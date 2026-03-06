@@ -1,0 +1,313 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        d:DesignWidth="1320"
+        d:DesignHeight="820"
+        x:Class="NovaSetup.Views.MainWindow"
+        x:CompileBindings="False"
+        Title="NovaSetup"
+        MinWidth="1080"
+        MinHeight="720"
+        Background="#F4F7FB">
+    <Window.Resources>
+        <SolidColorBrush x:Key="TopBarBrush" Color="#FFFFFF" />
+        <SolidColorBrush x:Key="PanelBrush" Color="#FFFFFF" />
+        <SolidColorBrush x:Key="SidebarBrush" Color="#F8FAFC" />
+        <SolidColorBrush x:Key="BorderBrush" Color="#D8E1EC" />
+        <SolidColorBrush x:Key="PrimaryBrush" Color="#2563EB" />
+        <SolidColorBrush x:Key="MutedTextBrush" Color="#5E7189" />
+        <SolidColorBrush x:Key="StatusBrush" Color="#E8EEF8" />
+    </Window.Resources>
+
+    <Window.Styles>
+        <Style Selector="Border.appCard">
+            <Setter Property="Background" Value="{StaticResource PanelBrush}" />
+            <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="12" />
+            <Setter Property="Padding" Value="12" />
+            <Setter Property="Margin" Value="0,0,0,8" />
+        </Style>
+
+        <Style Selector="Border.statusBadge">
+            <Setter Property="Background" Value="{StaticResource StatusBrush}" />
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="Padding" Value="8,4" />
+        </Style>
+
+        <Style Selector="Button.linkButton">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Foreground" Value="{StaticResource PrimaryBrush}" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="HorizontalAlignment" Value="Left" />
+        </Style>
+    </Window.Styles>
+
+    <Grid RowDefinitions="Auto,*,Auto">
+        <Border Grid.Row="0"
+                Background="{StaticResource TopBarBrush}"
+                BorderBrush="{StaticResource BorderBrush}"
+                BorderThickness="0,0,0,1"
+                Padding="16,12">
+            <Grid ColumnDefinitions="Auto,Auto,*,220,Auto,Auto"
+                  ColumnSpacing="12"
+                  VerticalAlignment="Center">
+                <Border Grid.Column="0"
+                        Width="34"
+                        Height="34"
+                        CornerRadius="10"
+                        Background="{StaticResource PrimaryBrush}">
+                    <TextBlock Text="N"
+                               FontSize="18"
+                               FontWeight="SemiBold"
+                               Foreground="White"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center" />
+                </Border>
+
+                <TextBlock Grid.Column="1"
+                           VerticalAlignment="Center"
+                           Text="NovaSetup"
+                           FontSize="21"
+                           FontWeight="SemiBold" />
+
+                <StackPanel Grid.Column="2"
+                            Orientation="Horizontal"
+                            HorizontalAlignment="Right"
+                            Spacing="12">
+                    <Border Background="#EEF3FB" CornerRadius="9" Padding="10,6">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <TextBlock Text="{Binding CurrentPlatformIcon}"
+                                       FontWeight="SemiBold"
+                                       Foreground="{StaticResource PrimaryBrush}" />
+                            <TextBlock Text="{Binding CurrentPlatformLabel}" />
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+
+                <TextBox Grid.Column="3"
+                         Watermark="Search apps or publishers"
+                         Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" />
+
+                <ComboBox Grid.Column="4"
+                          Width="150"
+                          ItemsSource="{Binding Profiles}"
+                          SelectedItem="{Binding SelectedProfile}" />
+
+                <Button Grid.Column="5"
+                        Command="{Binding ToggleSettingsCommand}"
+                        Padding="12,8"
+                        Content="Settings" />
+            </Grid>
+        </Border>
+
+        <Grid Grid.Row="1"
+              ColumnDefinitions="210,*"
+              ColumnSpacing="12"
+              Margin="16,12,16,12">
+            <Border Grid.Column="0"
+                    Background="{StaticResource SidebarBrush}"
+                    BorderBrush="{StaticResource BorderBrush}"
+                    BorderThickness="1"
+                    CornerRadius="12"
+                    Padding="8">
+                <StackPanel>
+                    <TextBlock Text="Categories"
+                               FontSize="14"
+                               FontWeight="SemiBold"
+                               Margin="8,6,8,8"
+                               Foreground="{StaticResource MutedTextBrush}" />
+                    <ListBox ItemsSource="{Binding Categories}"
+                             SelectedItem="{Binding SelectedCategory}"
+                             BorderThickness="0"
+                             Background="Transparent" />
+                </StackPanel>
+            </Border>
+
+            <Grid Grid.Column="1" RowDefinitions="Auto,*">
+                <Border Grid.Row="0"
+                        IsVisible="{Binding IsSettingsVisible}"
+                        Background="{StaticResource PanelBrush}"
+                        BorderBrush="{StaticResource BorderBrush}"
+                        BorderThickness="1"
+                        CornerRadius="12"
+                        Padding="12"
+                        Margin="0,0,0,10">
+                    <Grid ColumnDefinitions="Auto,Auto,Auto,*,260" ColumnSpacing="14">
+                        <CheckBox Grid.Column="0"
+                                  Content="Silent install"
+                                  IsChecked="{Binding SilentInstallEnabled}" />
+                        <CheckBox Grid.Column="1"
+                                  Content="Self-delete"
+                                  IsChecked="{Binding SelfDeleteAfterInstall}" />
+                        <CheckBox Grid.Column="2"
+                                  Content="Show unsupported"
+                                  IsChecked="{Binding ShowUnsupportedApps}" />
+                        <CheckBox Grid.Column="3"
+                                  Content="Show other platform apps"
+                                  IsChecked="{Binding ShowOtherPlatformApps}" />
+                        <TextBox Grid.Column="4"
+                                 Watermark="Default install path"
+                                 Text="{Binding DefaultInstallLocation}" />
+                    </Grid>
+                </Border>
+
+                <Border Grid.Row="1"
+                        Background="{StaticResource PanelBrush}"
+                        BorderBrush="{StaticResource BorderBrush}"
+                        BorderThickness="1"
+                        CornerRadius="12"
+                        Padding="12">
+                    <Grid RowDefinitions="Auto,*,Auto">
+                        <Grid Grid.Row="0"
+                              ColumnDefinitions="*,Auto"
+                              Margin="0,0,0,8">
+                            <TextBlock Text="{Binding StatusText}"
+                                       Foreground="{StaticResource MutedTextBrush}"
+                                       VerticalAlignment="Center" />
+                            <TextBlock Grid.Column="1"
+                                       Text="{Binding FilteredCount, StringFormat='Visible apps: {0}'}"
+                                       Foreground="{StaticResource MutedTextBrush}" />
+                        </Grid>
+
+                        <ScrollViewer Grid.Row="1">
+                            <ItemsControl ItemsSource="{Binding VisibleApps}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border Classes="appCard"
+                                                Opacity="{Binding RowOpacity}">
+                                            <Grid ColumnDefinitions="34,44,2.1*,1.4*,1.2*,48,1.2*"
+                                                  ColumnSpacing="10"
+                                                  VerticalAlignment="Center">
+                                                <CheckBox Grid.Column="0"
+                                                          VerticalAlignment="Center"
+                                                          IsChecked="{Binding IsSelected}"
+                                                          IsEnabled="{Binding IsSupportedOnCurrentPlatform}" />
+
+                                                <Border Grid.Column="1"
+                                                        Width="36"
+                                                        Height="36"
+                                                        CornerRadius="10"
+                                                        Background="#E5EEF9">
+                                                    <TextBlock Text="{Binding IconGlyph}"
+                                                               FontWeight="SemiBold"
+                                                               HorizontalAlignment="Center"
+                                                               VerticalAlignment="Center"
+                                                               Foreground="{StaticResource PrimaryBrush}" />
+                                                </Border>
+
+                                                <StackPanel Grid.Column="2" Spacing="3">
+                                                    <TextBlock Text="{Binding Name}"
+                                                               FontWeight="SemiBold"
+                                                               FontSize="14" />
+                                                    <TextBlock Text="{Binding Description}"
+                                                               FontSize="12"
+                                                               Foreground="{StaticResource MutedTextBrush}" />
+                                                    <TextBlock Text="{Binding RecommendationReason}"
+                                                               FontSize="11"
+                                                               Foreground="#1D7A46"
+                                                               IsVisible="{Binding IsRecommended}" />
+                                                </StackPanel>
+
+                                                <Button Grid.Column="3"
+                                                        Classes="linkButton"
+                                                        Content="{Binding PublisherName}"
+                                                        Command="{Binding $parent[Window].DataContext.OpenPublisherCommand}"
+                                                        CommandParameter="{Binding .}" />
+
+                                                <StackPanel Grid.Column="4"
+                                                            Orientation="Horizontal"
+                                                            Spacing="6">
+                                                    <Border IsVisible="{Binding SupportedPlatforms.Windows}"
+                                                            Background="#EEF3FB"
+                                                            CornerRadius="8"
+                                                            Padding="7,3">
+                                                        <TextBlock Text="WIN"
+                                                                   FontSize="11"
+                                                                   FontWeight="SemiBold" />
+                                                    </Border>
+                                                    <Border IsVisible="{Binding SupportedPlatforms.Linux}"
+                                                            Background="#EEF3FB"
+                                                            CornerRadius="8"
+                                                            Padding="7,3">
+                                                        <TextBlock Text="LNX"
+                                                                   FontSize="11"
+                                                                   FontWeight="SemiBold" />
+                                                    </Border>
+                                                </StackPanel>
+
+                                                <Button Grid.Column="5"
+                                                        Width="28"
+                                                        Height="28"
+                                                        Padding="0"
+                                                        Content="i"
+                                                        HorizontalAlignment="Center"
+                                                        VerticalAlignment="Center"
+                                                        Command="{Binding $parent[Window].DataContext.ShowInfoCommand}"
+                                                        CommandParameter="{Binding .}" />
+
+                                                <Border Grid.Column="6"
+                                                        Classes="statusBadge"
+                                                        HorizontalAlignment="Right">
+                                                    <TextBlock Text="{Binding StatusBadge}" FontSize="11" />
+                                                </Border>
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </ScrollViewer>
+
+                        <Border Grid.Row="2"
+                                IsVisible="{Binding ShowRestartOptions}"
+                                Background="#FFF7E8"
+                                BorderBrush="#F4D39D"
+                                BorderThickness="1"
+                                CornerRadius="10"
+                                Padding="10"
+                                Margin="0,10,0,0">
+                            <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
+                                <TextBlock Text="One or more installs need a restart."
+                                           VerticalAlignment="Center" />
+                                <Button Grid.Column="1"
+                                        Command="{Binding RestartNowCommand}"
+                                        Content="Restart Now"
+                                        Padding="10,6" />
+                                <Button Grid.Column="2"
+                                        Command="{Binding SkipRestartCommand}"
+                                        Content="Skip"
+                                        Padding="10,6" />
+                            </Grid>
+                        </Border>
+                    </Grid>
+                </Border>
+            </Grid>
+        </Grid>
+
+        <Border Grid.Row="2"
+                Background="{StaticResource TopBarBrush}"
+                BorderBrush="{StaticResource BorderBrush}"
+                BorderThickness="1,1,1,0"
+                Padding="16,12">
+            <Grid ColumnDefinitions="*,Auto,Auto,Auto" ColumnSpacing="10">
+                <TextBlock Text="{Binding SelectedCount, StringFormat='Selected: {0}'}"
+                           VerticalAlignment="Center" />
+                <TextBlock Grid.Column="1"
+                           Text="{Binding InstallSummary}"
+                           VerticalAlignment="Center"
+                           Foreground="{StaticResource MutedTextBrush}" />
+                <Button Grid.Column="2"
+                        Command="{Binding SaveProfileCommand}"
+                        Content="Save profile"
+                        Padding="12,8" />
+                <Button Grid.Column="3"
+                        Command="{Binding InstallCommand}"
+                        Content="Install"
+                        Padding="16,8" />
+            </Grid>
+        </Border>
+    </Grid>
+</Window>
