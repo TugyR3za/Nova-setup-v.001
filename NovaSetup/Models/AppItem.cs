@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 namespace NovaSetup.Models;
 
@@ -22,11 +23,13 @@ public class AppItem : ObservableObject
     private string _recommendationReason = string.Empty;
     private bool _requiresRestartHint;
     private bool _supportsSilentInstall;
+    private List<string> _recommendationTags = new();
+
+    // Runtime/UI state (not part of apps.json schema).
     private bool _supportsCustomPath;
     private bool _hasInstallFailed;
     private string _statusBadge = "Not Installed";
     private double _rowOpacity = 1.0;
-    private List<string> _recommendedVendors = new();
 
     public string Id
     {
@@ -142,44 +145,60 @@ public class AppItem : ObservableObject
         set => SetProperty(ref _supportsSilentInstall, value);
     }
 
+    public List<string> RecommendationTags
+    {
+        get => _recommendationTags;
+        set => SetProperty(ref _recommendationTags, value ?? new List<string>());
+    }
+
+    [JsonIgnore]
     public bool SupportsCustomPath
     {
         get => _supportsCustomPath;
         set => SetProperty(ref _supportsCustomPath, value);
     }
 
-    public List<string> RecommendedVendors
-    {
-        get => _recommendedVendors;
-        set => SetProperty(ref _recommendedVendors, value);
-    }
-
+    [JsonIgnore]
     public bool HasInstallFailed
     {
         get => _hasInstallFailed;
         set => SetProperty(ref _hasInstallFailed, value);
     }
 
+    [JsonIgnore]
     public string StatusBadge
     {
         get => _statusBadge;
         set => SetProperty(ref _statusBadge, value);
     }
 
+    [JsonIgnore]
     public double RowOpacity
     {
         get => _rowOpacity;
         set => SetProperty(ref _rowOpacity, value);
     }
 
+    [JsonIgnore]
     public string IconGlyph => string.IsNullOrWhiteSpace(Name) ? "?" : Name[0].ToString().ToUpperInvariant();
 }
 
 public class InstallDefinition
 {
+    // Optional direct installer URL for download-first install flows.
+    public string InstallerUrl { get; set; } = string.Empty;
+
+    // Optional explicit output file name for downloaded installers.
+    public string InstallerFileName { get; set; } = string.Empty;
+
     public string Command { get; set; } = string.Empty;
 
     public string SilentCommand { get; set; } = string.Empty;
+
+    // Optional arguments when running a downloaded installer file.
+    public string Arguments { get; set; } = string.Empty;
+
+    public string SilentArguments { get; set; } = string.Empty;
 
     public bool RequiresRestart { get; set; }
 

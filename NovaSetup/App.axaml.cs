@@ -24,7 +24,6 @@ public partial class App : Application
             var selectionService = new SelectionService(loggingService);
             var detectionService = new DetectionService(loggingService);
             var installerService = new InstallerService(loggingService);
-            var browserService = new BrowserService(loggingService);
 
             var mainWindowViewModel = new MainWindowViewModel(
                 platformService,
@@ -32,15 +31,12 @@ public partial class App : Application
                 selectionService,
                 detectionService,
                 installerService,
-                loggingService,
-                browserService);
+                loggingService);
 
             desktop.MainWindow = new MainWindow
             {
                 DataContext = mainWindowViewModel
             };
-
-            mainWindowViewModel.Initialize();
         }
 
         base.OnFrameworkInitializationCompleted();

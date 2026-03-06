@@ -1,0 +1,58 @@
+2026-03-06 14:53:17 [INFO] Logging initialized.
+2026-03-06 14:53:19 [INFO] Loaded 9 apps from apps.json.
+2026-03-06 14:53:19 [INFO] Applied settings from selection.json: Profile='Website Starter', Silent=True, SelfDelete=False, ShowUnsupported=False, InstallLocation=''
+2026-03-06 14:53:19 [INFO] Detected GPU vendor: NVIDIA
+2026-03-06 14:53:20 [INFO] Detected motherboard vendor: ASUS
+2026-03-06 14:53:23 [INFO] Recommended app 'NVIDIA App' for NVIDIA GPU. Supported=True, AutoSelected=True
+2026-03-06 14:53:23 [INFO] No catalog app found for recommendation rule: ASUS motherboard
+2026-03-06 14:53:23 [INFO] Recommendation summary: Total=1, Supported=1, Unsupported=0
+2026-03-06 14:53:23 [INFO] Recommendations applied. Total=1, Supported=1, Unsupported=0
+2026-03-06 14:53:23 [INFO] Loaded 9 apps for Windows. Recommended: 1. 1 selected app(s) are unsupported and will be skipped.
+2026-03-06 14:53:51 [INFO] Setting changed: ShowUnsupportedApps=True
+2026-03-06 14:53:51 [INFO] Setting changed: SelfDeleteEnabled=True
+2026-03-06 14:53:52 [INFO] Setting changed: SelfDeleteEnabled=False
+2026-03-06 14:53:54 [INFO] Setting changed: ShowUnsupportedApps=False
+2026-03-06 14:53:55 [INFO] Setting changed: ShowUnsupportedApps=True
+2026-03-06 14:53:56 [INFO] Setting changed: ShowUnsupportedApps=False
+2026-03-06 14:53:56 [INFO] Setting changed: ShowUnsupportedApps=True
+2026-03-06 14:53:56 [INFO] Setting changed: ShowUnsupportedApps=False
+2026-03-06 15:23:45 [INFO] Logging initialized.
+2026-03-06 15:23:46 [INFO] Loaded 9 apps from apps.json.
+2026-03-06 15:23:46 [INFO] Applied settings from selection.json: Profile='Website Starter', Silent=True, SelfDelete=False, ShowUnsupported=False, InstallLocation=''
+2026-03-06 15:23:46 [INFO] Detected GPU vendor: NVIDIA
+2026-03-06 15:23:46 [INFO] Detected motherboard vendor: ASUS
+2026-03-06 15:23:49 [INFO] Recommended app 'NVIDIA App' for NVIDIA GPU. Supported=True, AutoSelected=True
+2026-03-06 15:23:49 [INFO] No catalog app found for recommendation rule: ASUS motherboard
+2026-03-06 15:23:49 [INFO] Recommendation summary: Total=1, Supported=1, Unsupported=0
+2026-03-06 15:23:49 [INFO] Recommendations applied. Total=1, Supported=1, Unsupported=0
+2026-03-06 15:23:49 [INFO] Loaded 9 apps for Windows. Recommended: 1. 1 selected app(s) are unsupported and will be skipped.
+2026-03-06 15:23:56 [INFO] Starting installation for 4 app(s)...
+2026-03-06 15:23:56 [INFO] Install settings: Silent=True, SelfDelete=False, ShowUnsupported=False, InstallLocation=''
+2026-03-06 15:23:56 [INFO] Install started. Platform=Windows, CandidateCount=1, Silent=True.
+2026-03-06 15:23:56 [INFO] Installing app: Mozilla Firefox
+2026-03-06 15:23:56 [INFO] Executing install command: winget install --id Mozilla.Firefox -e --silent --accept-source-agreements --accept-package-agreements
+2026-03-06 15:24:03 [INFO] Command completed. ExitCode=-1978335189
+2026-03-06 15:24:03 [INFO] Command output: -    \    |                                                                                                                           â–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–’â–’â–’â–’â–’â–’â–’â–’â–’â–’â–’â–’â–’â–’â–’â–’â–’â–’â–’  1024 KB / 2.68 MB  â–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ...
+2026-03-06 15:24:03 [ERROR] Install failed for Mozilla Firefox. ExitCode=-1978335189. Install command failed with exit code -1978335189.
+2026-03-06 15:24:03 [INFO] Deleted temp installer directory: C:\Users\naime\AppData\Local\Temp\NovaSetup\install-20260306-232356-c5971c150f7f42729c4f337214afa4fc
+2026-03-06 15:24:03 [INFO] Install finished. ResultCount=1.
+2026-03-06 15:24:03 [INFO] Install started. Platform=Windows, CandidateCount=1, Silent=True.
+2026-03-06 15:24:03 [INFO] Installing app: Steam
+2026-03-06 15:24:03 [INFO] Executing install command: winget install --id Valve.Steam -e --silent --accept-source-agreements --accept-package-agreements
+2026-03-06 15:24:05 [INFO] Command completed. ExitCode=-1978335189
+2026-03-06 15:24:05 [INFO] Command output: -                                                                                                                            -    \    |    /                                                                                                                         Found an existing package alre...
+2026-03-06 15:24:05 [ERROR] Install failed for Steam. ExitCode=-1978335189. Install command failed with exit code -1978335189.
+2026-03-06 15:24:05 [INFO] Deleted temp installer directory: C:\Users\naime\AppData\Local\Temp\NovaSetup\install-20260306-232403-387e3386006e47a8ae5537772584883e
+2026-03-06 15:24:05 [INFO] Install finished. ResultCount=1.
+2026-03-06 15:24:05 [INFO] Install started. Platform=Windows, CandidateCount=1, Silent=True.
+2026-03-06 15:24:05 [INFO] Installing app: NVIDIA App
+2026-03-06 15:24:05 [INFO] Executing install command: winget install --id NVIDIA.NVIDIAApp -e --silent --accept-source-agreements --accept-package-agreements
+2026-03-06 15:24:07 [INFO] Command completed. ExitCode=-1978335212
+2026-03-06 15:24:07 [INFO] Command output: -                                                                                                                            -    \    |                                                                                                                         No package found matching input crit...
+2026-03-06 15:24:07 [ERROR] Install failed for NVIDIA App. ExitCode=-1978335212. Install command failed with exit code -1978335212.
+2026-03-06 15:24:07 [INFO] Deleted temp installer directory: C:\Users\naime\AppData\Local\Temp\NovaSetup\install-20260306-232405-002f82cff35a4ec8a8b7ab312d1c2a16
+2026-03-06 15:24:07 [INFO] Install finished. ResultCount=1.
+2026-03-06 15:24:07 [INFO] Install started. Platform=Windows, CandidateCount=1, Silent=True.
+2026-03-06 15:24:07 [WARN] Skipping htop: unsupported on Windows.
+2026-03-06 15:24:07 [INFO] No install actions generated.
+2026-03-06 15:24:07 [WARN] Restart recommended after install. RestartItems=1, Installed=0, Failed=3, Skipped=1

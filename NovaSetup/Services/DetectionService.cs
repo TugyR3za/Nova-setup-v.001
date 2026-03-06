@@ -5,150 +5,275 @@ namespace NovaSetup.Services;
 
 public sealed class DetectionService
 {
-    private static readonly string[] KnownAccessoryVendors =
-    {
-        "Logitech",
-        "Razer",
-        "Corsair",
-        "SteelSeries"
-    };
+    private static readonly string[] KnownGpuVendors = { "NVIDIA", "AMD", "Intel" };
+    private static readonly string[] KnownAccessoryVendors = { "Logitech", "Razer", "Corsair", "SteelSeries" };
 
-    private readonly LoggingService _loggingService;
+    private readonly LoggingService? _loggingService;
 
-    public DetectionService(LoggingService loggingService)
+    public DetectionService(LoggingService? loggingService = null)
     {
         _loggingService = loggingService;
     }
 
-    public void RunDetections(IList<AppItem> catalog, string currentPlatform)
+    public string? DetectGpuVendor(string currentPlatform)
     {
-        DetectInstalledApps(catalog, currentPlatform);
-        var vendors = DetectHardwareAndAccessoryVendors(currentPlatform);
-        ApplyRecommendations(catalog, vendors);
-    }
-
-    private void DetectInstalledApps(IList<AppItem> catalog, string currentPlatform)
-    {
-        foreach (var app in catalog)
-        {
-            var installDefinition = currentPlatform == PlatformService.Windows
-                ? app.WindowsInstall
-                : app.LinuxInstall;
-
-            if (installDefinition is null || string.IsNullOrWhiteSpace(installDefinition.DetectExecutable))
-            {
-                continue;
-            }
-
-            app.IsInstalled = CommandExists(installDefinition.DetectExecutable, currentPlatform);
-            if (app.IsInstalled)
-            {
-                app.StatusBadge = "Installed";
-            }
-        }
-    }
-
-    private HashSet<string> DetectHardwareAndAccessoryVendors(string currentPlatform)
-    {
-        var vendors = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-
-        var gpuOutput = currentPlatform == PlatformService.Windows
+        var output = currentPlatform == PlatformService.Windows
             ? RunCommand("wmic", "path win32_VideoController get Name")
             : RunCommand("sh", "-c \"lspci\"");
-        TryAddVendor(vendors, gpuOutput);
 
-        var boardOutput = currentPlatform == PlatformService.Windows
+        var vendor = ExtractKnownVendor(output, KnownGpuVendors);
+        if (!string.IsNullOrWhiteSpace(vendor))
+        {
+            _loggingService?.LogInfo($"Detected GPU vendor: {vendor}");
+        }
+
+        return vendor;
+    }
+
+    public string? DetectMotherboardVendor(string currentPlatform)
+    {
+        var output = currentPlatform == PlatformService.Windows
             ? RunCommand("wmic", "baseboard get Manufacturer")
             : TryReadFile("/sys/devices/virtual/dmi/id/board_vendor");
-        TryAddVendor(vendors, boardOutput);
 
-        var accessoryOutput = currentPlatform == PlatformService.Windows
+        var vendor = ExtractCommonBoardVendor(output);
+        if (!string.IsNullOrWhiteSpace(vendor))
+        {
+            _loggingService?.LogInfo($"Detected motherboard vendor: {vendor}");
+        }
+
+        return vendor;
+    }
+
+    public IReadOnlyList<string> DetectAccessoryVendors(string currentPlatform)
+    {
+        var output = currentPlatform == PlatformService.Windows
             ? RunCommand("wmic", "path Win32_PnPEntity get Name")
             : RunCommand("sh", "-c \"lsusb\"");
 
+        var detected = new List<string>();
         foreach (var vendor in KnownAccessoryVendors)
         {
-            if (accessoryOutput.Contains(vendor, StringComparison.OrdinalIgnoreCase))
+            if (output.Contains(vendor, StringComparison.OrdinalIgnoreCase))
             {
-                vendors.Add(vendor);
+                detected.Add(vendor);
             }
         }
 
-        if (vendors.Count > 0)
+        if (detected.Count > 0)
         {
-            _loggingService.Info($"Detected vendor hints: {string.Join(", ", vendors)}");
-        }
-        else
-        {
-            _loggingService.Info("No vendor hints detected.");
+            _loggingService?.LogInfo($"Detected accessory vendors: {string.Join(", ", detected)}");
         }
 
-        return vendors;
+        return detected;
     }
 
-    private void ApplyRecommendations(IList<AppItem> catalog, HashSet<string> detectedVendors)
+    public HardwareDetectionResult DetectHardware(string currentPlatform)
     {
-        foreach (var app in catalog)
+        return new HardwareDetectionResult
+        {
+            GpuVendor = DetectGpuVendor(currentPlatform),
+            MotherboardVendor = DetectMotherboardVendor(currentPlatform),
+            AccessoryVendors = DetectAccessoryVendors(currentPlatform).ToList()
+        };
+    }
+
+    public RecommendationSummary ApplyRecommendations(
+        IList<AppItem> apps,
+        string currentPlatform,
+        bool autoSelectSupportedApps = true)
+    {
+        var detectionResult = DetectHardware(currentPlatform);
+        return ApplyRecommendations(apps, currentPlatform, detectionResult, autoSelectSupportedApps);
+    }
+
+    public RecommendationSummary ApplyRecommendations(
+        IList<AppItem> apps,
+        string currentPlatform,
+        HardwareDetectionResult detectionResult,
+        bool autoSelectSupportedApps = true)
+    {
+        // Reset existing recommendation flags. Any new recommendations are reapplied from current detection.
+        foreach (var app in apps)
         {
             app.IsRecommended = false;
             app.RecommendationReason = string.Empty;
-
-            if (app.RecommendedVendors.Count == 0)
-            {
-                continue;
-            }
-
-            var matchedVendor = app.RecommendedVendors.FirstOrDefault(vendor => detectedVendors.Contains(vendor));
-            if (string.IsNullOrWhiteSpace(matchedVendor))
-            {
-                continue;
-            }
-
-            app.IsRecommended = true;
-            app.RecommendationReason = $"Recommended for detected {matchedVendor} hardware/accessories.";
-
-            if (app.IsSupportedOnCurrentPlatform && !app.IsInstalled)
-            {
-                app.IsSelected = true;
-            }
         }
-    }
 
-    private static bool CommandExists(string command, string currentPlatform)
-    {
-        if (string.IsNullOrWhiteSpace(command))
+        var summary = new RecommendationSummary();
+        summary.RecordDetected(detectionResult);
+
+        var recommendationCandidates = BuildRecommendationCandidates(detectionResult);
+        foreach (var candidate in recommendationCandidates)
         {
-            return false;
+            var matchedApp = FindOfficialVendorApp(apps, candidate);
+            if (matchedApp is null)
+            {
+                _loggingService?.LogInfo($"No catalog app found for recommendation rule: {candidate.DisplayName}");
+                continue;
+            }
+
+            matchedApp.IsRecommended = true;
+            var supportedOnCurrentPlatform = IsSupportedOnPlatform(matchedApp, currentPlatform);
+
+            if (supportedOnCurrentPlatform && autoSelectSupportedApps)
+            {
+                matchedApp.IsSelected = true;
+            }
+
+            matchedApp.RecommendationReason = supportedOnCurrentPlatform
+                ? $"{candidate.Reason} Recommended and auto-selected."
+                : $"{candidate.Reason} Recommended but unsupported on {currentPlatform}.";
+
+            summary.RecommendedAppIds.Add(matchedApp.Id);
+            if (supportedOnCurrentPlatform)
+            {
+                summary.SupportedRecommendations++;
+            }
+            else
+            {
+                summary.UnsupportedRecommendations++;
+            }
+
+            _loggingService?.LogInfo(
+                $"Recommended app '{matchedApp.Name}' for {candidate.DisplayName}. Supported={supportedOnCurrentPlatform}, AutoSelected={matchedApp.IsSelected}");
         }
 
-        var probeOutput = currentPlatform == PlatformService.Windows
-            ? RunCommand("where", command)
-            : RunCommand("sh", $"-c \"which {command}\"");
+        _loggingService?.LogInfo(
+            $"Recommendation summary: Total={summary.RecommendedAppIds.Count}, Supported={summary.SupportedRecommendations}, Unsupported={summary.UnsupportedRecommendations}");
 
-        return !string.IsNullOrWhiteSpace(probeOutput);
+        return summary;
     }
 
-    private static void TryAddVendor(HashSet<string> vendors, string output)
+    private static bool IsSupportedOnPlatform(AppItem app, string currentPlatform)
+    {
+        return currentPlatform switch
+        {
+            PlatformService.Windows => app.SupportedPlatforms.Windows,
+            PlatformService.Linux => app.SupportedPlatforms.Linux,
+            _ => false
+        };
+    }
+
+    private static List<RecommendationCandidate> BuildRecommendationCandidates(HardwareDetectionResult detectionResult)
+    {
+        var candidates = new List<RecommendationCandidate>();
+
+        if (!string.IsNullOrWhiteSpace(detectionResult.GpuVendor))
+        {
+            var gpuVendor = NormalizeVendor(detectionResult.GpuVendor);
+            var gpuCandidate = gpuVendor switch
+            {
+                "NVIDIA" => new RecommendationCandidate(
+                    "NVIDIA",
+                    "NVIDIA GPU",
+                    "NVIDIA GPU detected. NVIDIA software can help with driver and device management."),
+                "AMD" => new RecommendationCandidate(
+                    "AMD",
+                    "AMD GPU",
+                    "AMD GPU detected. AMD software is recommended for driver and device support."),
+                "Intel" => new RecommendationCandidate(
+                    "Intel",
+                    "Intel GPU",
+                    "Intel GPU detected. Intel support/driver tooling is recommended."),
+                _ => null
+            };
+
+            if (gpuCandidate is not null)
+            {
+                candidates.Add(gpuCandidate);
+            }
+        }
+
+        foreach (var accessoryVendor in detectionResult.AccessoryVendors)
+        {
+            var normalized = NormalizeVendor(accessoryVendor);
+            if (normalized is "LOGITECH" or "RAZER" or "CORSAIR" or "STEELSERIES")
+            {
+                candidates.Add(new RecommendationCandidate(
+                    normalized,
+                    $"{normalized} accessory device",
+                    $"{normalized} accessory hardware detected. Matching vendor software is recommended."));
+            }
+        }
+
+        if (!string.IsNullOrWhiteSpace(detectionResult.MotherboardVendor))
+        {
+            var boardVendor = NormalizeVendor(detectionResult.MotherboardVendor);
+            candidates.Add(new RecommendationCandidate(
+                boardVendor,
+                $"{boardVendor} motherboard",
+                $"{boardVendor} motherboard vendor detected. Vendor support utility may be useful."));
+        }
+
+        // Deduplicate by vendor key.
+        return candidates
+            .GroupBy(candidate => candidate.VendorKey, StringComparer.OrdinalIgnoreCase)
+            .Select(group => group.First())
+            .ToList();
+    }
+
+    private static AppItem? FindOfficialVendorApp(IEnumerable<AppItem> apps, RecommendationCandidate candidate)
+    {
+        // Only recommend apps already present in apps.json and matching known vendor signatures.
+        return apps.FirstOrDefault(app => IsOfficialVendorMatch(app, candidate.VendorKey));
+    }
+
+    private static bool IsOfficialVendorMatch(AppItem app, string vendorKey)
+    {
+        var key = NormalizeVendor(vendorKey);
+        var id = app.Id ?? string.Empty;
+        var name = app.Name ?? string.Empty;
+        var publisher = app.PublisherName ?? string.Empty;
+
+        bool contains(string value) => value.Contains(key, StringComparison.OrdinalIgnoreCase);
+        var publisherMatch = contains(publisher);
+        var strongNameMatch = contains(id) && contains(name);
+
+        return key switch
+        {
+            "NVIDIA" => publisherMatch || strongNameMatch,
+            "AMD" => publisherMatch || strongNameMatch,
+            "INTEL" => publisherMatch || strongNameMatch,
+            "LOGITECH" => publisherMatch || strongNameMatch,
+            "RAZER" => publisherMatch || strongNameMatch,
+            "CORSAIR" => publisherMatch || strongNameMatch,
+            "STEELSERIES" => publisherMatch || strongNameMatch,
+            "ASUS" => publisherMatch || strongNameMatch,
+            "MSI" => publisherMatch || strongNameMatch,
+            "GIGABYTE" => publisherMatch || strongNameMatch,
+            "ASROCK" => publisherMatch || strongNameMatch,
+            "DELL" => publisherMatch || strongNameMatch,
+            "HP" => publisherMatch || strongNameMatch,
+            "LENOVO" => publisherMatch || strongNameMatch,
+            _ => false
+        };
+    }
+
+    private static string NormalizeVendor(string vendor)
+    {
+        return vendor.Trim().ToUpperInvariant();
+    }
+
+    private static string? ExtractKnownVendor(string output, IEnumerable<string> vendors)
     {
         if (string.IsNullOrWhiteSpace(output))
         {
-            return;
+            return null;
         }
 
-        if (output.Contains("NVIDIA", StringComparison.OrdinalIgnoreCase))
+        return vendors.FirstOrDefault(vendor => output.Contains(vendor, StringComparison.OrdinalIgnoreCase));
+    }
+
+    private static string? ExtractCommonBoardVendor(string output)
+    {
+        if (string.IsNullOrWhiteSpace(output))
         {
-            vendors.Add("NVIDIA");
+            return null;
         }
 
-        if (output.Contains("AMD", StringComparison.OrdinalIgnoreCase))
-        {
-            vendors.Add("AMD");
-        }
-
-        if (output.Contains("Intel", StringComparison.OrdinalIgnoreCase))
-        {
-            vendors.Add("Intel");
-        }
+        var common = new[] { "ASUS", "MSI", "Gigabyte", "ASRock", "Dell", "HP", "Lenovo" };
+        return ExtractKnownVendor(output, common);
     }
 
     private static string RunCommand(string fileName, string arguments)
@@ -183,15 +308,55 @@ public sealed class DetectionService
         }
     }
 
-    private static string TryReadFile(string filePath)
+    private static string TryReadFile(string path)
     {
         try
         {
-            return File.Exists(filePath) ? File.ReadAllText(filePath) : string.Empty;
+            return File.Exists(path) ? File.ReadAllText(path) : string.Empty;
         }
         catch
         {
             return string.Empty;
+        }
+    }
+
+    private sealed record RecommendationCandidate(string VendorKey, string DisplayName, string Reason);
+}
+
+public sealed class HardwareDetectionResult
+{
+    public string? GpuVendor { get; set; }
+
+    public string? MotherboardVendor { get; set; }
+
+    public List<string> AccessoryVendors { get; set; } = new();
+}
+
+public sealed class RecommendationSummary
+{
+    public List<string> DetectedSignals { get; } = new();
+
+    public List<string> RecommendedAppIds { get; } = new();
+
+    public int SupportedRecommendations { get; set; }
+
+    public int UnsupportedRecommendations { get; set; }
+
+    public void RecordDetected(HardwareDetectionResult result)
+    {
+        if (!string.IsNullOrWhiteSpace(result.GpuVendor))
+        {
+            DetectedSignals.Add($"GPU:{result.GpuVendor}");
+        }
+
+        if (!string.IsNullOrWhiteSpace(result.MotherboardVendor))
+        {
+            DetectedSignals.Add($"Motherboard:{result.MotherboardVendor}");
+        }
+
+        foreach (var accessory in result.AccessoryVendors)
+        {
+            DetectedSignals.Add($"Accessory:{accessory}");
         }
     }
 }

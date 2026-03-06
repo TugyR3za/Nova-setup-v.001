@@ -4,23 +4,65 @@ namespace NovaSetup.Services;
 
 public sealed class PlatformService
 {
+    public enum PlatformKind
+    {
+        Unknown,
+        Windows,
+        Linux
+    }
+
+    public sealed class PlatformInfo
+    {
+        public PlatformKind Kind { get; init; } = PlatformKind.Unknown;
+
+        public string Id { get; init; } = Unknown;
+
+        public string Label { get; init; } = "Unknown OS";
+
+        public string Icon { get; init; } = "OS";
+    }
+
     public const string Windows = "Windows";
     public const string Linux = "Linux";
     public const string Unknown = "Unknown";
 
-    public string DetectCurrentPlatform()
+    // Simple UI-friendly platform result.
+    public PlatformInfo GetCurrentPlatformInfo()
     {
         if (OperatingSystem.IsWindows())
         {
-            return Windows;
+            return new PlatformInfo
+            {
+                Kind = PlatformKind.Windows,
+                Id = Windows,
+                Label = "Windows",
+                Icon = "WIN"
+            };
         }
 
         if (OperatingSystem.IsLinux())
         {
-            return Linux;
+            return new PlatformInfo
+            {
+                Kind = PlatformKind.Linux,
+                Id = Linux,
+                Label = "Linux",
+                Icon = "LNX"
+            };
         }
 
-        return Unknown;
+        return new PlatformInfo
+        {
+            Kind = PlatformKind.Unknown,
+            Id = Unknown,
+            Label = "Unknown OS",
+            Icon = "OS"
+        };
+    }
+
+    public string DetectCurrentPlatform()
+    {
+        return GetCurrentPlatformInfo().Id;
     }
 
     public string GetPlatformLabel(string platform)
@@ -45,6 +87,11 @@ public sealed class PlatformService
 
     public bool IsSupportedOnPlatform(PlatformSupport support, string platform)
     {
+        if (support is null)
+        {
+            return false;
+        }
+
         return platform switch
         {
             Windows => support.Windows,

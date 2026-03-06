@@ -4,18 +4,18 @@ namespace NovaSetup.Services;
 
 public sealed class BrowserService
 {
-    private readonly LoggingService _loggingService;
+    private readonly LoggingService? _loggingService;
 
-    public BrowserService(LoggingService loggingService)
+    public BrowserService(LoggingService? loggingService = null)
     {
         _loggingService = loggingService;
     }
 
-    public bool OpenPublisherHomepage(string? url)
+    public bool OpenUrl(string? url)
     {
         if (string.IsNullOrWhiteSpace(url) || !Uri.TryCreate(url, UriKind.Absolute, out var uri))
         {
-            _loggingService.Warn("Publisher homepage URL is empty or invalid.");
+            _loggingService?.LogWarning("Cannot open URL: value is missing or invalid.");
             return false;
         }
 
@@ -27,13 +27,16 @@ public sealed class BrowserService
                 UseShellExecute = true
             });
 
-            _loggingService.Info($"Opened publisher homepage: {uri}");
+            _loggingService?.LogInfo($"Opened URL in default browser: {uri}");
             return true;
         }
         catch (Exception ex)
         {
-            _loggingService.Error($"Failed to open browser: {ex.Message}");
+            _loggingService?.LogError($"Failed to open URL '{uri}': {ex.Message}");
             return false;
         }
     }
+
+    // Convenience alias for app publisher links in the UI.
+    public bool OpenPublisherHomepage(string? url) => OpenUrl(url);
 }

@@ -25,16 +25,7 @@
       "NeedsManualInstall": false,
       "DetectExecutable": "firefox"
     },
-    "IsSelected": false,
-    "IsInstalled": false,
-    "IsSupportedOnCurrentPlatform": true,
-    "WillBeSkipped": false,
-    "IsRecommended": false,
-    "RecommendationReason": "",
-    "RequiresRestartHint": false,
-    "SupportsSilentInstall": true,
-    "SupportsCustomPath": false,
-    "RecommendedVendors": []
+    "SupportsSilentInstall": true
   },
   {
     "Id": "chrome",
@@ -62,16 +53,7 @@
       "NeedsManualInstall": false,
       "DetectExecutable": "google-chrome"
     },
-    "IsSelected": false,
-    "IsInstalled": false,
-    "IsSupportedOnCurrentPlatform": true,
-    "WillBeSkipped": false,
-    "IsRecommended": false,
-    "RecommendationReason": "",
-    "RequiresRestartHint": false,
-    "SupportsSilentInstall": true,
-    "SupportsCustomPath": false,
-    "RecommendedVendors": []
+    "SupportsSilentInstall": true
   },
   {
     "Id": "discord",
@@ -79,7 +61,7 @@
     "Category": "Communication",
     "PublisherName": "Discord Inc.",
     "HomepageUrl": "https://discord.com/",
-    "Description": "Voice and chat platform for communities.",
+    "Description": "Voice and text chat app.",
     "IconPath": "Assets/icons/discord.png",
     "SupportedPlatforms": {
       "Windows": true,
@@ -99,16 +81,7 @@
       "NeedsManualInstall": false,
       "DetectExecutable": "discord"
     },
-    "IsSelected": false,
-    "IsInstalled": false,
-    "IsSupportedOnCurrentPlatform": true,
-    "WillBeSkipped": false,
-    "IsRecommended": false,
-    "RecommendationReason": "",
-    "RequiresRestartHint": false,
-    "SupportsSilentInstall": true,
-    "SupportsCustomPath": false,
-    "RecommendedVendors": []
+    "SupportsSilentInstall": true
   },
   {
     "Id": "steam",
@@ -136,16 +109,7 @@
       "NeedsManualInstall": false,
       "DetectExecutable": "steam"
     },
-    "IsSelected": false,
-    "IsInstalled": false,
-    "IsSupportedOnCurrentPlatform": true,
-    "WillBeSkipped": false,
-    "IsRecommended": false,
-    "RecommendationReason": "",
-    "RequiresRestartHint": false,
-    "SupportsSilentInstall": true,
-    "SupportsCustomPath": false,
-    "RecommendedVendors": []
+    "SupportsSilentInstall": true
   },
   {
     "Id": "vscode",
@@ -161,7 +125,7 @@
     },
     "WindowsInstall": {
       "Command": "winget install --id Microsoft.VisualStudioCode -e --accept-source-agreements --accept-package-agreements",
-      "SilentCommand": "winget install --id Microsoft.VisualStudioCode -e --silent --accept-source-agreements --accept-package-agreements --location \"{installPath}\"",
+      "SilentCommand": "winget install --id Microsoft.VisualStudioCode -e --silent --accept-source-agreements --accept-package-agreements",
       "RequiresRestart": false,
       "NeedsManualInstall": false,
       "DetectExecutable": "code"
@@ -173,90 +137,35 @@
       "NeedsManualInstall": false,
       "DetectExecutable": "code"
     },
-    "IsSelected": false,
-    "IsInstalled": false,
-    "IsSupportedOnCurrentPlatform": true,
-    "WillBeSkipped": false,
-    "IsRecommended": false,
-    "RecommendationReason": "",
-    "RequiresRestartHint": false,
-    "SupportsSilentInstall": true,
-    "SupportsCustomPath": true,
-    "RecommendedVendors": []
+    "SupportsSilentInstall": true
   },
   {
-    "Id": "vlc",
-    "Name": "VLC Media Player",
-    "Category": "Media",
-    "PublisherName": "VideoLAN",
-    "HomepageUrl": "https://www.videolan.org/",
-    "Description": "Media playback for common formats.",
-    "IconPath": "Assets/icons/vlc.png",
+    "Id": "git",
+    "Name": "Git",
+    "Category": "Coding",
+    "PublisherName": "Git Project",
+    "HomepageUrl": "https://git-scm.com/",
+    "Description": "Version control system.",
+    "IconPath": "Assets/icons/git.png",
     "SupportedPlatforms": {
       "Windows": true,
       "Linux": true
     },
     "WindowsInstall": {
-      "Command": "winget install --id VideoLAN.VLC -e --accept-source-agreements --accept-package-agreements",
-      "SilentCommand": "winget install --id VideoLAN.VLC -e --silent --accept-source-agreements --accept-package-agreements",
+      "Command": "winget install --id Git.Git -e --accept-source-agreements --accept-package-agreements",
+      "SilentCommand": "winget install --id Git.Git -e --silent --accept-source-agreements --accept-package-agreements",
       "RequiresRestart": false,
       "NeedsManualInstall": false,
-      "DetectExecutable": "vlc"
+      "DetectExecutable": "git"
     },
     "LinuxInstall": {
-      "Command": "sudo apt-get install -y vlc",
-      "SilentCommand": "sudo apt-get install -y vlc",
+      "Command": "sudo apt-get install -y git",
+      "SilentCommand": "sudo apt-get install -y git",
       "RequiresRestart": false,
       "NeedsManualInstall": false,
-      "DetectExecutable": "vlc"
+      "DetectExecutable": "git"
     },
-    "IsSelected": false,
-    "IsInstalled": false,
-    "IsSupportedOnCurrentPlatform": true,
-    "WillBeSkipped": false,
-    "IsRecommended": false,
-    "RecommendationReason": "",
-    "RequiresRestartHint": false,
-    "SupportsSilentInstall": true,
-    "SupportsCustomPath": false,
-    "RecommendedVendors": []
-  },
-  {
-    "Id": "sevenzip",
-    "Name": "7-Zip",
-    "Category": "Essentials",
-    "PublisherName": "Igor Pavlov",
-    "HomepageUrl": "https://www.7-zip.org/",
-    "Description": "Archiver utility for compressed files.",
-    "IconPath": "Assets/icons/7zip.png",
-    "SupportedPlatforms": {
-      "Windows": true,
-      "Linux": false
-    },
-    "WindowsInstall": {
-      "Command": "winget install --id 7zip.7zip -e --accept-source-agreements --accept-package-agreements",
-      "SilentCommand": "winget install --id 7zip.7zip -e --silent --accept-source-agreements --accept-package-agreements",
-      "RequiresRestart": false,
-      "NeedsManualInstall": false,
-      "DetectExecutable": "7z"
-    },
-    "LinuxInstall": {
-      "Command": "",
-      "SilentCommand": "",
-      "RequiresRestart": false,
-      "NeedsManualInstall": true,
-      "DetectExecutable": ""
-    },
-    "IsSelected": false,
-    "IsInstalled": false,
-    "IsSupportedOnCurrentPlatform": true,
-    "WillBeSkipped": false,
-    "IsRecommended": false,
-    "RecommendationReason": "",
-    "RequiresRestartHint": false,
-    "SupportsSilentInstall": true,
-    "SupportsCustomPath": false,
-    "RecommendedVendors": []
+    "SupportsSilentInstall": true
   },
   {
     "Id": "nvidia-app",
@@ -284,18 +193,7 @@
       "NeedsManualInstall": true,
       "DetectExecutable": "nvidia-smi"
     },
-    "IsSelected": false,
-    "IsInstalled": false,
-    "IsSupportedOnCurrentPlatform": true,
-    "WillBeSkipped": false,
-    "IsRecommended": false,
-    "RecommendationReason": "",
-    "RequiresRestartHint": false,
-    "SupportsSilentInstall": true,
-    "SupportsCustomPath": false,
-    "RecommendedVendors": [
-      "NVIDIA"
-    ]
+    "SupportsSilentInstall": true
   },
   {
     "Id": "logitech-ghub",
@@ -303,7 +201,7 @@
     "Category": "Accessories",
     "PublisherName": "Logitech",
     "HomepageUrl": "https://www.logitechg.com/ghub",
-    "Description": "Accessory control suite for Logitech devices.",
+    "Description": "Accessory suite for Logitech devices.",
     "IconPath": "Assets/icons/logitech.png",
     "SupportedPlatforms": {
       "Windows": true,
@@ -323,94 +221,7 @@
       "NeedsManualInstall": true,
       "DetectExecutable": ""
     },
-    "IsSelected": false,
-    "IsInstalled": false,
-    "IsSupportedOnCurrentPlatform": true,
-    "WillBeSkipped": false,
-    "IsRecommended": false,
-    "RecommendationReason": "",
-    "RequiresRestartHint": false,
-    "SupportsSilentInstall": true,
-    "SupportsCustomPath": false,
-    "RecommendedVendors": [
-      "Logitech"
-    ]
-  },
-  {
-    "Id": "razer-synapse",
-    "Name": "Razer Synapse",
-    "Category": "Accessories",
-    "PublisherName": "Razer",
-    "HomepageUrl": "https://www.razer.com/synapse-3",
-    "Description": "Accessory suite for Razer peripherals.",
-    "IconPath": "Assets/icons/razer.png",
-    "SupportedPlatforms": {
-      "Windows": true,
-      "Linux": false
-    },
-    "WindowsInstall": {
-      "Command": "",
-      "SilentCommand": "",
-      "RequiresRestart": false,
-      "NeedsManualInstall": true,
-      "DetectExecutable": "Razer Synapse 3"
-    },
-    "LinuxInstall": {
-      "Command": "",
-      "SilentCommand": "",
-      "RequiresRestart": false,
-      "NeedsManualInstall": true,
-      "DetectExecutable": ""
-    },
-    "IsSelected": false,
-    "IsInstalled": false,
-    "IsSupportedOnCurrentPlatform": true,
-    "WillBeSkipped": false,
-    "IsRecommended": false,
-    "RecommendationReason": "",
-    "RequiresRestartHint": false,
-    "SupportsSilentInstall": false,
-    "SupportsCustomPath": false,
-    "RecommendedVendors": [
-      "Razer"
-    ]
-  },
-  {
-    "Id": "git",
-    "Name": "Git",
-    "Category": "Coding",
-    "PublisherName": "Git Project",
-    "HomepageUrl": "https://git-scm.com/",
-    "Description": "Version control client.",
-    "IconPath": "Assets/icons/git.png",
-    "SupportedPlatforms": {
-      "Windows": true,
-      "Linux": true
-    },
-    "WindowsInstall": {
-      "Command": "winget install --id Git.Git -e --accept-source-agreements --accept-package-agreements",
-      "SilentCommand": "winget install --id Git.Git -e --silent --accept-source-agreements --accept-package-agreements",
-      "RequiresRestart": false,
-      "NeedsManualInstall": false,
-      "DetectExecutable": "git"
-    },
-    "LinuxInstall": {
-      "Command": "sudo apt-get install -y git",
-      "SilentCommand": "sudo apt-get install -y git",
-      "RequiresRestart": false,
-      "NeedsManualInstall": false,
-      "DetectExecutable": "git"
-    },
-    "IsSelected": false,
-    "IsInstalled": false,
-    "IsSupportedOnCurrentPlatform": true,
-    "WillBeSkipped": false,
-    "IsRecommended": false,
-    "RecommendationReason": "",
-    "RequiresRestartHint": false,
-    "SupportsSilentInstall": true,
-    "SupportsCustomPath": false,
-    "RecommendedVendors": []
+    "SupportsSilentInstall": true
   },
   {
     "Id": "htop",
@@ -438,15 +249,6 @@
       "NeedsManualInstall": false,
       "DetectExecutable": "htop"
     },
-    "IsSelected": false,
-    "IsInstalled": false,
-    "IsSupportedOnCurrentPlatform": true,
-    "WillBeSkipped": false,
-    "IsRecommended": false,
-    "RecommendationReason": "",
-    "RequiresRestartHint": false,
-    "SupportsSilentInstall": true,
-    "SupportsCustomPath": false,
-    "RecommendedVendors": []
+    "SupportsSilentInstall": true
   }
 ]

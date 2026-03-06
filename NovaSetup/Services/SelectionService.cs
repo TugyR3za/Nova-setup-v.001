@@ -5,39 +5,63 @@ namespace NovaSetup.Services;
 
 public sealed class SelectionService
 {
-    private readonly LoggingService _loggingService;
+    private readonly LoggingService? _loggingService;
     private readonly JsonSerializerOptions _jsonOptions = new()
     {
         PropertyNameCaseInsensitive = true,
         WriteIndented = true
     };
 
-    public SelectionService(LoggingService loggingService)
+    public SelectionService(LoggingService? loggingService = null)
     {
         _loggingService = loggingService;
     }
 
+    // Loads Configs/selection.json if present and returns null on missing/invalid data.
     public SelectionConfig? LoadSelection()
     {
         var configPath = ResolveConfigPath("selection.json");
         if (!File.Exists(configPath))
         {
-            _loggingService.Info("selection.json not found. Starting with default app state.");
+            _loggingService?.Info("selection.json not found.");
             return null;
         }
 
-        var rawJson = File.ReadAllText(configPath);
-        var selection = JsonSerializer.Deserialize<SelectionConfig>(rawJson, _jsonOptions);
-        if (selection is null)
+        try
         {
-            _loggingService.Warn("selection.json exists but could not be parsed.");
+            var rawJson = File.ReadAllText(configPath);
+            if (string.IsNullOrWhiteSpace(rawJson))
+            {
+                _loggingService?.Warn("selection.json is empty.");
+                return null;
+            }
+
+            var selection = JsonSerializer.Deserialize<SelectionConfig>(rawJson, _jsonOptions);
+            if (selection is null)
+            {
+                _loggingService?.Warn("selection.json could not be deserialized.");
+                return null;
+            }
+
+            selection.SelectedApps ??= new List<string>();
+            selection.Settings ??= new SelectionSettings();
+            return selection;
+        }
+        catch (JsonException ex)
+        {
+            _loggingService?.Warn($"Invalid selection.json format: {ex.Message}");
             return null;
         }
-
-        selection.SelectedApps ??= new List<string>();
-        selection.Settings ??= new SelectionSettings();
-        _loggingService.Info($"Loaded selection profile: {selection.ProfileName}");
-        return selection;
+        catch (IOException ex)
+        {
+            _loggingService?.Warn($"Could not read selection.json: {ex.Message}");
+            return null;
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            _loggingService?.Warn($"Access denied reading selection.json: {ex.Message}");
+            return null;
+        }
     }
 
     public void ApplySelection(IList<AppItem> catalog, SelectionConfig? selection)
@@ -50,12 +74,13 @@ public sealed class SelectionService
         var selectedIds = new HashSet<string>(selection.SelectedApps, StringComparer.OrdinalIgnoreCase);
         foreach (var app in catalog)
         {
-            if (selectedIds.Contains(app.Id))
+            if (!selectedIds.Contains(app.Id))
             {
-                app.IsSelected = true;
+                continue;
             }
 
-            app.WillBeSkipped = app.IsSelected && !app.IsSupportedOnCurrentPlatform;
+            app.IsSelected = true;
+            app.WillBeSkipped = !app.IsSupportedOnCurrentPlatform;
             if (app.WillBeSkipped)
             {
                 app.StatusBadge = "Will Be Skipped";
@@ -74,15 +99,15 @@ public sealed class SelectionService
 
         var json = JsonSerializer.Serialize(selection, _jsonOptions);
         File.WriteAllText(configPath, json);
-        _loggingService.Info($"Saved selection profile to {configPath}");
+        _loggingService?.Info($"Saved selection profile to {configPath}");
     }
 
     private static string ResolveConfigPath(string fileName)
     {
-        var localPath = Path.Combine(AppContext.BaseDirectory, "Configs", fileName);
-        if (File.Exists(localPath))
+        var outputPath = Path.Combine(AppContext.BaseDirectory, "Configs", fileName);
+        if (File.Exists(outputPath))
         {
-            return localPath;
+            return outputPath;
         }
 
         return Path.Combine(Directory.GetCurrentDirectory(), "Configs", fileName);

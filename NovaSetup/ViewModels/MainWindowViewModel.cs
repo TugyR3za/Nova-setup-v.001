@@ -1,5 +1,7 @@
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Windows.Input;
 using NovaSetup.Models;
 using NovaSetup.Services;
@@ -8,31 +10,43 @@ namespace NovaSetup.ViewModels;
 
 public sealed class MainWindowViewModel : ObservableObject
 {
+    private const string UnsupportedSelectionNote = "Selected from selection.json but unsupported on this OS.";
+
     private readonly PlatformService _platformService;
     private readonly CatalogService _catalogService;
     private readonly SelectionService _selectionService;
     private readonly DetectionService _detectionService;
     private readonly InstallerService _installerService;
     private readonly LoggingService _loggingService;
-    private readonly BrowserService _browserService;
 
-    private readonly List<AppItem> _catalog = new();
+    private readonly ObservableCollection<AppItem> _apps = new();
     private readonly ObservableCollection<AppItem> _visibleApps = new();
-    private readonly AsyncRelayCommand _installCommand;
+    private readonly ObservableCollection<InstallResult> _installResults = new();
+    private readonly ObservableCollection<InstallResult> _installedResults = new();
+    private readonly ObservableCollection<InstallResult> _failedResults = new();
+    private readonly ObservableCollection<InstallResult> _skippedResults = new();
+    private readonly ObservableCollection<InstallResult> _restartRequiredResults = new();
+    private readonly ObservableCollection<InstallResult> _unsupportedSkippedResults = new();
 
-    private string _currentPlatform = PlatformService.Unknown;
-    private string _searchText = string.Empty;
-    private string _selectedCategory = "All Apps";
-    private string _selectedProfile = "Default";
-    private bool _silentInstallEnabled = true;
-    private bool _selfDeleteAfterInstall;
-    private bool _showUnsupportedApps;
-    private bool _showOtherPlatformApps;
-    private bool _isSettingsVisible = true;
-    private bool _showRestartOptions;
-    private string _defaultInstallLocation = string.Empty;
-    private string _statusText = "Ready";
-    private string _installSummary = string.Empty;
+    private readonly AsyncRelayCommand _installCommand;
+    private readonly RelayCommand _requestRestartNowCommand;
+    private readonly AsyncRelayCommand _confirmRestartNowCommand;
+    private readonly RelayCommand _cancelRestartCommand;
+    private readonly RelayCommand _restartLaterCommand;
+
+    private bool _isInitialized;
+    private bool _isInstalling;
+    private bool _restartRequired;
+    private bool _isRestartConfirmationVisible;
+    private bool _restartDecisionFinalized;
+    private bool _suppressSettingsLogging;
+    private string _currentPlatformId = PlatformService.Unknown;
+    private string _currentPlatform = "Unknown OS";
+    private string _statusText = "Ready.";
+    private string _installStatusText = "Install has not started.";
+    private string _installSummaryText = string.Empty;
+    private string _restartStatusText = string.Empty;
+    private double _progressValue;
 
     public MainWindowViewModel(
         PlatformService platformService,
@@ -40,8 +54,7 @@ public sealed class MainWindowViewModel : ObservableObject
         SelectionService selectionService,
         DetectionService detectionService,
         InstallerService installerService,
-        LoggingService loggingService,
-        BrowserService browserService)
+        LoggingService loggingService)
     {
         _platformService = platformService;
         _catalogService = catalogService;
@@ -49,416 +62,651 @@ public sealed class MainWindowViewModel : ObservableObject
         _detectionService = detectionService;
         _installerService = installerService;
         _loggingService = loggingService;
-        _browserService = browserService;
 
-        Categories = new ObservableCollection<string>
-        {
-            "All Apps",
-            "Essentials",
-            "Browsers",
-            "Gaming",
-            "Communication",
-            "Coding",
-            "Media",
-            "Drivers",
-            "Utilities",
-            "Accessories"
-        };
+        Settings = new AppSettings();
+        Settings.PropertyChanged += HandleSettingsChanged;
 
-        Profiles = new ObservableCollection<string> { "Default" };
-        _installCommand = new AsyncRelayCommand(InstallAsync, CanInstall);
+        _installCommand = new AsyncRelayCommand(InstallSelectedAsync, CanInstall);
+        _requestRestartNowCommand = new RelayCommand(_ => RequestRestartNow(), _ => CanShowRestartActions());
+        _confirmRestartNowCommand = new AsyncRelayCommand(ConfirmRestartNowAsync, CanConfirmRestartNow);
+        _cancelRestartCommand = new RelayCommand(_ => CancelRestartNow(), _ => IsRestartConfirmationVisible);
+        _restartLaterCommand = new RelayCommand(_ => RestartLater(), _ => CanShowRestartActions());
 
-        InstallCommand = _installCommand;
-        SaveProfileCommand = new RelayCommand(_ => SaveSelectionProfile());
-        OpenPublisherCommand = new RelayCommand(OpenPublisherPage);
-        ShowInfoCommand = new RelayCommand(ShowInfo);
-        ToggleSettingsCommand = new RelayCommand(_ => IsSettingsVisible = !IsSettingsVisible);
-        RestartNowCommand = new RelayCommand(_ => RestartNow());
-        SkipRestartCommand = new RelayCommand(_ => SkipRestart());
+        HookCollectionNotifications();
     }
 
-    public ObservableCollection<string> Categories { get; }
+    public AppSettings Settings { get; }
 
-    public ObservableCollection<string> Profiles { get; }
+    public string CurrentPlatform
+    {
+        get => _currentPlatform;
+        private set => SetProperty(ref _currentPlatform, value);
+    }
+
+    public ObservableCollection<AppItem> Apps => _apps;
 
     public ObservableCollection<AppItem> VisibleApps => _visibleApps;
 
-    public ICommand InstallCommand { get; }
+    public int SelectedCount => _apps.Count(app => app.IsSelected);
 
-    public ICommand SaveProfileCommand { get; }
-
-    public ICommand OpenPublisherCommand { get; }
-
-    public ICommand ShowInfoCommand { get; }
-
-    public ICommand ToggleSettingsCommand { get; }
-
-    public ICommand RestartNowCommand { get; }
-
-    public ICommand SkipRestartCommand { get; }
-
-    public string CurrentPlatformLabel => _platformService.GetPlatformLabel(_currentPlatform);
-
-    public string CurrentPlatformIcon => _platformService.GetPlatformIcon(_currentPlatform);
-
-    public string SearchText
+    public bool IsInstalling
     {
-        get => _searchText;
-        set
+        get => _isInstalling;
+        private set
         {
-            if (SetProperty(ref _searchText, value))
+            if (SetProperty(ref _isInstalling, value))
             {
-                ApplyFilters();
+                UpdateCommandStates();
             }
         }
     }
 
-    public string SelectedCategory
+    public string InstallStatusText
     {
-        get => _selectedCategory;
-        set
+        get => _installStatusText;
+        private set => SetProperty(ref _installStatusText, value);
+    }
+
+    public string InstallSummaryText
+    {
+        get => _installSummaryText;
+        private set => SetProperty(ref _installSummaryText, value);
+    }
+
+    public ObservableCollection<InstallResult> InstallResults => _installResults;
+
+    public ObservableCollection<InstallResult> InstalledResults => _installedResults;
+
+    public ObservableCollection<InstallResult> FailedResults => _failedResults;
+
+    public ObservableCollection<InstallResult> SkippedResults => _skippedResults;
+
+    public ObservableCollection<InstallResult> RestartRequiredResults => _restartRequiredResults;
+
+    public ObservableCollection<InstallResult> UnsupportedSkippedResults => _unsupportedSkippedResults;
+
+    public bool HasInstallResults => _installResults.Count > 0;
+
+    public bool HasInstalledResults => _installedResults.Count > 0;
+
+    public bool HasFailedResults => _failedResults.Count > 0;
+
+    public bool HasSkippedResults => _skippedResults.Count > 0;
+
+    public bool HasRestartRequiredResults => _restartRequiredResults.Count > 0;
+
+    public bool HasUnsupportedSkippedResults => _unsupportedSkippedResults.Count > 0;
+
+    public bool RestartRequired
+    {
+        get => _restartRequired;
+        private set
         {
-            if (SetProperty(ref _selectedCategory, value))
+            if (SetProperty(ref _restartRequired, value))
             {
-                ApplyFilters();
+                OnPropertyChanged(nameof(IsRestartSectionVisible));
+                OnPropertyChanged(nameof(ShowRestartActions));
+                OnPropertyChanged(nameof(ShowPrimaryRestartActions));
+                UpdateCommandStates();
             }
         }
     }
 
-    public string SelectedProfile
-    {
-        get => _selectedProfile;
-        set => SetProperty(ref _selectedProfile, value);
-    }
+    public bool IsRestartSectionVisible => RestartRequired && HasInstallResults;
 
-    public bool SilentInstallEnabled
-    {
-        get => _silentInstallEnabled;
-        set => SetProperty(ref _silentInstallEnabled, value);
-    }
+    public bool ShowRestartActions => RestartRequired && !_restartDecisionFinalized;
 
-    public bool SelfDeleteAfterInstall
-    {
-        get => _selfDeleteAfterInstall;
-        set => SetProperty(ref _selfDeleteAfterInstall, value);
-    }
+    public bool ShowPrimaryRestartActions => ShowRestartActions && !IsRestartConfirmationVisible;
 
-    public bool ShowUnsupportedApps
+    public bool IsRestartConfirmationVisible
     {
-        get => _showUnsupportedApps;
-        set
+        get => _isRestartConfirmationVisible;
+        private set
         {
-            if (SetProperty(ref _showUnsupportedApps, value))
+            if (SetProperty(ref _isRestartConfirmationVisible, value))
             {
-                ApplyFilters();
+                OnPropertyChanged(nameof(ShowPrimaryRestartActions));
+                UpdateCommandStates();
             }
         }
     }
 
-    public bool ShowOtherPlatformApps
+    public string RestartStatusText
     {
-        get => _showOtherPlatformApps;
-        set
-        {
-            if (SetProperty(ref _showOtherPlatformApps, value))
-            {
-                ApplyFilters();
-            }
-        }
+        get => _restartStatusText;
+        private set => SetProperty(ref _restartStatusText, value);
     }
 
-    public bool IsSettingsVisible
+    public double ProgressValue
     {
-        get => _isSettingsVisible;
-        set => SetProperty(ref _isSettingsVisible, value);
-    }
-
-    public bool ShowRestartOptions
-    {
-        get => _showRestartOptions;
-        set => SetProperty(ref _showRestartOptions, value);
-    }
-
-    public string DefaultInstallLocation
-    {
-        get => _defaultInstallLocation;
-        set => SetProperty(ref _defaultInstallLocation, value);
+        get => _progressValue;
+        private set => SetProperty(ref _progressValue, value);
     }
 
     public string StatusText
     {
         get => _statusText;
-        set => SetProperty(ref _statusText, value);
+        private set => SetProperty(ref _statusText, value);
     }
 
-    public string InstallSummary
-    {
-        get => _installSummary;
-        set => SetProperty(ref _installSummary, value);
-    }
+    public ICommand InstallCommand => _installCommand;
 
-    public int SelectedCount => _catalog.Count(app => app.IsSelected);
+    public ICommand RequestRestartNowCommand => _requestRestartNowCommand;
 
-    public int FilteredCount => _visibleApps.Count;
+    public ICommand ConfirmRestartNowCommand => _confirmRestartNowCommand;
+
+    public ICommand CancelRestartCommand => _cancelRestartCommand;
+
+    public ICommand RestartLaterCommand => _restartLaterCommand;
 
     public void Initialize()
     {
-        _currentPlatform = _platformService.DetectCurrentPlatform();
-        OnPropertyChanged(nameof(CurrentPlatformLabel));
-        OnPropertyChanged(nameof(CurrentPlatformIcon));
+        if (_isInitialized)
+        {
+            return;
+        }
 
-        _catalog.Clear();
-        var apps = _catalogService.LoadApps(_currentPlatform);
+        _isInitialized = true;
+
+        var platform = _platformService.GetCurrentPlatformInfo();
+        _currentPlatformId = platform.Id;
+        CurrentPlatform = platform.Label;
+
+        var apps = _catalogService.LoadApps(_currentPlatformId);
+        var selection = _selectionService.LoadSelection();
+        ApplySettingsFromSelection(selection);
+        _selectionService.ApplySelection(apps, selection);
+
+        // Recommendation pass runs after platform + catalog + selection are loaded.
+        var recommendationSummary = _detectionService.ApplyRecommendations(
+            apps,
+            _currentPlatformId,
+            autoSelectSupportedApps: true);
+
+        if (recommendationSummary.RecommendedAppIds.Count > 0)
+        {
+            _loggingService.LogInfo(
+                $"Recommendations applied. Total={recommendationSummary.RecommendedAppIds.Count}, Supported={recommendationSummary.SupportedRecommendations}, Unsupported={recommendationSummary.UnsupportedRecommendations}");
+        }
+        else
+        {
+            _loggingService.LogInfo("No recommendation matches found in catalog for detected hardware/accessories.");
+        }
+
+        _apps.Clear();
         foreach (var app in apps)
         {
+            ApplyPlatformFlags(app);
             app.PropertyChanged += HandleAppPropertyChanged;
-            _catalog.Add(app);
+            _apps.Add(app);
         }
 
-        var selection = _selectionService.LoadSelection();
-        if (selection is not null)
+        ApplyVisibilityFilter();
+
+        var skippedCount = _apps.Count(app => app.WillBeSkipped);
+        var recommendedCount = _apps.Count(app => app.IsRecommended);
+        StatusText = skippedCount > 0
+            ? $"Loaded {_apps.Count} apps for {CurrentPlatform}. Recommended: {recommendedCount}. {skippedCount} selected app(s) are unsupported and will be skipped."
+            : $"Loaded {_apps.Count} apps for {CurrentPlatform}. Recommended: {recommendedCount}.";
+
+        _loggingService.LogInfo(StatusText);
+        OnPropertyChanged(nameof(SelectedCount));
+        UpdateCommandStates();
+    }
+
+    private void HookCollectionNotifications()
+    {
+        _installResults.CollectionChanged += (_, _) =>
         {
-            ApplySelectionSettings(selection);
-            _selectionService.ApplySelection(_catalog, selection);
-            if (!string.IsNullOrWhiteSpace(selection.ProfileName) &&
-                !Profiles.Contains(selection.ProfileName))
+            OnPropertyChanged(nameof(HasInstallResults));
+            OnPropertyChanged(nameof(IsRestartSectionVisible));
+        };
+
+        _installedResults.CollectionChanged += (_, _) => OnPropertyChanged(nameof(HasInstalledResults));
+        _failedResults.CollectionChanged += (_, _) => OnPropertyChanged(nameof(HasFailedResults));
+        _skippedResults.CollectionChanged += (_, _) => OnPropertyChanged(nameof(HasSkippedResults));
+        _restartRequiredResults.CollectionChanged += (_, _) => OnPropertyChanged(nameof(HasRestartRequiredResults));
+        _unsupportedSkippedResults.CollectionChanged += (_, _) => OnPropertyChanged(nameof(HasUnsupportedSkippedResults));
+    }
+
+    private void HandleSettingsChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(AppSettings.ShowUnsupportedApps))
+        {
+            ApplyVisibilityFilter();
+            if (!_suppressSettingsLogging)
             {
-                Profiles.Add(selection.ProfileName);
-                SelectedProfile = selection.ProfileName;
+                _loggingService.LogInfo($"Setting changed: ShowUnsupportedApps={Settings.ShowUnsupportedApps}");
+            }
+
+            return;
+        }
+
+        if (_suppressSettingsLogging)
+        {
+            return;
+        }
+
+        switch (e.PropertyName)
+        {
+            case nameof(AppSettings.SilentInstallEnabled):
+                _loggingService.LogInfo($"Setting changed: SilentInstallEnabled={Settings.SilentInstallEnabled}");
+                break;
+            case nameof(AppSettings.SelfDeleteEnabled):
+                _loggingService.LogInfo($"Setting changed: SelfDeleteEnabled={Settings.SelfDeleteEnabled}");
+                break;
+            case nameof(AppSettings.DefaultInstallLocation):
+                _loggingService.LogInfo($"Setting changed: DefaultInstallLocation='{Settings.DefaultInstallLocation}'");
+                break;
+            case nameof(AppSettings.ProfileName):
+                _loggingService.LogInfo($"Setting changed: ProfileName='{Settings.ProfileName}'");
+                break;
+        }
+    }
+
+    private void ApplySettingsFromSelection(SelectionConfig? selection)
+    {
+        if (selection is null)
+        {
+            // Defaults stay active:
+            // Silent ON, Self-delete OFF, Show unsupported ON, default location blank.
+            return;
+        }
+
+        var selectionSettings = selection.Settings ?? new SelectionSettings();
+        _suppressSettingsLogging = true;
+        try
+        {
+            Settings.ProfileName = string.IsNullOrWhiteSpace(selection.ProfileName)
+                ? Settings.ProfileName
+                : selection.ProfileName;
+            Settings.SilentInstallEnabled = selectionSettings.SilentInstall;
+            Settings.SelfDeleteEnabled = selectionSettings.SelfDelete;
+            Settings.ShowUnsupportedApps = selectionSettings.ShowUnsupportedApps;
+            Settings.DefaultInstallLocation = selectionSettings.DefaultInstallLocation ?? string.Empty;
+        }
+        finally
+        {
+            _suppressSettingsLogging = false;
+        }
+
+        _loggingService.LogInfo(
+            $"Applied settings from selection.json: Profile='{Settings.ProfileName}', Silent={Settings.SilentInstallEnabled}, SelfDelete={Settings.SelfDeleteEnabled}, ShowUnsupported={Settings.ShowUnsupportedApps}, InstallLocation='{Settings.DefaultInstallLocation}'");
+    }
+
+    private void ApplyVisibilityFilter()
+    {
+        _visibleApps.Clear();
+        foreach (var app in _apps)
+        {
+            var include = Settings.ShowUnsupportedApps || app.IsSupportedOnCurrentPlatform || app.IsSelected;
+            if (include)
+            {
+                _visibleApps.Add(app);
             }
         }
-
-        _detectionService.RunDetections(_catalog, _currentPlatform);
-        RefreshDerivedStates();
-        ApplyFilters();
-
-        StatusText = $"Loaded {_catalog.Count} apps for {CurrentPlatformLabel}.";
     }
 
-    private void HandleAppPropertyChanged(object? sender, PropertyChangedEventArgs args)
+    private void HandleAppPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
-        if (sender is not AppItem app)
+        if (sender is not AppItem app || e.PropertyName != nameof(AppItem.IsSelected))
         {
             return;
         }
 
-        if (args.PropertyName is nameof(AppItem.IsSelected)
-            or nameof(AppItem.IsInstalled)
-            or nameof(AppItem.HasInstallFailed))
-        {
-            UpdateAppState(app);
-            OnPropertyChanged(nameof(SelectedCount));
-            ApplyFilters();
-            _installCommand.RaiseCanExecuteChanged();
-        }
-    }
-
-    private void RefreshDerivedStates()
-    {
-        foreach (var app in _catalog)
-        {
-            UpdateAppState(app);
-        }
-
+        ApplyPlatformFlags(app);
+        ApplyVisibilityFilter();
         OnPropertyChanged(nameof(SelectedCount));
-        _installCommand.RaiseCanExecuteChanged();
+        UpdateCommandStates();
     }
 
-    private void UpdateAppState(AppItem app)
+    private bool CanInstall()
     {
-        app.WillBeSkipped = app.IsSelected && !app.IsSupportedOnCurrentPlatform;
-        app.RowOpacity = app.IsSupportedOnCurrentPlatform ? 1.0 : 0.56;
+        return !IsInstalling && _apps.Any(app => app.IsSelected);
+    }
 
-        var installDefinition = _currentPlatform == PlatformService.Windows ? app.WindowsInstall : app.LinuxInstall;
-        var needsManual = installDefinition?.NeedsManualInstall ?? false;
-
-        if (app.HasInstallFailed)
+    private async Task InstallSelectedAsync()
+    {
+        var selectedApps = _apps.Where(app => app.IsSelected).ToList();
+        if (selectedApps.Count == 0)
         {
-            app.StatusBadge = "Failed";
+            InstallStatusText = "No selected apps to install.";
             return;
         }
 
-        if (app.IsInstalled && app.RequiresRestartHint)
+        ResetInstallOutputState();
+        IsInstalling = true;
+
+        InstallStatusText = $"Starting installation for {selectedApps.Count} app(s)...";
+        _loggingService.LogInfo(InstallStatusText);
+        _loggingService.LogInfo(
+            $"Install settings: Silent={Settings.SilentInstallEnabled}, SelfDelete={Settings.SelfDeleteEnabled}, ShowUnsupported={Settings.ShowUnsupportedApps}, InstallLocation='{Settings.DefaultInstallLocation}'");
+
+        var processedCount = 0;
+        foreach (var app in selectedApps)
         {
-            app.StatusBadge = "Pending Restart";
+            InstallStatusText = $"Installing {app.Name} ({processedCount + 1}/{selectedApps.Count})...";
+            var batchResults = await _installerService.InstallSelectedAppsAsync(
+                new[] { app },
+                _currentPlatformId,
+                silentInstallEnabled: Settings.SilentInstallEnabled);
+
+            foreach (var result in batchResults)
+            {
+                AddInstallResult(result);
+                ApplyInstallResultToApp(result);
+            }
+
+            processedCount++;
+            ProgressValue = Math.Round((double)processedCount / selectedApps.Count * 100.0, 1);
+        }
+
+        FinalizeInstallSummary();
+        IsInstalling = false;
+        UpdateCommandStates();
+    }
+
+    private void ResetInstallOutputState()
+    {
+        ProgressValue = 0;
+        InstallSummaryText = string.Empty;
+        RestartRequired = false;
+        RestartStatusText = string.Empty;
+        _restartDecisionFinalized = false;
+        IsRestartConfirmationVisible = false;
+        _installResults.Clear();
+        _installedResults.Clear();
+        _failedResults.Clear();
+        _skippedResults.Clear();
+        _restartRequiredResults.Clear();
+        _unsupportedSkippedResults.Clear();
+    }
+
+    private void AddInstallResult(InstallResult result)
+    {
+        _installResults.Add(result);
+
+        if (result.Success)
+        {
+            _installedResults.Add(result);
+        }
+        else if (result.Skipped)
+        {
+            _skippedResults.Add(result);
+            if (IsUnsupportedSkippedResult(result))
+            {
+                _unsupportedSkippedResults.Add(result);
+            }
+        }
+        else
+        {
+            _failedResults.Add(result);
+        }
+
+        if (result.RequiresRestart)
+        {
+            _restartRequiredResults.Add(result);
+        }
+    }
+
+    private void FinalizeInstallSummary()
+    {
+        var successCount = _installedResults.Count;
+        var skippedCount = _skippedResults.Count;
+        var failedCount = _failedResults.Count;
+        var restartCount = _restartRequiredResults.Count;
+
+        RestartRequired = restartCount > 0;
+        ProgressValue = 100;
+        InstallStatusText = "Installation finished.";
+        InstallSummaryText = $"Installed: {successCount} | Failed: {failedCount} | Skipped: {skippedCount} | Restart: {restartCount}";
+        StatusText = InstallSummaryText;
+
+        if (Settings.SelfDeleteEnabled)
+        {
+            _loggingService.LogWarning("Self-delete is enabled, but safe placeholder mode is active. No deletion was performed.");
+        }
+
+        if (!string.IsNullOrWhiteSpace(Settings.DefaultInstallLocation))
+        {
+            _loggingService.LogInfo(
+                $"Default install location '{Settings.DefaultInstallLocation}' is stored for future installer path overrides.");
+        }
+
+        if (RestartRequired)
+        {
+            RestartStatusText = "Restart recommended: some apps or drivers may not work correctly until the PC is restarted.";
+            _loggingService.LogWarning(
+                $"Restart recommended after install. RestartItems={restartCount}, Installed={successCount}, Failed={failedCount}, Skipped={skippedCount}");
+        }
+        else
+        {
+            RestartStatusText = "No restart required.";
+            _restartDecisionFinalized = true;
+            _loggingService.LogInfo("Installation finished with no restart required.");
+        }
+    }
+
+    private void ApplyInstallResultToApp(InstallResult result)
+    {
+        var app = _apps.FirstOrDefault(candidate => candidate.Id.Equals(result.AppId, StringComparison.OrdinalIgnoreCase));
+        if (app is null)
+        {
             return;
         }
 
-        if (app.IsInstalled)
+        if (result.Success)
         {
+            app.IsInstalled = true;
+            app.HasInstallFailed = false;
             app.StatusBadge = "Installed";
-            return;
         }
+        else if (result.Skipped)
+        {
+            app.StatusBadge = app.WillBeSkipped ? "Will Be Skipped" : "Skipped";
+        }
+        else
+        {
+            app.HasInstallFailed = true;
+            app.StatusBadge = "Failed";
+        }
+
+        if (result.RequiresRestart)
+        {
+            app.RequiresRestartHint = true;
+        }
+    }
+
+    private void ApplyPlatformFlags(AppItem app)
+    {
+        app.IsSupportedOnCurrentPlatform = _platformService.IsSupportedOnPlatform(app.SupportedPlatforms, _currentPlatformId);
+        app.WillBeSkipped = app.IsSelected && !app.IsSupportedOnCurrentPlatform;
+        app.RowOpacity = app.IsSupportedOnCurrentPlatform ? 1.0 : 0.6;
 
         if (app.WillBeSkipped)
         {
             app.StatusBadge = "Will Be Skipped";
+            if (app.IsRecommended)
+            {
+                var unsupportedMessage = $"Unsupported on {CurrentPlatform}; it will be skipped.";
+                if (string.IsNullOrWhiteSpace(app.RecommendationReason))
+                {
+                    app.RecommendationReason = unsupportedMessage;
+                }
+                else if (!app.RecommendationReason.Contains(unsupportedMessage, StringComparison.OrdinalIgnoreCase))
+                {
+                    app.RecommendationReason = $"{app.RecommendationReason} {unsupportedMessage}";
+                }
+            }
+            else
+            {
+                app.RecommendationReason = UnsupportedSelectionNote;
+            }
+
             return;
         }
 
         if (!app.IsSupportedOnCurrentPlatform)
         {
             app.StatusBadge = "Unsupported on this OS";
+            if (app.IsRecommended)
+            {
+                if (string.IsNullOrWhiteSpace(app.RecommendationReason))
+                {
+                    app.RecommendationReason = $"Recommended by detected hardware, but unsupported on {CurrentPlatform}.";
+                }
+            }
+            else if (app.RecommendationReason == UnsupportedSelectionNote)
+            {
+                app.RecommendationReason = string.Empty;
+            }
+
             return;
         }
 
-        app.StatusBadge = needsManual ? "Needs Manual Install" : "Not Installed";
+        if (!app.IsInstalled && !app.HasInstallFailed)
+        {
+            app.StatusBadge = app.IsSelected ? "Selected" : "Available";
+        }
+
+        if (app.RecommendationReason == UnsupportedSelectionNote)
+        {
+            app.RecommendationReason = string.Empty;
+        }
     }
 
-    private void ApplyFilters()
+    private bool CanShowRestartActions()
     {
-        var query = _catalog.AsEnumerable();
-
-        if (!string.Equals(SelectedCategory, "All Apps", StringComparison.OrdinalIgnoreCase))
-        {
-            query = query.Where(app => app.Category.Equals(SelectedCategory, StringComparison.OrdinalIgnoreCase));
-        }
-
-        if (!string.IsNullOrWhiteSpace(SearchText))
-        {
-            query = query.Where(app =>
-                app.Name.Contains(SearchText, StringComparison.OrdinalIgnoreCase) ||
-                app.PublisherName.Contains(SearchText, StringComparison.OrdinalIgnoreCase) ||
-                app.Description.Contains(SearchText, StringComparison.OrdinalIgnoreCase));
-        }
-
-        if (!ShowUnsupportedApps && !ShowOtherPlatformApps)
-        {
-            query = query.Where(app => app.IsSupportedOnCurrentPlatform || app.IsSelected);
-        }
-
-        var ordered = query
-            .OrderByDescending(app => app.IsSelected)
-            .ThenByDescending(app => app.IsRecommended)
-            .ThenBy(app => app.Name)
-            .ToList();
-
-        _visibleApps.Clear();
-        foreach (var app in ordered)
-        {
-            _visibleApps.Add(app);
-        }
-
-        OnPropertyChanged(nameof(FilteredCount));
-        OnPropertyChanged(nameof(SelectedCount));
-        _installCommand.RaiseCanExecuteChanged();
+        return !IsInstalling && ShowRestartActions;
     }
 
-    private bool CanInstall()
+    private bool CanConfirmRestartNow()
     {
-        return _catalog.Any(app => app.IsSelected);
+        return !IsInstalling && RestartRequired && IsRestartConfirmationVisible;
     }
 
-    private async Task InstallAsync()
+    private void RequestRestartNow()
     {
-        StatusText = "Installing selected apps...";
-        InstallSummary = string.Empty;
-
-        var results = await _installerService.InstallSelectedAppsAsync(
-            _catalog,
-            _currentPlatform,
-            SilentInstallEnabled,
-            DefaultInstallLocation);
-
-        var installedCount = results.Count(result => result.Success);
-        var failedCount = results.Count(result => !result.Success && !result.Skipped);
-        var skippedCount = results.Count(result => result.Skipped);
-
-        InstallSummary = $"Installed: {installedCount} | Failed: {failedCount} | Skipped: {skippedCount}";
-
-        if (skippedCount > 0)
+        if (!CanShowRestartActions())
         {
-            StatusText = "Install complete. Unsupported selections were skipped.";
+            return;
+        }
+
+        IsRestartConfirmationVisible = true;
+        RestartStatusText = "Confirm restart now? Unsaved work in other applications may be lost.";
+        _loggingService.LogInfo("User selected Restart Now. Waiting for confirmation.");
+    }
+
+    private void CancelRestartNow()
+    {
+        IsRestartConfirmationVisible = false;
+        RestartStatusText = "Restart is still recommended. You can restart now or later.";
+        _loggingService.LogInfo("User cancelled restart confirmation dialog state.");
+    }
+
+    private void RestartLater()
+    {
+        if (!CanShowRestartActions())
+        {
+            return;
+        }
+
+        _restartDecisionFinalized = true;
+        IsRestartConfirmationVisible = false;
+        RestartStatusText = "Restart postponed. Installation is complete; restart later when convenient.";
+        InstallStatusText = "Installation finished. Restart postponed.";
+        _loggingService.LogInfo("User chose Skip / Restart Later.");
+        OnPropertyChanged(nameof(ShowRestartActions));
+        OnPropertyChanged(nameof(ShowPrimaryRestartActions));
+        UpdateCommandStates();
+    }
+
+    private async Task ConfirmRestartNowAsync()
+    {
+        if (!CanConfirmRestartNow())
+        {
+            return;
+        }
+
+        _loggingService.LogInfo("User confirmed Restart Now.");
+        var restarted = await TryRestartSystemAsync();
+        if (restarted)
+        {
+            _restartDecisionFinalized = true;
+            IsRestartConfirmationVisible = false;
+            RestartStatusText = "Restart command sent. System should restart shortly.";
+            InstallStatusText = "Restart command sent.";
+            _loggingService.LogInfo("System restart command executed successfully.");
         }
         else
         {
-            StatusText = "Install complete.";
+            IsRestartConfirmationVisible = false;
+            RestartStatusText = "Could not trigger automatic restart. Please restart manually.";
+            _loggingService.LogError("Failed to execute system restart command.");
         }
 
-        ShowRestartOptions = results.Any(result => result.RequiresRestart);
-        if (SelfDeleteAfterInstall)
-        {
-            _loggingService.Warn("Self-delete is enabled. This prototype does not execute self-delete.");
-        }
-
-        RefreshDerivedStates();
-        ApplyFilters();
+        OnPropertyChanged(nameof(ShowRestartActions));
+        OnPropertyChanged(nameof(ShowPrimaryRestartActions));
+        UpdateCommandStates();
     }
 
-    private void SaveSelectionProfile()
+    private async Task<bool> TryRestartSystemAsync()
     {
-        var profileName = string.IsNullOrWhiteSpace(SelectedProfile) ? "Default" : SelectedProfile.Trim();
-        if (!Profiles.Contains(profileName))
+        try
         {
-            Profiles.Add(profileName);
-        }
-
-        var selection = new SelectionConfig
-        {
-            ProfileName = profileName,
-            TargetPlatform = _currentPlatform,
-            SelectedApps = _catalog.Where(app => app.IsSelected).Select(app => app.Id).ToList(),
-            Settings = new SelectionSettings
+            ProcessStartInfo? startInfo = _currentPlatformId switch
             {
-                SilentInstall = SilentInstallEnabled,
-                SelfDelete = SelfDeleteAfterInstall,
-                DefaultInstallLocation = DefaultInstallLocation,
-                ShowUnsupportedApps = ShowUnsupportedApps,
-                ShowOtherPlatforms = ShowOtherPlatformApps
+                PlatformService.Windows => new ProcessStartInfo
+                {
+                    FileName = "shutdown",
+                    Arguments = "/r /t 0",
+                    UseShellExecute = false,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    CreateNoWindow = true
+                },
+                PlatformService.Linux => new ProcessStartInfo
+                {
+                    FileName = "sh",
+                    Arguments = "-c \"systemctl reboot || shutdown -r now\"",
+                    UseShellExecute = false,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    CreateNoWindow = true
+                },
+                _ => null
+            };
+
+            if (startInfo is null)
+            {
+                _loggingService.LogWarning("Restart command is not available for unknown platform.");
+                return false;
             }
-        };
 
-        _selectionService.SaveSelection(selection);
-        StatusText = "Selection profile saved.";
-    }
-
-    private void OpenPublisherPage(object? parameter)
-    {
-        if (parameter is not AppItem app)
-        {
-            return;
+            using var process = new Process { StartInfo = startInfo };
+            process.Start();
+            await process.WaitForExitAsync();
+            return process.ExitCode == 0;
         }
-
-        if (!_browserService.OpenPublisherHomepage(app.HomepageUrl))
+        catch (Exception ex)
         {
-            StatusText = $"Could not open publisher page for {app.Name}.";
-            return;
+            _loggingService.LogError($"Restart command failed: {ex.Message}");
+            return false;
         }
-
-        StatusText = $"Opened publisher page for {app.Name}.";
     }
 
-    private void ShowInfo(object? parameter)
+    private void UpdateCommandStates()
     {
-        if (parameter is not AppItem app)
-        {
-            return;
-        }
-
-        StatusText = $"{app.Name}: {app.Description}";
+        _installCommand.RaiseCanExecuteChanged();
+        _requestRestartNowCommand.RaiseCanExecuteChanged();
+        _confirmRestartNowCommand.RaiseCanExecuteChanged();
+        _cancelRestartCommand.RaiseCanExecuteChanged();
+        _restartLaterCommand.RaiseCanExecuteChanged();
     }
 
-    private void RestartNow()
+    private static bool IsUnsupportedSkippedResult(InstallResult result)
     {
-        ShowRestartOptions = false;
-        StatusText = "Restart requested. Please restart the computer manually.";
-        _loggingService.Info("Restart requested by user.");
-    }
-
-    private void SkipRestart()
-    {
-        ShowRestartOptions = false;
-        StatusText = "Restart skipped.";
-        _loggingService.Info("Restart skipped by user.");
-    }
-
-    private void ApplySelectionSettings(SelectionConfig selection)
-    {
-        var settings = selection.Settings ?? new SelectionSettings();
-        SilentInstallEnabled = settings.SilentInstall;
-        SelfDeleteAfterInstall = settings.SelfDelete;
-        DefaultInstallLocation = settings.DefaultInstallLocation ?? string.Empty;
-        ShowUnsupportedApps = settings.ShowUnsupportedApps;
-        ShowOtherPlatformApps = settings.ShowOtherPlatforms;
+        return result.Skipped &&
+               result.Message.Contains("unsupported", StringComparison.OrdinalIgnoreCase);
     }
 }
