@@ -18,6 +18,7 @@ public sealed class MainWindowViewModel : ObservableObject
     private readonly DetectionService _detectionService;
     private readonly InstallerService _installerService;
     private readonly LoggingService _loggingService;
+    private readonly BrowserService _browserService;
 
     private readonly ObservableCollection<AppItem> _apps = new();
     private readonly ObservableCollection<AppItem> _visibleApps = new();
@@ -29,6 +30,13 @@ public sealed class MainWindowViewModel : ObservableObject
     private readonly ObservableCollection<InstallResult> _unsupportedSkippedResults = new();
 
     private readonly AsyncRelayCommand _installCommand;
+    private readonly RelayCommand _saveListCommand;
+    private readonly RelayCommand _openLogFileCommand;
+    private readonly RelayCommand _openPublisherCommand;
+    private readonly RelayCommand _showAppDetailsCommand;
+    private readonly RelayCommand _pauseInstallCommand;
+    private readonly RelayCommand _exportReportCommand;
+    private readonly RelayCommand _toggleSettingsPanelCommand;
     private readonly RelayCommand _requestRestartNowCommand;
     private readonly AsyncRelayCommand _confirmRestartNowCommand;
     private readonly RelayCommand _cancelRestartCommand;
@@ -39,13 +47,21 @@ public sealed class MainWindowViewModel : ObservableObject
     private bool _restartRequired;
     private bool _isRestartConfirmationVisible;
     private bool _restartDecisionFinalized;
+    private bool _isSettingsPanelOpen;
     private bool _suppressSettingsLogging;
+    private bool _updatingFilterFlags;
     private string _currentPlatformId = PlatformService.Unknown;
     private string _currentPlatform = "Unknown OS";
     private string _statusText = "Ready.";
     private string _installStatusText = "Install has not started.";
     private string _installSummaryText = string.Empty;
     private string _restartStatusText = string.Empty;
+    private string _searchText = string.Empty;
+    private string _selectedFilter = "All";
+    private bool _isAllFilter = true;
+    private bool _isGamesFilter;
+    private bool _isDevToolsFilter;
+    private bool _isUtilitiesFilter;
     private double _progressValue;
 
     public MainWindowViewModel(
@@ -54,7 +70,8 @@ public sealed class MainWindowViewModel : ObservableObject
         SelectionService selectionService,
         DetectionService detectionService,
         InstallerService installerService,
-        LoggingService loggingService)
+        LoggingService loggingService,
+        BrowserService browserService)
     {
         _platformService = platformService;
         _catalogService = catalogService;
@@ -62,11 +79,19 @@ public sealed class MainWindowViewModel : ObservableObject
         _detectionService = detectionService;
         _installerService = installerService;
         _loggingService = loggingService;
+        _browserService = browserService;
 
         Settings = new AppSettings();
         Settings.PropertyChanged += HandleSettingsChanged;
 
         _installCommand = new AsyncRelayCommand(InstallSelectedAsync, CanInstall);
+        _saveListCommand = new RelayCommand(_ => SaveCurrentList());
+        _openLogFileCommand = new RelayCommand(_ => OpenLogFile());
+        _openPublisherCommand = new RelayCommand(OpenPublisherHomepage);
+        _showAppDetailsCommand = new RelayCommand(ShowAppDetails);
+        _pauseInstallCommand = new RelayCommand(_ => PauseInstallPlaceholder(), _ => IsInstalling);
+        _exportReportCommand = new RelayCommand(_ => ExportReportPlaceholder());
+        _toggleSettingsPanelCommand = new RelayCommand(_ => ToggleSettingsPanel());
         _requestRestartNowCommand = new RelayCommand(_ => RequestRestartNow(), _ => CanShowRestartActions());
         _confirmRestartNowCommand = new AsyncRelayCommand(ConfirmRestartNowAsync, CanConfirmRestartNow);
         _cancelRestartCommand = new RelayCommand(_ => CancelRestartNow(), _ => IsRestartConfirmationVisible);
@@ -89,6 +114,90 @@ public sealed class MainWindowViewModel : ObservableObject
 
     public int SelectedCount => _apps.Count(app => app.IsSelected);
 
+    public int VisibleAppCount => _visibleApps.Count;
+
+    public string SelectedFooterText => $"Selected apps: {SelectedCount} • Download size: {SelectedCount * 30} MB";
+
+    public bool IsHomeScreenVisible => !IsInstalling && !HasInstallResults;
+
+    public bool IsInstallScreenVisible => IsInstalling;
+
+    public bool IsSummaryScreenVisible => !IsInstalling && HasInstallResults;
+
+    public bool IsSelectionPhase => !IsSummaryScreenVisible;
+
+    public bool IsSettingsPanelOpen
+    {
+        get => _isSettingsPanelOpen;
+        private set => SetProperty(ref _isSettingsPanelOpen, value);
+    }
+
+    public string SearchText
+    {
+        get => _searchText;
+        set
+        {
+            if (SetProperty(ref _searchText, value))
+            {
+                ApplyVisibilityFilter();
+            }
+        }
+    }
+
+    public string SelectedFilter
+    {
+        get => _selectedFilter;
+        private set => SetProperty(ref _selectedFilter, value);
+    }
+
+    public bool IsAllFilter
+    {
+        get => _isAllFilter;
+        set
+        {
+            if (SetProperty(ref _isAllFilter, value) && value && !_updatingFilterFlags)
+            {
+                SetCategoryFilter("All");
+            }
+        }
+    }
+
+    public bool IsGamesFilter
+    {
+        get => _isGamesFilter;
+        set
+        {
+            if (SetProperty(ref _isGamesFilter, value) && value && !_updatingFilterFlags)
+            {
+                SetCategoryFilter("Games");
+            }
+        }
+    }
+
+    public bool IsDevToolsFilter
+    {
+        get => _isDevToolsFilter;
+        set
+        {
+            if (SetProperty(ref _isDevToolsFilter, value) && value && !_updatingFilterFlags)
+            {
+                SetCategoryFilter("Dev Tools");
+            }
+        }
+    }
+
+    public bool IsUtilitiesFilter
+    {
+        get => _isUtilitiesFilter;
+        set
+        {
+            if (SetProperty(ref _isUtilitiesFilter, value) && value && !_updatingFilterFlags)
+            {
+                SetCategoryFilter("Utilities");
+            }
+        }
+    }
+
     public bool IsInstalling
     {
         get => _isInstalling;
@@ -96,6 +205,7 @@ public sealed class MainWindowViewModel : ObservableObject
         {
             if (SetProperty(ref _isInstalling, value))
             {
+                NotifyScreenStateChanged();
                 UpdateCommandStates();
             }
         }
@@ -191,6 +301,20 @@ public sealed class MainWindowViewModel : ObservableObject
 
     public ICommand InstallCommand => _installCommand;
 
+    public ICommand SaveListCommand => _saveListCommand;
+
+    public ICommand OpenLogFileCommand => _openLogFileCommand;
+
+    public ICommand OpenPublisherCommand => _openPublisherCommand;
+
+    public ICommand ShowAppDetailsCommand => _showAppDetailsCommand;
+
+    public ICommand PauseInstallCommand => _pauseInstallCommand;
+
+    public ICommand ExportReportCommand => _exportReportCommand;
+
+    public ICommand ToggleSettingsPanelCommand => _toggleSettingsPanelCommand;
+
     public ICommand RequestRestartNowCommand => _requestRestartNowCommand;
 
     public ICommand ConfirmRestartNowCommand => _confirmRestartNowCommand;
@@ -251,6 +375,8 @@ public sealed class MainWindowViewModel : ObservableObject
 
         _loggingService.LogInfo(StatusText);
         OnPropertyChanged(nameof(SelectedCount));
+        OnPropertyChanged(nameof(SelectedFooterText));
+        NotifyScreenStateChanged();
         UpdateCommandStates();
     }
 
@@ -260,6 +386,7 @@ public sealed class MainWindowViewModel : ObservableObject
         {
             OnPropertyChanged(nameof(HasInstallResults));
             OnPropertyChanged(nameof(IsRestartSectionVisible));
+            NotifyScreenStateChanged();
         };
 
         _installedResults.CollectionChanged += (_, _) => OnPropertyChanged(nameof(HasInstalledResults));
@@ -267,6 +394,7 @@ public sealed class MainWindowViewModel : ObservableObject
         _skippedResults.CollectionChanged += (_, _) => OnPropertyChanged(nameof(HasSkippedResults));
         _restartRequiredResults.CollectionChanged += (_, _) => OnPropertyChanged(nameof(HasRestartRequiredResults));
         _unsupportedSkippedResults.CollectionChanged += (_, _) => OnPropertyChanged(nameof(HasUnsupportedSkippedResults));
+        _visibleApps.CollectionChanged += (_, _) => OnPropertyChanged(nameof(VisibleAppCount));
     }
 
     private void HandleSettingsChanged(object? sender, PropertyChangedEventArgs e)
@@ -336,14 +464,166 @@ public sealed class MainWindowViewModel : ObservableObject
 
     private void ApplyVisibilityFilter()
     {
+        var query = SearchText.Trim();
         _visibleApps.Clear();
+
         foreach (var app in _apps)
         {
-            var include = Settings.ShowUnsupportedApps || app.IsSupportedOnCurrentPlatform || app.IsSelected;
-            if (include)
+            var includeByPlatform = Settings.ShowUnsupportedApps || app.IsSupportedOnCurrentPlatform || app.IsSelected;
+            if (!includeByPlatform)
             {
-                _visibleApps.Add(app);
+                continue;
             }
+
+            if (!MatchesSelectedFilter(app))
+            {
+                continue;
+            }
+
+            if (!string.IsNullOrWhiteSpace(query))
+            {
+                var blob = $"{app.Name} {app.Category} {app.PublisherName} {app.Description}";
+                if (!blob.Contains(query, StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+            }
+
+            _visibleApps.Add(app);
+        }
+
+        OnPropertyChanged(nameof(VisibleAppCount));
+    }
+
+    private void SetCategoryFilter(string filter)
+    {
+        if (string.Equals(SelectedFilter, filter, StringComparison.OrdinalIgnoreCase))
+        {
+            return;
+        }
+
+        SelectedFilter = filter;
+        _updatingFilterFlags = true;
+        try
+        {
+            IsAllFilter = string.Equals(filter, "All", StringComparison.OrdinalIgnoreCase);
+            IsGamesFilter = string.Equals(filter, "Games", StringComparison.OrdinalIgnoreCase);
+            IsDevToolsFilter = string.Equals(filter, "Dev Tools", StringComparison.OrdinalIgnoreCase);
+            IsUtilitiesFilter = string.Equals(filter, "Utilities", StringComparison.OrdinalIgnoreCase);
+        }
+        finally
+        {
+            _updatingFilterFlags = false;
+        }
+
+        _loggingService.LogInfo($"Category filter set to '{SelectedFilter}'.");
+        ApplyVisibilityFilter();
+    }
+
+    private bool MatchesSelectedFilter(AppItem app)
+    {
+        if (string.Equals(SelectedFilter, "All", StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+
+        var category = app.Category ?? string.Empty;
+        return SelectedFilter switch
+        {
+            "Games" => category.Contains("gaming", StringComparison.OrdinalIgnoreCase),
+            "Dev Tools" => category.Contains("coding", StringComparison.OrdinalIgnoreCase) ||
+                           category.Contains("dev", StringComparison.OrdinalIgnoreCase),
+            "Utilities" => category.Contains("util", StringComparison.OrdinalIgnoreCase),
+            _ => true
+        };
+    }
+
+    private void NotifyScreenStateChanged()
+    {
+        OnPropertyChanged(nameof(IsHomeScreenVisible));
+        OnPropertyChanged(nameof(IsInstallScreenVisible));
+        OnPropertyChanged(nameof(IsSummaryScreenVisible));
+        OnPropertyChanged(nameof(IsSelectionPhase));
+    }
+
+    private void SaveCurrentList()
+    {
+        var selection = new SelectionConfig
+        {
+            ProfileName = Settings.ProfileName,
+            TargetPlatform = _currentPlatformId,
+            SelectedApps = _apps.Where(app => app.IsSelected).Select(app => app.Id).ToList(),
+            Settings = new SelectionSettings
+            {
+                SilentInstall = Settings.SilentInstallEnabled,
+                SelfDelete = Settings.SelfDeleteEnabled,
+                ShowUnsupportedApps = Settings.ShowUnsupportedApps,
+                DefaultInstallLocation = Settings.DefaultInstallLocation
+            }
+        };
+
+        _selectionService.SaveSelection(selection);
+        StatusText = $"Saved list '{selection.ProfileName}' with {selection.SelectedApps.Count} app(s).";
+        _loggingService.LogInfo(StatusText);
+    }
+
+    private void ToggleSettingsPanel()
+    {
+        IsSettingsPanelOpen = !IsSettingsPanelOpen;
+        _loggingService.LogInfo($"Settings panel {(IsSettingsPanelOpen ? "opened" : "closed")}.");
+    }
+
+    private void OpenPublisherHomepage(object? parameter)
+    {
+        if (parameter is not AppItem app)
+        {
+            return;
+        }
+
+        if (!_browserService.OpenPublisherHomepage(app.HomepageUrl))
+        {
+            StatusText = $"Could not open homepage for {app.Name}.";
+        }
+    }
+
+    private void ShowAppDetails(object? parameter)
+    {
+        if (parameter is not AppItem app)
+        {
+            return;
+        }
+
+        StatusText = $"{app.Name}: {app.Description}";
+    }
+
+    private void PauseInstallPlaceholder()
+    {
+        StatusText = "Pause is not available yet. Installation continues.";
+        _loggingService.LogInfo("Pause requested (placeholder).");
+    }
+
+    private void ExportReportPlaceholder()
+    {
+        StatusText = "Export report (PDF) is a placeholder for the next step.";
+        _loggingService.LogInfo("Export report requested (placeholder).");
+    }
+
+    private void OpenLogFile()
+    {
+        try
+        {
+            Process.Start(new ProcessStartInfo
+            {
+                FileName = _loggingService.LogFilePath,
+                UseShellExecute = true
+            });
+
+            _loggingService.LogInfo($"Opened log file: {_loggingService.LogFilePath}");
+        }
+        catch (Exception ex)
+        {
+            StatusText = "Could not open log file.";
+            _loggingService.LogError($"Failed to open log file: {ex.Message}");
         }
     }
 
@@ -357,6 +637,7 @@ public sealed class MainWindowViewModel : ObservableObject
         ApplyPlatformFlags(app);
         ApplyVisibilityFilter();
         OnPropertyChanged(nameof(SelectedCount));
+        OnPropertyChanged(nameof(SelectedFooterText));
         UpdateCommandStates();
     }
 
@@ -375,6 +656,7 @@ public sealed class MainWindowViewModel : ObservableObject
         }
 
         ResetInstallOutputState();
+        IsSettingsPanelOpen = false;
         IsInstalling = true;
 
         InstallStatusText = $"Starting installation for {selectedApps.Count} app(s)...";
@@ -521,7 +803,7 @@ public sealed class MainWindowViewModel : ObservableObject
     {
         app.IsSupportedOnCurrentPlatform = _platformService.IsSupportedOnPlatform(app.SupportedPlatforms, _currentPlatformId);
         app.WillBeSkipped = app.IsSelected && !app.IsSupportedOnCurrentPlatform;
-        app.RowOpacity = app.IsSupportedOnCurrentPlatform ? 1.0 : 0.6;
+        app.RowOpacity = app.IsSupportedOnCurrentPlatform ? 1.0 : 0.78;
 
         if (app.WillBeSkipped)
         {
@@ -698,6 +980,7 @@ public sealed class MainWindowViewModel : ObservableObject
     private void UpdateCommandStates()
     {
         _installCommand.RaiseCanExecuteChanged();
+        _pauseInstallCommand.RaiseCanExecuteChanged();
         _requestRestartNowCommand.RaiseCanExecuteChanged();
         _confirmRestartNowCommand.RaiseCanExecuteChanged();
         _cancelRestartCommand.RaiseCanExecuteChanged();

@@ -1,0 +1,78 @@
+2026-03-09 14:40:46 [INFO] Logging initialized.
+2026-03-09 14:40:48 [INFO] Loaded 9 apps from apps.json.
+2026-03-09 14:40:48 [INFO] Applied settings from selection.json: Profile='Website Starter', Silent=True, SelfDelete=False, ShowUnsupported=False, InstallLocation=''
+2026-03-09 14:40:48 [INFO] Detected GPU vendor: NVIDIA
+2026-03-09 14:40:48 [INFO] Detected motherboard vendor: ASUS
+2026-03-09 14:40:51 [INFO] Recommended app 'NVIDIA App' for NVIDIA GPU. Supported=True, AutoSelected=True
+2026-03-09 14:40:51 [INFO] No catalog app found for recommendation rule: ASUS motherboard
+2026-03-09 14:40:51 [INFO] Recommendation summary: Total=1, Supported=1, Unsupported=0
+2026-03-09 14:40:51 [INFO] Recommendations applied. Total=1, Supported=1, Unsupported=0
+2026-03-09 14:40:51 [INFO] Loaded 9 apps for Windows. Recommended: 1. 1 selected app(s) are unsupported and will be skipped.
+2026-03-09 14:41:34 [INFO] Opened URL in default browser: https://www.logitechg.com/ghub
+2026-03-09 15:04:28 [INFO] Logging initialized.
+2026-03-09 15:04:30 [INFO] Loaded 9 apps from apps.json.
+2026-03-09 15:04:30 [INFO] Applied settings from selection.json: Profile='Website Starter', Silent=True, SelfDelete=False, ShowUnsupported=False, InstallLocation=''
+2026-03-09 15:04:30 [INFO] Detected GPU vendor: NVIDIA
+2026-03-09 15:04:30 [INFO] Detected motherboard vendor: ASUS
+2026-03-09 15:04:33 [INFO] Recommended app 'NVIDIA App' for NVIDIA GPU. Supported=True, AutoSelected=True
+2026-03-09 15:04:33 [INFO] No catalog app found for recommendation rule: ASUS motherboard
+2026-03-09 15:04:33 [INFO] Recommendation summary: Total=1, Supported=1, Unsupported=0
+2026-03-09 15:04:33 [INFO] Recommendations applied. Total=1, Supported=1, Unsupported=0
+2026-03-09 15:04:33 [INFO] Loaded 9 apps for Windows. Recommended: 1. 1 selected app(s) are unsupported and will be skipped.
+2026-03-09 15:04:40 [INFO] Settings panel opened.
+2026-03-09 15:04:44 [INFO] Settings panel closed.
+2026-03-09 15:04:45 [INFO] Settings panel opened.
+2026-03-09 15:04:46 [INFO] Settings panel closed.
+2026-03-09 15:04:46 [INFO] Settings panel opened.
+2026-03-09 15:04:47 [INFO] Settings panel closed.
+2026-03-09 15:04:49 [INFO] Settings panel opened.
+2026-03-09 15:04:49 [INFO] Settings panel closed.
+2026-03-09 15:05:29 [INFO] Opened URL in default browser: https://htop.dev/
+2026-03-09 15:29:11 [INFO] Settings panel opened.
+2026-03-09 15:29:17 [INFO] Settings panel closed.
+2026-03-09 15:38:11 [INFO] Logging initialized.
+2026-03-09 15:38:12 [INFO] Loaded 9 apps from apps.json.
+2026-03-09 15:38:12 [INFO] Applied settings from selection.json: Profile='Website Starter', Silent=True, SelfDelete=False, ShowUnsupported=False, InstallLocation=''
+2026-03-09 15:38:13 [INFO] Detected GPU vendor: NVIDIA
+2026-03-09 15:38:13 [INFO] Detected motherboard vendor: ASUS
+2026-03-09 15:38:16 [INFO] Recommended app 'NVIDIA App' for NVIDIA GPU. Supported=True, AutoSelected=True
+2026-03-09 15:38:16 [INFO] No catalog app found for recommendation rule: ASUS motherboard
+2026-03-09 15:38:16 [INFO] Recommendation summary: Total=1, Supported=1, Unsupported=0
+2026-03-09 15:38:16 [INFO] Recommendations applied. Total=1, Supported=1, Unsupported=0
+2026-03-09 15:38:16 [INFO] Loaded 9 apps for Windows. Recommended: 1. 1 selected app(s) are unsupported and will be skipped.
+2026-03-09 17:28:38 [INFO] Logging initialized.
+2026-03-09 17:28:39 [INFO] Loaded 9 apps from apps.json.
+2026-03-09 17:28:39 [INFO] Applied settings from selection.json: Profile='Website Starter', Silent=True, SelfDelete=False, ShowUnsupported=False, InstallLocation=''
+2026-03-09 17:28:39 [INFO] Detected GPU vendor: NVIDIA
+2026-03-09 17:28:39 [INFO] Detected motherboard vendor: ASUS
+2026-03-09 17:28:43 [INFO] Recommended app 'NVIDIA App' for NVIDIA GPU. Supported=True, AutoSelected=True
+2026-03-09 17:28:43 [INFO] No catalog app found for recommendation rule: ASUS motherboard
+2026-03-09 17:28:43 [INFO] Recommendation summary: Total=1, Supported=1, Unsupported=0
+2026-03-09 17:28:43 [INFO] Recommendations applied. Total=1, Supported=1, Unsupported=0
+2026-03-09 17:28:43 [INFO] Loaded 9 apps for Windows. Recommended: 1. 1 selected app(s) are unsupported and will be skipped.
+2026-03-09 17:29:07 [INFO] Category filter set to 'Utilities'.
+2026-03-09 17:29:09 [INFO] Category filter set to 'Dev Tools'.
+2026-03-09 17:29:09 [INFO] Category filter set to 'Utilities'.
+2026-03-09 17:29:12 [INFO] Category filter set to 'All'.
+2026-03-09 17:37:17 [INFO] Logging initialized.
+2026-03-09 17:37:19 [INFO] Loaded 9 apps from apps.json.
+2026-03-09 17:37:19 [INFO] Applied settings from selection.json: Profile='Website Starter', Silent=True, SelfDelete=False, ShowUnsupported=False, InstallLocation=''
+2026-03-09 17:37:19 [INFO] Detected GPU vendor: NVIDIA
+2026-03-09 17:37:19 [INFO] Detected motherboard vendor: ASUS
+2026-03-09 17:37:22 [INFO] Recommended app 'NVIDIA App' for NVIDIA GPU. Supported=True, AutoSelected=True
+2026-03-09 17:37:22 [INFO] No catalog app found for recommendation rule: ASUS motherboard
+2026-03-09 17:37:22 [INFO] Recommendation summary: Total=1, Supported=1, Unsupported=0
+2026-03-09 17:37:22 [INFO] Recommendations applied. Total=1, Supported=1, Unsupported=0
+2026-03-09 17:37:22 [INFO] Loaded 9 apps for Windows. Recommended: 1. 1 selected app(s) are unsupported and will be skipped.
+2026-03-09 17:37:33 [INFO] Settings panel opened.
+2026-03-09 17:37:35 [INFO] Settings panel closed.
+2026-03-09 17:39:44 [INFO] Logging initialized.
+2026-03-09 17:41:53 [INFO] Logging initialized.
+2026-03-09 17:42:22 [INFO] Logging initialized.
+2026-03-09 17:43:47 [INFO] Logging initialized.
+2026-03-09 17:45:35 [INFO] Logging initialized.
+2026-03-09 17:45:36 [INFO] Loaded 9 apps from apps.json.
+2026-03-09 17:45:36 [INFO] Applied settings from selection.json: Profile='Website Starter', Silent=True, SelfDelete=False, ShowUnsupported=False, InstallLocation=''
+2026-03-09 17:45:36 [INFO] Recommendation summary: Total=0, Supported=0, Unsupported=0
+2026-03-09 17:45:36 [INFO] No recommendation matches found in catalog for detected hardware/accessories.
+2026-03-09 17:45:36 [INFO] Loaded 9 apps for Windows. Recommended: 0. 1 selected app(s) are unsupported and will be skipped.

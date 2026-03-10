@@ -24,6 +24,7 @@ public partial class App : Application
             var selectionService = new SelectionService(loggingService);
             var detectionService = new DetectionService(loggingService);
             var installerService = new InstallerService(loggingService);
+            var browserService = new BrowserService(loggingService);
 
             var mainWindowViewModel = new MainWindowViewModel(
                 platformService,
@@ -31,7 +32,8 @@ public partial class App : Application
                 selectionService,
                 detectionService,
                 installerService,
-                loggingService);
+                loggingService,
+                browserService);
 
             desktop.MainWindow = new MainWindow
             {
