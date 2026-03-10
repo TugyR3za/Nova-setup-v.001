@@ -22,6 +22,7 @@ public partial class App : Application
             var platformService = new PlatformService();
             var catalogService = new CatalogService(platformService, loggingService);
             var selectionService = new SelectionService(loggingService);
+            var settingsService = new SettingsService(loggingService);
             var detectionService = new DetectionService(loggingService);
             var installerService = new InstallerService(loggingService);
             var browserService = new BrowserService(loggingService);
@@ -33,7 +34,8 @@ public partial class App : Application
                 detectionService,
                 installerService,
                 loggingService,
-                browserService);
+                browserService,
+                settingsService);
 
             desktop.MainWindow = new MainWindow
             {

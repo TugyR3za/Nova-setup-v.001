@@ -45,6 +45,7 @@ public sealed class SelectionService
 
             selection.SelectedApps ??= new List<string>();
             selection.Settings ??= new SelectionSettings();
+            ApplyLegacySettingsFallback(selection, rawJson);
             return selection;
         }
         catch (JsonException ex)
@@ -100,6 +101,68 @@ public sealed class SelectionService
         var json = JsonSerializer.Serialize(selection, _jsonOptions);
         File.WriteAllText(configPath, json);
         _loggingService?.Info($"Saved selection profile to {configPath}");
+    }
+
+    private static void ApplyLegacySettingsFallback(SelectionConfig selection, string rawJson)
+    {
+        try
+        {
+            using var document = JsonDocument.Parse(rawJson);
+            if (!TryGetProperty(document.RootElement, "Settings", out var settingsElement) ||
+                settingsElement.ValueKind != JsonValueKind.Object)
+            {
+                return;
+            }
+
+            if (TryGetBooleanProperty(settingsElement, "OsSupportedApps", out _))
+            {
+                return;
+            }
+
+            if (TryGetBooleanProperty(settingsElement, "ShowUnsupportedApps", out var legacyShowUnsupportedApps))
+            {
+                selection.Settings.OsSupportedApps = !legacyShowUnsupportedApps;
+            }
+        }
+        catch (JsonException)
+        {
+            // Ignore fallback parsing if the json payload is malformed.
+        }
+    }
+
+    private static bool TryGetProperty(JsonElement element, string propertyName, out JsonElement value)
+    {
+        foreach (var property in element.EnumerateObject())
+        {
+            if (string.Equals(property.Name, propertyName, StringComparison.OrdinalIgnoreCase))
+            {
+                value = property.Value;
+                return true;
+            }
+        }
+
+        value = default;
+        return false;
+    }
+
+    private static bool TryGetBooleanProperty(JsonElement element, string propertyName, out bool value)
+    {
+        foreach (var property in element.EnumerateObject())
+        {
+            if (!string.Equals(property.Name, propertyName, StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
+            if (property.Value.ValueKind is JsonValueKind.True or JsonValueKind.False)
+            {
+                value = property.Value.GetBoolean();
+                return true;
+            }
+        }
+
+        value = default;
+        return false;
     }
 
     private static string ResolveConfigPath(string fileName)

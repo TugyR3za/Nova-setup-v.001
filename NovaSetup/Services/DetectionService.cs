@@ -78,6 +78,23 @@ public sealed class DetectionService
         };
     }
 
+    public int DetectInstalledApps(IList<AppItem> apps, string currentPlatform)
+    {
+        var detectedCount = 0;
+
+        foreach (var app in apps)
+        {
+            if (IsAppInstalled(app, currentPlatform))
+            {
+                app.IsInstalled = true;
+                detectedCount++;
+            }
+        }
+
+        _loggingService?.LogInfo($"Installed app detection completed. DetectedInstalledApps={detectedCount}");
+        return detectedCount;
+    }
+
     public RecommendationSummary ApplyRecommendations(
         IList<AppItem> apps,
         string currentPlatform,
@@ -153,6 +170,27 @@ public sealed class DetectionService
             PlatformService.Linux => app.SupportedPlatforms.Linux,
             _ => false
         };
+    }
+
+    private static bool IsAppInstalled(AppItem app, string currentPlatform)
+    {
+        var detectExecutable = currentPlatform switch
+        {
+            PlatformService.Windows => app.WindowsInstall?.DetectExecutable,
+            PlatformService.Linux => app.LinuxInstall?.DetectExecutable,
+            _ => string.Empty
+        };
+
+        if (string.IsNullOrWhiteSpace(detectExecutable))
+        {
+            return false;
+        }
+
+        var output = currentPlatform == PlatformService.Windows
+            ? RunCommand("where.exe", detectExecutable)
+            : RunCommand("sh", $"-c \"command -v '{EscapeSingleQuotes(detectExecutable)}'\"");
+
+        return !string.IsNullOrWhiteSpace(output);
     }
 
     private static List<RecommendationCandidate> BuildRecommendationCandidates(HardwareDetectionResult detectionResult)
@@ -318,6 +356,11 @@ public sealed class DetectionService
         {
             return string.Empty;
         }
+    }
+
+    private static string EscapeSingleQuotes(string value)
+    {
+        return value.Replace("'", "'\"'\"'", StringComparison.Ordinal);
     }
 
     private sealed record RecommendationCandidate(string VendorKey, string DisplayName, string Reason);

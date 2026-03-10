@@ -19,6 +19,9 @@ public sealed class InstallerService
         IEnumerable<AppItem> selectedApps,
         string currentPlatform,
         bool silentInstallEnabled,
+        bool keepInstallersAfterInstall = false,
+        string downloadLocationMode = AppSettings.DownloadSystemDefault,
+        string customDownloadFolder = "",
         CancellationToken cancellationToken = default)
     {
         var source = selectedApps?.ToList() ?? new List<AppItem>();
@@ -34,8 +37,9 @@ public sealed class InstallerService
             return results;
         }
 
+        var rootDirectory = ResolveDownloadRoot(downloadLocationMode, customDownloadFolder);
         var tempRoot = Path.Combine(
-            Path.GetTempPath(),
+            rootDirectory,
             "NovaSetup",
             $"install-{DateTime.UtcNow:yyyyMMdd-HHmmss}-{Guid.NewGuid():N}");
         Directory.CreateDirectory(tempRoot);
@@ -52,7 +56,14 @@ public sealed class InstallerService
         }
         finally
         {
-            await CleanupTemporaryFilesAsync(tempRoot, downloadedFiles);
+            if (keepInstallersAfterInstall)
+            {
+                _loggingService?.LogInfo($"Keeping downloaded installers in {tempRoot}");
+            }
+            else
+            {
+                await CleanupTemporaryFilesAsync(tempRoot, downloadedFiles);
+            }
         }
 
         _loggingService?.LogInfo($"Install finished. ResultCount={results.Count}.");
@@ -328,12 +339,11 @@ public sealed class InstallerService
             return $"\"{installerPath}\" {args}".Trim();
         }
 
-        if (action.UseSilent && !string.IsNullOrWhiteSpace(action.InstallDefinition.SilentCommand))
-        {
-            return action.InstallDefinition.SilentCommand;
-        }
+        var command = action.UseSilent && !string.IsNullOrWhiteSpace(action.InstallDefinition.SilentCommand)
+            ? action.InstallDefinition.SilentCommand
+            : action.InstallDefinition.Command;
 
-        return action.InstallDefinition.Command;
+        return NormalizeWindowsCommand(command, action.UseSilent);
     }
 
     private string BuildLinuxInstallCommand(InstallAction action, string? installerPath)
@@ -429,9 +439,62 @@ public sealed class InstallerService
         return string.IsNullOrWhiteSpace(primary) ? fallback : primary;
     }
 
+    private static string NormalizeWindowsCommand(string command, bool useSilent)
+    {
+        if (string.IsNullOrWhiteSpace(command))
+        {
+            return command;
+        }
+
+        if (!command.TrimStart().StartsWith("winget ", StringComparison.OrdinalIgnoreCase))
+        {
+            return command;
+        }
+
+        var normalized = command.Trim();
+        if (useSilent && !normalized.Contains("--silent", StringComparison.OrdinalIgnoreCase))
+        {
+            normalized += " --silent";
+        }
+
+        if (!normalized.Contains("--disable-interactivity", StringComparison.OrdinalIgnoreCase))
+        {
+            normalized += " --disable-interactivity";
+        }
+
+        if (!normalized.Contains("--accept-source-agreements", StringComparison.OrdinalIgnoreCase))
+        {
+            normalized += " --accept-source-agreements";
+        }
+
+        if (!normalized.Contains("--accept-package-agreements", StringComparison.OrdinalIgnoreCase))
+        {
+            normalized += " --accept-package-agreements";
+        }
+
+        return normalized;
+    }
+
     private static string TrimForLog(string value)
     {
         return value.Length <= 300 ? value : value[..300] + "...";
+    }
+
+    private string ResolveDownloadRoot(string downloadLocationMode, string customDownloadFolder)
+    {
+        return downloadLocationMode switch
+        {
+            AppSettings.DownloadCustomFolder when !string.IsNullOrWhiteSpace(customDownloadFolder)
+                => customDownloadFolder,
+            AppSettings.DownloadAskEveryTime => LogAndUseSystemDefault("Download location is set to Ask every time. Using system default until folder-prompt support is added."),
+            _ => Path.GetTempPath()
+        };
+    }
+
+    private string LogAndUseSystemDefault(string message)
+    {
+        _loggingService?.LogInfo(message);
+        return Path.GetTempPath();
     }
 
     private static HttpClient CreateHttpClient()

@@ -76,3 +76,4 @@ C:\Users\naime\OneDrive\Desktop\Nova setup v.001\NovaSetup\obj\Debug\net8.0\Nova
 C:\Users\naime\OneDrive\Desktop\Nova setup v.001\NovaSetup\obj\Debug\net8.0\NovaSetup.genruntimeconfig.cache
 C:\Users\naime\OneDrive\Desktop\Nova setup v.001\NovaSetup\obj\Debug\net8.0\ref\NovaSetup.dll
 C:\Users\naime\OneDrive\Desktop\Nova setup v.001\NovaSetup\bin\Debug\net8.0\Assets\nova_logo.ico
+C:\Users\naime\OneDrive\Desktop\Nova setup v.001\NovaSetup\bin\Debug\net8.0\Configs\settings.json

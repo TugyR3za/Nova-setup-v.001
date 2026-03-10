@@ -24,10 +24,14 @@
 
   <ItemGroup>
     <AvaloniaResource Include="Assets\nova_logo.ico" />
+    <AvaloniaResource Include="Assets\nova_logo_512.png" />
     <None Update="Assets\nova_logo.ico">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="Configs\apps.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Configs\settings.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="Configs\selection.json">

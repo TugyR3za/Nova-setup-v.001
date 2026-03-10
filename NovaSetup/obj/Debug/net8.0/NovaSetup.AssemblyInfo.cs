@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("NovaSetup")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+520e3041f5314f3a1d67412137afdd3bfca17fb0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+b59568ed200d045ad3defd6c23efecc720a2106e")]
 [assembly: System.Reflection.AssemblyProductAttribute("NovaSetup")]
 [assembly: System.Reflection.AssemblyTitleAttribute("NovaSetup")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

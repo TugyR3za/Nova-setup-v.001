@@ -9,7 +9,7 @@
         x:CompileBindings="False"
         Title="NovaSetup"
         Icon="avares://NovaSetup/Assets/nova_logo.ico"
-        RequestedThemeVariant="Dark"
+        RequestedThemeVariant="Default"
         Background="#050915"
         Foreground="#E6EBFF"
         MinWidth="1120"
@@ -49,7 +49,7 @@
             <Setter Property="BorderBrush" Value="{StaticResource CardBorderBrush}" />
             <Setter Property="BorderThickness" Value="1" />
             <Setter Property="CornerRadius" Value="14" />
-            <Setter Property="Padding" Value="12" />
+            <Setter Property="Padding" Value="10" />
         </Style>
 
         <Style Selector="Border.rowCard">
@@ -57,8 +57,8 @@
             <Setter Property="BorderBrush" Value="#263A5C" />
             <Setter Property="BorderThickness" Value="1" />
             <Setter Property="CornerRadius" Value="10" />
-            <Setter Property="Padding" Value="8" />
-            <Setter Property="Margin" Value="0,0,0,6" />
+            <Setter Property="Padding" Value="7" />
+            <Setter Property="Margin" Value="0,0,0,4" />
         </Style>
 
         <Style Selector="TextBox">
@@ -67,7 +67,20 @@
             <Setter Property="BorderThickness" Value="1" />
             <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
             <Setter Property="CornerRadius" Value="11" />
-            <Setter Property="Padding" Value="10,8" />
+            <Setter Property="Padding" Value="10,7" />
+        </Style>
+
+        <Style Selector="ComboBox">
+            <Setter Property="Background" Value="{StaticResource InputBrush}" />
+            <Setter Property="BorderBrush" Value="{StaticResource InputBorderBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
+            <Setter Property="Padding" Value="8,6" />
+        </Style>
+
+        <Style Selector="ComboBoxItem">
+            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
+            <Setter Property="Background" Value="{StaticResource InputBrush}" />
         </Style>
 
         <Style Selector="Button">
@@ -76,7 +89,7 @@
             <Setter Property="BorderThickness" Value="1" />
             <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
             <Setter Property="CornerRadius" Value="12" />
-            <Setter Property="Padding" Value="10,7" />
+            <Setter Property="Padding" Value="10,6" />
         </Style>
 
         <Style Selector="Button.primary">
@@ -94,8 +107,8 @@
         </Style>
 
         <Style Selector="Button.icon">
-            <Setter Property="Width" Value="40" />
-            <Setter Property="Height" Value="40" />
+            <Setter Property="Width" Value="38" />
+            <Setter Property="Height" Value="38" />
             <Setter Property="Padding" Value="0" />
             <Setter Property="FontSize" Value="15" />
         </Style>
@@ -113,9 +126,9 @@
             <Setter Property="BorderBrush" Value="Transparent" />
             <Setter Property="BorderThickness" Value="1" />
             <Setter Property="CornerRadius" Value="12" />
-            <Setter Property="Padding" Value="12,9" />
+            <Setter Property="Padding" Value="11,7" />
             <Setter Property="HorizontalContentAlignment" Value="Left" />
-            <Setter Property="FontSize" Value="16" />
+            <Setter Property="FontSize" Value="15" />
         </Style>
 
         <Style Selector="Button.navActive">
@@ -131,8 +144,8 @@
             <Setter Property="BorderThickness" Value="1" />
             <Setter Property="Foreground" Value="{StaticResource TextMutedBrush}" />
             <Setter Property="CornerRadius" Value="999" />
-            <Setter Property="Padding" Value="14,6" />
-            <Setter Property="FontSize" Value="14" />
+            <Setter Property="Padding" Value="10,5" />
+            <Setter Property="FontSize" Value="13" />
         </Style>
 
         <Style Selector="RadioButton.pill:checked">
@@ -155,9 +168,9 @@
         </Style>
     </Window.Styles>
 
-    <Border Margin="14"
+    <Border Margin="10"
             Classes="shellPanel"
-            Padding="12">
+            Padding="10">
         <Border.Background>
             <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
                 <GradientStop Color="#0A1020" Offset="0" />
@@ -165,26 +178,30 @@
             </LinearGradientBrush>
         </Border.Background>
 
-        <Grid RowDefinitions="Auto,*" RowSpacing="14">
+        <Grid RowDefinitions="Auto,*" RowSpacing="10">
             <Border Grid.Row="0"
                     Classes="shellPanel"
                     CornerRadius="20"
-                    Padding="12"
+                    Padding="10"
                     Background="{StaticResource TopBarBrush}">
-                <Grid ColumnDefinitions="Auto,*,Auto,Auto,Auto" ColumnSpacing="14">
-                    <StackPanel Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
-                        <Border Width="38" Height="38" CornerRadius="19" Background="#10203F">
-                            <TextBlock Text="*"
-                                       FontSize="24"
-                                       Foreground="{StaticResource AccentBrush}"
-                                       HorizontalAlignment="Center"
-                                       VerticalAlignment="Center" />
+                <Grid ColumnDefinitions="Auto,*,Auto,Auto,Auto" ColumnSpacing="10">
+                    <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                        <Border Width="36"
+                                Height="36"
+                                CornerRadius="10"
+                                Background="#10203F"
+                                ClipToBounds="True">
+                            <Image Source="avares://NovaSetup/Assets/nova_logo_512.png"
+                                   Stretch="UniformToFill" />
                         </Border>
-                        <TextBlock Text="Nova" FontSize="26" FontWeight="Bold" VerticalAlignment="Center" />
-                        <TextBlock Text="Setup everything fast"
-                                   FontSize="14"
-                                   Foreground="{StaticResource TextMutedBrush}"
-                                   VerticalAlignment="Center" />
+                        <StackPanel Spacing="0" VerticalAlignment="Center">
+                            <TextBlock Text="Nova"
+                                       FontSize="22"
+                                       FontWeight="Bold" />
+                            <TextBlock Text="Setup everything fast"
+                                       FontSize="13"
+                                       Foreground="{StaticResource TextMutedBrush}" />
+                        </StackPanel>
                     </StackPanel>
 
                     <Border Grid.Column="2"
@@ -192,7 +209,7 @@
                             BorderBrush="#294067"
                             BorderThickness="1"
                             CornerRadius="10"
-                            Padding="10,6"
+                            Padding="10,5"
                             VerticalAlignment="Center">
                         <TextBlock Text="{Binding CurrentPlatform, StringFormat='OS: {0}'}"
                                    Foreground="{StaticResource TextMutedBrush}" />
@@ -200,50 +217,90 @@
 
                     <Button Grid.Column="3"
                             Classes="icon ghost"
-                            Content="S"
-                            Command="{Binding ToggleSettingsPanelCommand}" />
-                    <Button Grid.Column="4" Classes="icon ghost" Content="?"/>
+                            Command="{Binding ToggleSettingsPanelCommand}">
+                        <Viewbox Width="16" Height="16">
+                            <Path Fill="{StaticResource TextPrimaryBrush}"
+                                  Data="M19.14,12.94A7.43,7.43 0 0,0 19.19,12A7.43,7.43 0 0,0 19.14,11.06L21.19,9.47C21.37,9.33 21.42,9.08 21.31,8.88L19.31,5.42C19.2,5.22 18.95,5.13 18.74,5.2L16.33,6.17C15.83,5.79 15.29,5.47 14.7,5.23L14.34,2.67C14.31,2.44 14.11,2.27 13.88,2.27H10.12C9.89,2.27 9.69,2.44 9.66,2.67L9.3,5.23C8.71,5.47 8.17,5.79 7.67,6.17L5.26,5.2C5.05,5.13 4.8,5.22 4.69,5.42L2.69,8.88C2.58,9.08 2.63,9.33 2.81,9.47L4.86,11.06A7.43,7.43 0 0,0 4.81,12A7.43,7.43 0 0,0 4.86,12.94L2.81,14.53C2.63,14.67 2.58,14.92 2.69,15.12L4.69,18.58C4.8,18.78 5.05,18.87 5.26,18.8L7.67,17.83C8.17,18.21 8.71,18.53 9.3,18.77L9.66,21.33C9.69,21.56 9.89,21.73 10.12,21.73H13.88C14.11,21.73 14.31,21.56 14.34,21.33L14.7,18.77C15.29,18.53 15.83,18.21 16.33,17.83L18.74,18.8C18.95,18.87 19.2,18.78 19.31,18.58L21.31,15.12C21.42,14.92 21.37,14.67 21.19,14.53L19.14,12.94M12,15.5A3.5,3.5 0 0,1 8.5,12A3.5,3.5 0 0,1 12,8.5A3.5,3.5 0 0,1 15.5,12A3.5,3.5 0 0,1 12,15.5Z" />
+                        </Viewbox>
+                    </Button>
+                    <Button Grid.Column="4"
+                            Classes="icon ghost"
+                            Content="?"
+                            FontSize="18" />
                 </Grid>
             </Border>
 
-            <Grid Grid.Row="1" ColumnDefinitions="200,*" ColumnSpacing="12">
+            <Grid Grid.Row="1" ColumnDefinitions="186,*" ColumnSpacing="10">
                 <Border Grid.Column="0"
                         Classes="shellPanel"
                         CornerRadius="18"
                         Background="{StaticResource SidebarBrush}"
-                        Padding="8">
+                        Padding="6">
                     <Grid RowDefinitions="*,Auto">
-                        <StackPanel Spacing="8">
-                            <Button Classes="nav" Content="Dashboard" />
+                        <StackPanel Spacing="4">
+                            <Button Classes="nav navActive"
+                                    IsVisible="{Binding IsDashboardSelected}"
+                                    Content="Dashboard"
+                                    Command="{Binding NavigateDashboardCommand}" />
+                            <Button Classes="nav"
+                                    IsVisible="{Binding IsDashboardUnselected}"
+                                    Content="Dashboard"
+                                    Command="{Binding NavigateDashboardCommand}" />
 
                             <Button Classes="nav navActive"
-                                    IsVisible="{Binding IsSelectionPhase}"
-                                    Content="Apps" />
+                                    IsVisible="{Binding IsAppsSelected}"
+                                    Content="Apps"
+                                    Command="{Binding NavigateAppsCommand}" />
                             <Button Classes="nav"
-                                    IsVisible="{Binding IsSummaryScreenVisible}"
-                                    Content="Apps" />
-
-                            <Button Classes="nav" Content="Drivers" />
-                            <Button Classes="nav" Content="My Lists" />
+                                    IsVisible="{Binding IsAppsUnselected}"
+                                    Content="Apps"
+                                    Command="{Binding NavigateAppsCommand}" />
 
                             <Button Classes="nav navActive"
-                                    IsVisible="{Binding IsSummaryScreenVisible}"
-                                    Content="History" />
+                                    IsVisible="{Binding IsDriversSelected}"
+                                    Content="Drivers"
+                                    Command="{Binding NavigateDriversCommand}" />
                             <Button Classes="nav"
-                                    IsVisible="{Binding IsSelectionPhase}"
-                                    Content="History" />
+                                    IsVisible="{Binding IsDriversUnselected}"
+                                    Content="Drivers"
+                                    Command="{Binding NavigateDriversCommand}" />
 
-                            <Button Classes="nav" Content="Logs" Command="{Binding OpenLogFileCommand}" />
+                            <Button Classes="nav navActive"
+                                    IsVisible="{Binding IsMyListsSelected}"
+                                    Content="My Lists"
+                                    Command="{Binding NavigateMyListsCommand}" />
+                            <Button Classes="nav"
+                                    IsVisible="{Binding IsMyListsUnselected}"
+                                    Content="My Lists"
+                                    Command="{Binding NavigateMyListsCommand}" />
+
+                            <Button Classes="nav navActive"
+                                    IsVisible="{Binding IsHistorySelected}"
+                                    Content="History"
+                                    Command="{Binding NavigateHistoryCommand}" />
+                            <Button Classes="nav"
+                                    IsVisible="{Binding IsHistoryUnselected}"
+                                    Content="History"
+                                    Command="{Binding NavigateHistoryCommand}" />
+
+                            <Button Classes="nav navActive"
+                                    IsVisible="{Binding IsLogsSelected}"
+                                    Content="Logs"
+                                    Command="{Binding NavigateLogsCommand}" />
+                            <Button Classes="nav"
+                                    IsVisible="{Binding IsLogsUnselected}"
+                                    Content="Logs"
+                                    Command="{Binding NavigateLogsCommand}" />
                         </StackPanel>
 
                         <Border Grid.Row="1"
                                 Classes="card"
-                                Padding="12"
+                                Padding="10"
                                 Background="#111A2C">
-                            <StackPanel Spacing="8">
+                            <StackPanel Spacing="6">
                                 <TextBlock Text="Current profile"
                                            FontWeight="SemiBold" />
-                                <TextBlock Text="{Binding Settings.ProfileName}"
+                                <TextBlock Text="{Binding CurrentProfileName}"
                                            Foreground="{StaticResource TextMutedBrush}" />
                                 <TextBlock Text="{Binding SelectedCount, StringFormat='Selected: {0} app(s)'}"
                                            Foreground="{StaticResource TextMutedBrush}"
@@ -260,74 +317,57 @@
                         Padding="12">
                     <Grid>
                         <Grid IsVisible="{Binding IsHomeScreenVisible}"
-                              RowDefinitions="Auto,Auto,*"
-                              RowSpacing="10">
-                            <Border Grid.Row="0" Classes="card" Padding="14">
-                                <StackPanel Spacing="4">
-                                    <TextBlock Text="Choose what to install"
-                                               FontSize="30"
-                                               FontWeight="Bold"
-                                               TextWrapping="Wrap" />
-                                    <TextBlock Text="Pick apps, drivers, and packs, then press Install"
-                                               FontSize="15"
-                                               Foreground="{StaticResource TextMutedBrush}"
-                                               TextWrapping="Wrap" />
-                                </StackPanel>
-                            </Border>
+                              RowDefinitions="Auto,*"
+                              RowSpacing="8">
+                            <StackPanel Grid.Row="0"
+                                        Margin="4,2,4,0"
+                                        Spacing="2">
+                                <TextBlock Text="{Binding HomeTitle}"
+                                           FontSize="24"
+                                           FontWeight="Bold"
+                                           TextWrapping="Wrap" />
+                                <TextBlock Text="{Binding HomeSubtitle}"
+                                           FontSize="14"
+                                           Foreground="{StaticResource TextMutedBrush}"
+                                           TextWrapping="Wrap" />
+                            </StackPanel>
 
-                            <Grid Grid.Row="1" ColumnDefinitions="1*,1*" ColumnSpacing="8">
-                                <Border Grid.Column="0" Classes="card" Padding="12">
-                                    <StackPanel Spacing="4">
-                                        <TextBlock Text="Quick Packs" FontSize="16" FontWeight="SemiBold" />
-                                        <TextBlock Text="Starter preset includes browser, chat, and dev essentials."
-                                                   Foreground="{StaticResource TextMutedBrush}" />
-                                    </StackPanel>
-                                </Border>
-                                <Border Grid.Column="1" Classes="card" Padding="12">
-                                    <StackPanel Spacing="4">
-                                        <TextBlock Text="System Check" FontSize="16" FontWeight="SemiBold" />
-                                        <TextBlock Text="{Binding CurrentPlatform, StringFormat='Detected platform: {0}'}"
-                                                   Foreground="{StaticResource TextMutedBrush}" />
-                                    </StackPanel>
-                                </Border>
-                            </Grid>
-
-                            <Border Grid.Row="2" Classes="card">
-                                <Grid RowDefinitions="Auto,Auto,*,Auto" RowSpacing="10">
-                                    <WrapPanel Orientation="Horizontal">
+                            <Border Grid.Row="1" Classes="card">
+                                <Grid RowDefinitions="Auto,*,Auto" RowSpacing="8">
+                                    <Grid Grid.Row="0" RowDefinitions="Auto,Auto" RowSpacing="6">
                                         <TextBox Width="260"
-                                                 Margin="0,0,10,10"
-                                                 Watermark="Quick pack..."
+                                                 MinWidth="220"
+                                                 MaxWidth="320"
+                                                 Watermark="Search apps..."
                                                  Text="{Binding SearchText}" />
 
-                                        <RadioButton GroupName="filter"
-                                                     Classes="pill"
-                                                     Margin="0,0,10,10"
-                                                     IsChecked="{Binding IsAllFilter}"
-                                                     Content="All" />
-                                        <RadioButton GroupName="filter"
-                                                     Classes="pill"
-                                                     Margin="0,0,10,10"
-                                                     IsChecked="{Binding IsGamesFilter}"
-                                                     Content="Games" />
-                                        <RadioButton GroupName="filter"
-                                                     Classes="pill"
-                                                     Margin="0,0,10,10"
-                                                     IsChecked="{Binding IsDevToolsFilter}"
-                                                     Content="Dev Tools" />
-                                        <RadioButton GroupName="filter"
-                                                     Classes="pill"
-                                                     Margin="0,0,10,10"
-                                                     IsChecked="{Binding IsUtilitiesFilter}"
-                                                     Content="Utilities" />
-                                    </WrapPanel>
+                                        <ScrollViewer Grid.Row="1"
+                                                      HorizontalScrollBarVisibility="Auto"
+                                                      VerticalScrollBarVisibility="Disabled">
+                                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                                <RadioButton GroupName="filter"
+                                                             Classes="pill"
+                                                             IsChecked="{Binding IsAllFilter}"
+                                                             Content="All" />
+                                                <RadioButton GroupName="filter"
+                                                             Classes="pill"
+                                                             IsChecked="{Binding IsGamesFilter}"
+                                                             Content="Games" />
+                                                <RadioButton GroupName="filter"
+                                                             Classes="pill"
+                                                             IsChecked="{Binding IsDevToolsFilter}"
+                                                             Content="Dev Tools" />
+                                                <RadioButton GroupName="filter"
+                                                             Classes="pill"
+                                                             IsChecked="{Binding IsUtilitiesFilter}"
+                                                             Content="Utilities" />
+                                            </StackPanel>
+                                        </ScrollViewer>
+                                    </Grid>
 
-                                    <TextBlock Grid.Row="1"
-                                               Text="{Binding VisibleAppCount, StringFormat='Visible apps: {0}'}"
-                                               Foreground="{StaticResource TextMutedBrush}" />
-
-                                    <Grid Grid.Row="2" RowDefinitions="Auto,*,Auto" RowSpacing="8">
-                                        <Grid ColumnDefinitions="40,*,76,96,64" Margin="2,0,2,0">
+                                    <Grid Grid.Row="1" RowDefinitions="Auto,*" RowSpacing="6">
+                                        <Grid ColumnDefinitions="36,*,70,88,56"
+                                              Margin="2,0,8,0">
                                             <TextBlock Text="Sel" FontWeight="SemiBold" Foreground="{StaticResource TextMutedBrush}" />
                                             <TextBlock Grid.Column="1" Text="App" FontWeight="SemiBold" Foreground="{StaticResource TextMutedBrush}" />
                                             <TextBlock Grid.Column="2" Text="Size" FontWeight="SemiBold" Foreground="{StaticResource TextMutedBrush}" />
@@ -338,21 +378,21 @@
                                         <ScrollViewer Grid.Row="1"
                                                       VerticalScrollBarVisibility="Auto"
                                                       HorizontalScrollBarVisibility="Disabled">
-                                                <ItemsControl ItemsSource="{Binding VisibleApps}">
-                                                    <ItemsControl.ItemTemplate>
-                                                        <DataTemplate>
-                                                            <Border Classes="rowCard" Opacity="{Binding RowOpacity}">
-                                                            <Grid ColumnDefinitions="40,*,76,96,64" ColumnSpacing="8">
+                                            <ItemsControl ItemsSource="{Binding VisibleApps}">
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <Border Classes="rowCard" Opacity="{Binding RowOpacity}">
+                                                            <Grid ColumnDefinitions="36,*,70,88,56" ColumnSpacing="8">
                                                                 <CheckBox Classes="appCheck"
                                                                           IsChecked="{Binding IsSelected}"
                                                                           IsEnabled="{Binding IsSupportedOnCurrentPlatform}"
                                                                           VerticalAlignment="Center"
                                                                           HorizontalAlignment="Center" />
 
-                                                                <Grid Grid.Column="1" ColumnDefinitions="40,*" ColumnSpacing="10">
-                                                                    <Border Width="34"
-                                                                            Height="34"
-                                                                            CornerRadius="17"
+                                                                <Grid Grid.Column="1" ColumnDefinitions="36,*" ColumnSpacing="10">
+                                                                    <Border Width="32"
+                                                                            Height="32"
+                                                                            CornerRadius="16"
                                                                             Background="#223765"
                                                                             VerticalAlignment="Center">
                                                                         <TextBlock Text="{Binding IconGlyph}"
@@ -361,15 +401,15 @@
                                                                                    FontWeight="Bold" />
                                                                     </Border>
 
-                                                                    <StackPanel Grid.Column="1" Spacing="2">
-                                                                        <StackPanel Orientation="Horizontal" Spacing="8">
-                                                                            <TextBlock Text="{Binding Name}" FontSize="16" FontWeight="SemiBold" />
+                                                                    <StackPanel Grid.Column="1" Spacing="1">
+                                                                        <StackPanel Orientation="Horizontal" Spacing="6">
+                                                                            <TextBlock Text="{Binding Name}" FontSize="15" FontWeight="SemiBold" />
                                                                             <Border IsVisible="{Binding IsRecommended}"
                                                                                     Background="#214A92"
                                                                                     BorderBrush="{StaticResource AccentBrush}"
                                                                                     BorderThickness="1"
                                                                                     CornerRadius="7"
-                                                                                    Padding="8,2">
+                                                                                    Padding="6,2">
                                                                                 <TextBlock Text="Recommended" FontSize="10" />
                                                                             </Border>
                                                                         </StackPanel>
@@ -377,7 +417,7 @@
                                                                         <StackPanel Orientation="Horizontal" Spacing="8">
                                                                             <TextBlock Text="{Binding Category}"
                                                                                        Foreground="{StaticResource TextMutedBrush}"
-                                                                                       FontSize="13" />
+                                                                                       FontSize="12" />
                                                                             <Button Classes="link"
                                                                                     Content="{Binding PublisherName}"
                                                                                     Command="{Binding $parent[Window].DataContext.OpenPublisherCommand}"
@@ -396,16 +436,17 @@
                                                                         BorderBrush="#2C456B"
                                                                         BorderThickness="1"
                                                                         CornerRadius="8"
-                                                                        Padding="10,4"
+                                                                        Padding="8,3"
                                                                         VerticalAlignment="Center"
                                                                         HorizontalAlignment="Left">
-                                                                    <TextBlock Text="{Binding StatusBadge}" />
+                                                                    <TextBlock Text="{Binding StatusBadge}"
+                                                                               FontSize="12" />
                                                                 </Border>
 
                                                                 <Button Grid.Column="4"
                                                                         Classes="ghost"
                                                                         Content="..."
-                                                                        Width="52"
+                                                                        Width="48"
                                                                         HorizontalAlignment="Left"
                                                                         Command="{Binding $parent[Window].DataContext.ShowAppDetailsCommand}"
                                                                         CommandParameter="{Binding .}" />
@@ -415,33 +456,33 @@
                                                 </ItemsControl.ItemTemplate>
                                             </ItemsControl>
                                         </ScrollViewer>
-
-                                        <Border Grid.Row="2"
-                                                Background="#0F172A"
-                                                BorderBrush="#273A5F"
-                                                BorderThickness="1"
-                                                CornerRadius="12"
-                                                Padding="12">
-                                            <ScrollViewer HorizontalScrollBarVisibility="Auto"
-                                                          VerticalScrollBarVisibility="Disabled">
-                                                <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="10">
-                                                    <TextBlock Text="{Binding SelectedFooterText}"
-                                                               Foreground="{StaticResource TextMutedBrush}"
-                                                               VerticalAlignment="Center" />
-
-                                                    <Button Grid.Column="1"
-                                                            Classes="ghost"
-                                                            Content="Save List"
-                                                            Command="{Binding SaveListCommand}"
-                                                            Padding="26,10" />
-                                                    <Button Grid.Column="2"
-                                                            Classes="primary"
-                                                            Content="Install Selected"
-                                                            Command="{Binding InstallCommand}" />
-                                                </Grid>
-                                            </ScrollViewer>
-                                        </Border>
                                     </Grid>
+
+                                    <Border Grid.Row="2"
+                                            Background="#0F172A"
+                                            BorderBrush="#273A5F"
+                                            BorderThickness="1"
+                                            CornerRadius="12"
+                                            Padding="10">
+                                        <ScrollViewer HorizontalScrollBarVisibility="Auto"
+                                                      VerticalScrollBarVisibility="Disabled">
+                                            <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="10">
+                                                <TextBlock Text="{Binding SelectedFooterText}"
+                                                           Foreground="{StaticResource TextMutedBrush}"
+                                                           VerticalAlignment="Center" />
+
+                                                <Button Grid.Column="1"
+                                                        Classes="ghost"
+                                                        Content="Save List"
+                                                        Command="{Binding SaveListCommand}"
+                                                        Padding="22,9" />
+                                                <Button Grid.Column="2"
+                                                        Classes="primary"
+                                                        Content="Install Selected"
+                                                        Command="{Binding InstallCommand}" />
+                                            </Grid>
+                                        </ScrollViewer>
+                                    </Border>
                                 </Grid>
                             </Border>
                         </Grid>
@@ -584,7 +625,7 @@
                                                    Foreground="{StaticResource TextMutedBrush}" />
                                         <TextBlock Text="- Keep this profile as your default setup list."
                                                    Foreground="{StaticResource TextMutedBrush}" />
-                                        <TextBlock Text="{Binding Settings.SelfDeleteEnabled, StringFormat='Self-delete setting: {0}'}"
+                                        <TextBlock Text="{Binding Settings.SelfDeleteAfterInstall, StringFormat='Self-delete setting: {0}'}"
                                                    Foreground="{StaticResource TextMutedBrush}" />
                                     </StackPanel>
                                 </Border>
@@ -699,22 +740,86 @@
                             </StackPanel>
                         </ScrollViewer>
 
+                        <Border IsVisible="{Binding IsHistoryEmptyScreenVisible}"
+                                Classes="card"
+                                Padding="20">
+                            <StackPanel Spacing="10">
+                                <TextBlock Text="History"
+                                           FontSize="34"
+                                           FontWeight="Bold" />
+                                <TextBlock Text="No install history yet. Run an install and the summary will appear here."
+                                           Foreground="{StaticResource TextMutedBrush}"
+                                           TextWrapping="Wrap" />
+                                <Button Content="Back to Apps"
+                                        Command="{Binding NavigateAppsCommand}"
+                                        HorizontalAlignment="Left" />
+                            </StackPanel>
+                        </Border>
+
+                        <ScrollViewer IsVisible="{Binding IsLogsScreenVisible}"
+                                      VerticalScrollBarVisibility="Auto"
+                                      HorizontalScrollBarVisibility="Disabled">
+                            <StackPanel Spacing="12" Margin="0,0,6,0">
+                                <Border Classes="card" Padding="18">
+                                    <StackPanel Spacing="4">
+                                        <TextBlock Text="Logs"
+                                                   FontSize="34"
+                                                   FontWeight="Bold" />
+                                        <TextBlock Text="Open the current runtime log file or inspect the latest status message below."
+                                                   FontSize="15"
+                                                   Foreground="{StaticResource TextMutedBrush}"
+                                                   TextWrapping="Wrap" />
+                                    </StackPanel>
+                                </Border>
+
+                                <Border Classes="card">
+                                    <StackPanel Spacing="8">
+                                        <TextBlock Text="Current log file"
+                                                   FontSize="18"
+                                                   FontWeight="SemiBold" />
+                                        <TextBlock Text="{Binding LogFilePath}"
+                                                   Foreground="{StaticResource TextMutedBrush}"
+                                                   TextWrapping="Wrap" />
+                                        <StackPanel Orientation="Horizontal" Spacing="8">
+                                            <Button Content="Open Log File"
+                                                    Command="{Binding OpenLogFileCommand}" />
+                                            <Button Classes="ghost"
+                                                    Content="Back to Apps"
+                                                    Command="{Binding NavigateAppsCommand}" />
+                                        </StackPanel>
+                                    </StackPanel>
+                                </Border>
+
+                                <Border Classes="card"
+                                        IsVisible="{Binding IsDeveloperModeEnabled}">
+                                    <StackPanel Spacing="6">
+                                        <TextBlock Text="Latest status"
+                                                   FontWeight="SemiBold" />
+                                        <TextBlock Text="{Binding StatusText}"
+                                                   Foreground="{StaticResource TextMutedBrush}"
+                                                   TextWrapping="Wrap" />
+                                    </StackPanel>
+                                </Border>
+                            </StackPanel>
+                        </ScrollViewer>
+
                         <Border IsVisible="{Binding IsSettingsPanelOpen}"
                                 Classes="card"
-                                Width="320"
+                                Width="360"
+                                MaxHeight="640"
                                 HorizontalAlignment="Right"
                                 VerticalAlignment="Top"
                                 Margin="0,8,8,0"
-                                Padding="16"
+                                Padding="14"
                                 Background="#17233B"
                                 BorderBrush="#355181">
-                            <StackPanel Spacing="12">
+                            <Grid RowDefinitions="Auto,*" RowSpacing="12">
                                 <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
                                     <StackPanel Spacing="2">
                                         <TextBlock Text="Settings"
                                                    FontSize="20"
                                                    FontWeight="SemiBold" />
-                                        <TextBlock Text="Installation behavior and list visibility."
+                                        <TextBlock Text="Persistent app behavior, downloads, and advanced options."
                                                    Foreground="{StaticResource TextMutedBrush}"
                                                    TextWrapping="Wrap" />
                                     </StackPanel>
@@ -726,30 +831,220 @@
                                             Command="{Binding ToggleSettingsPanelCommand}" />
                                 </Grid>
 
-                                <CheckBox IsChecked="{Binding Settings.SilentInstallEnabled}"
-                                          Content="Silent install" />
-                                <CheckBox IsChecked="{Binding Settings.ShowUnsupportedApps}"
-                                          Content="Show unsupported apps" />
-                                <CheckBox IsChecked="{Binding Settings.SelfDeleteEnabled}"
-                                          Content="Self-delete after install" />
+                                <ScrollViewer Grid.Row="1"
+                                              VerticalScrollBarVisibility="Auto"
+                                              HorizontalScrollBarVisibility="Disabled">
+                                    <StackPanel Spacing="14">
+                                        <StackPanel Spacing="8">
+                                            <TextBlock Text="Installation"
+                                                       FontSize="16"
+                                                       FontWeight="SemiBold" />
 
-                                <StackPanel Spacing="6">
-                                    <TextBlock Text="Default install location"
-                                               Foreground="{StaticResource TextMutedBrush}" />
-                                    <TextBox Watermark="System default"
-                                             Text="{Binding Settings.DefaultInstallLocation}" />
-                                </StackPanel>
+                                            <StackPanel Spacing="2">
+                                                <CheckBox IsChecked="{Binding Settings.SilentInstall}"
+                                                          Content="Silent installation" />
+                                                <TextBlock Text="Install apps without showing installer windows when possible."
+                                                           FontSize="12"
+                                                           Foreground="{StaticResource TextMutedBrush}"
+                                                           TextWrapping="Wrap" />
+                                            </StackPanel>
 
-                                <StackPanel Spacing="6">
-                                    <TextBlock Text="Profile name"
-                                               Foreground="{StaticResource TextMutedBrush}" />
-                                    <TextBox Watermark="Website Starter"
-                                             Text="{Binding Settings.ProfileName}" />
-                                </StackPanel>
+                                            <StackPanel Spacing="2">
+                                                <CheckBox IsChecked="{Binding Settings.ParallelInstall}"
+                                                          Content="Install apps simultaneously" />
+                                                <TextBlock Text="Install multiple apps at the same time to speed up setup."
+                                                           FontSize="12"
+                                                           Foreground="{StaticResource TextMutedBrush}"
+                                                           TextWrapping="Wrap" />
+                                            </StackPanel>
 
-                                <Button Content="Save current list"
-                                        Command="{Binding SaveListCommand}" />
-                            </StackPanel>
+                                            <StackPanel Spacing="2">
+                                                <CheckBox IsChecked="{Binding Settings.SelfDeleteAfterInstall}"
+                                                          Content="Self-delete after install" />
+                                                <TextBlock Text="Remove NovaSetup after installation finishes."
+                                                           FontSize="12"
+                                                           Foreground="{StaticResource TextMutedBrush}"
+                                                           TextWrapping="Wrap" />
+                                            </StackPanel>
+
+                                            <StackPanel Spacing="4">
+                                                <TextBlock Text="Restart computer if required" />
+                                                <ComboBox ItemsSource="{Binding RestartBehaviorOptions}"
+                                                          SelectedItem="{Binding SelectedRestartBehaviorOption}">
+                                                    <ComboBox.ItemTemplate>
+                                                        <DataTemplate>
+                                                            <TextBlock Text="{Binding Label}" />
+                                                        </DataTemplate>
+                                                    </ComboBox.ItemTemplate>
+                                                </ComboBox>
+                                                <TextBlock Text="Choose what NovaSetup should do if installed apps require a restart."
+                                                           FontSize="12"
+                                                           Foreground="{StaticResource TextMutedBrush}"
+                                                           TextWrapping="Wrap" />
+                                            </StackPanel>
+                                        </StackPanel>
+
+                                        <StackPanel Spacing="8">
+                                            <TextBlock Text="App List"
+                                                       FontSize="16"
+                                                       FontWeight="SemiBold" />
+
+                                            <StackPanel Spacing="2">
+                                                <CheckBox IsChecked="{Binding Settings.OsSupportedApps}"
+                                                          Content="OS supported apps" />
+                                                <TextBlock Text="When enabled, only apps supported on this operating system will be shown."
+                                                           FontSize="12"
+                                                           Foreground="{StaticResource TextMutedBrush}"
+                                                           TextWrapping="Wrap" />
+                                            </StackPanel>
+
+                                            <StackPanel Spacing="2">
+                                                <CheckBox IsChecked="{Binding Settings.ShowAlreadyInstalledApps}"
+                                                          Content="Show already installed apps" />
+                                                <TextBlock Text="Show apps already installed on this computer."
+                                                           FontSize="12"
+                                                           Foreground="{StaticResource TextMutedBrush}"
+                                                           TextWrapping="Wrap" />
+                                            </StackPanel>
+
+                                            <StackPanel Spacing="2">
+                                                <CheckBox IsChecked="{Binding Settings.AutoDetectInstalledAppsOnStartup}"
+                                                          Content="Scan PC for installed apps on startup" />
+                                                <TextBlock Text="Automatically detect installed apps when NovaSetup starts."
+                                                           FontSize="12"
+                                                           Foreground="{StaticResource TextMutedBrush}"
+                                                           TextWrapping="Wrap" />
+                                            </StackPanel>
+                                        </StackPanel>
+
+                                        <StackPanel Spacing="8">
+                                            <TextBlock Text="Downloads"
+                                                       FontSize="16"
+                                                       FontWeight="SemiBold" />
+
+                                            <StackPanel Spacing="4">
+                                                <TextBlock Text="Download location" />
+                                                <ComboBox ItemsSource="{Binding DownloadLocationOptions}"
+                                                          SelectedItem="{Binding SelectedDownloadLocationOption}">
+                                                    <ComboBox.ItemTemplate>
+                                                        <DataTemplate>
+                                                            <TextBlock Text="{Binding Label}" />
+                                                        </DataTemplate>
+                                                    </ComboBox.ItemTemplate>
+                                                </ComboBox>
+                                                <TextBlock Text="Choose where installers are downloaded before installation."
+                                                           FontSize="12"
+                                                           Foreground="{StaticResource TextMutedBrush}"
+                                                           TextWrapping="Wrap" />
+                                            </StackPanel>
+
+                                            <StackPanel Spacing="4"
+                                                        IsVisible="{Binding IsCustomDownloadFolderVisible}">
+                                                <TextBlock Text="Custom download folder" />
+                                                <TextBox Watermark="Used only for Custom folder mode"
+                                                         Text="{Binding Settings.CustomDownloadFolder}" />
+                                                <TextBlock Text="Used only when Download location is set to Custom folder."
+                                                           FontSize="12"
+                                                           Foreground="{StaticResource TextMutedBrush}"
+                                                           TextWrapping="Wrap" />
+                                            </StackPanel>
+
+                                            <StackPanel Spacing="2">
+                                                <CheckBox IsChecked="{Binding Settings.KeepInstallersAfterInstall}"
+                                                          Content="Keep installers after install" />
+                                                <TextBlock Text="Keep downloaded installers after installation finishes."
+                                                           FontSize="12"
+                                                           Foreground="{StaticResource TextMutedBrush}"
+                                                           TextWrapping="Wrap" />
+                                            </StackPanel>
+                                        </StackPanel>
+
+                                        <StackPanel Spacing="8">
+                                            <TextBlock Text="System"
+                                                       FontSize="16"
+                                                       FontWeight="SemiBold" />
+
+                                            <StackPanel Spacing="2">
+                                                <CheckBox IsChecked="{Binding Settings.LaunchNovaAtStartup}"
+                                                          Content="Launch Nova at startup" />
+                                                <TextBlock Text="Open NovaSetup automatically when the system starts."
+                                                           FontSize="12"
+                                                           Foreground="{StaticResource TextMutedBrush}"
+                                                           TextWrapping="Wrap" />
+                                            </StackPanel>
+
+                                            <StackPanel Spacing="4">
+                                                <TextBlock Text="Theme" />
+                                                <ComboBox ItemsSource="{Binding ThemeOptions}"
+                                                          SelectedItem="{Binding SelectedThemeOption}">
+                                                    <ComboBox.ItemTemplate>
+                                                        <DataTemplate>
+                                                            <TextBlock Text="{Binding Label}" />
+                                                        </DataTemplate>
+                                                    </ComboBox.ItemTemplate>
+                                                </ComboBox>
+                                                <TextBlock Text="Choose the appearance theme for NovaSetup."
+                                                           FontSize="12"
+                                                           Foreground="{StaticResource TextMutedBrush}"
+                                                           TextWrapping="Wrap" />
+                                            </StackPanel>
+
+                                            <StackPanel Spacing="4">
+                                                <TextBlock Text="Language" />
+                                                <ComboBox ItemsSource="{Binding LanguageOptions}"
+                                                          SelectedItem="{Binding SelectedLanguageOption}">
+                                                    <ComboBox.ItemTemplate>
+                                                        <DataTemplate>
+                                                            <TextBlock Text="{Binding Label}" />
+                                                        </DataTemplate>
+                                                    </ComboBox.ItemTemplate>
+                                                </ComboBox>
+                                                <TextBlock Text="Choose the display language for NovaSetup."
+                                                           FontSize="12"
+                                                           Foreground="{StaticResource TextMutedBrush}"
+                                                           TextWrapping="Wrap" />
+                                            </StackPanel>
+                                        </StackPanel>
+
+                                        <StackPanel Spacing="8">
+                                            <TextBlock Text="Data"
+                                                       FontSize="16"
+                                                       FontWeight="SemiBold" />
+                                            <StackPanel Spacing="2">
+                                                <CheckBox IsChecked="{Binding Settings.SaveProfilesAutomatically}"
+                                                          Content="Save profiles automatically" />
+                                                <TextBlock Text="Automatically save changes to your NovaSetup lists and profiles."
+                                                           FontSize="12"
+                                                           Foreground="{StaticResource TextMutedBrush}"
+                                                           TextWrapping="Wrap" />
+                                            </StackPanel>
+                                        </StackPanel>
+
+                                        <StackPanel Spacing="8">
+                                            <TextBlock Text="Advanced"
+                                                       FontSize="16"
+                                                       FontWeight="SemiBold" />
+                                            <StackPanel Spacing="2">
+                                                <CheckBox IsChecked="{Binding Settings.DeveloperMode}"
+                                                          Content="Developer mode" />
+                                                <TextBlock Text="Show install logs and extra debug information."
+                                                           FontSize="12"
+                                                           Foreground="{StaticResource TextMutedBrush}"
+                                                           TextWrapping="Wrap" />
+                                            </StackPanel>
+
+                                            <StackPanel Spacing="4">
+                                                <Button Content="Reset Nova settings"
+                                                        Command="{Binding ResetSettingsCommand}" />
+                                                <TextBlock Text="Restore all NovaSetup settings to their default values."
+                                                           FontSize="12"
+                                                           Foreground="{StaticResource TextMutedBrush}"
+                                                           TextWrapping="Wrap" />
+                                            </StackPanel>
+                                        </StackPanel>
+                                    </StackPanel>
+                                </ScrollViewer>
+                            </Grid>
                         </Border>
                     </Grid>
                 </Border>

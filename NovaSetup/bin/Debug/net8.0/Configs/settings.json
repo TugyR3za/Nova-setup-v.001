@@ -1,0 +1,17 @@
+{
+  "silentInstall": true,
+  "osSupportedApps": true,
+  "selfDeleteAfterInstall": false,
+  "parallelInstall": true,
+  "restartBehavior": "AskBeforeRestart",
+  "showAlreadyInstalledApps": true,
+  "autoDetectInstalledAppsOnStartup": true,
+  "downloadLocationMode": "SystemDefault",
+  "customDownloadFolder": "",
+  "keepInstallersAfterInstall": false,
+  "launchNovaAtStartup": false,
+  "theme": "System",
+  "language": "English",
+  "saveProfilesAutomatically": true,
+  "developerMode": false
+}

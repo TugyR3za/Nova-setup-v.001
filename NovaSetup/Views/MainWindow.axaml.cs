@@ -13,14 +13,14 @@ public partial class MainWindow : Window
         Opened += OnOpened;
     }
 
-    private void OnOpened(object? sender, System.EventArgs e)
+    private async void OnOpened(object? sender, System.EventArgs e)
     {
         if (_viewModelInitialized || DataContext is not MainWindowViewModel viewModel)
         {
             return;
         }
 
-        viewModel.Initialize();
         _viewModelInitialized = true;
+        await viewModel.InitializeAsync();
     }
 }

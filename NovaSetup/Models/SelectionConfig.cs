@@ -21,7 +21,7 @@ public class SelectionSettings
 
     public string DefaultInstallLocation { get; set; } = string.Empty;
 
-    public bool ShowUnsupportedApps { get; set; } = true;
+    public bool OsSupportedApps { get; set; } = true;
 
     public bool ShowOtherPlatforms { get; set; }
 }

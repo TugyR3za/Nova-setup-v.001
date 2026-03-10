@@ -3,6 +3,8 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Windows.Input;
+using Avalonia;
+using Avalonia.Styling;
 using NovaSetup.Models;
 using NovaSetup.Services;
 
@@ -11,6 +13,12 @@ namespace NovaSetup.ViewModels;
 public sealed class MainWindowViewModel : ObservableObject
 {
     private const string UnsupportedSelectionNote = "Selected from selection.json but unsupported on this OS.";
+    private const string SectionDashboard = "Dashboard";
+    private const string SectionApps = "Apps";
+    private const string SectionDrivers = "Drivers";
+    private const string SectionMyLists = "My Lists";
+    private const string SectionHistory = "History";
+    private const string SectionLogs = "Logs";
 
     private readonly PlatformService _platformService;
     private readonly CatalogService _catalogService;
@@ -19,6 +27,7 @@ public sealed class MainWindowViewModel : ObservableObject
     private readonly InstallerService _installerService;
     private readonly LoggingService _loggingService;
     private readonly BrowserService _browserService;
+    private readonly SettingsService _settingsService;
 
     private readonly ObservableCollection<AppItem> _apps = new();
     private readonly ObservableCollection<AppItem> _visibleApps = new();
@@ -37,10 +46,17 @@ public sealed class MainWindowViewModel : ObservableObject
     private readonly RelayCommand _pauseInstallCommand;
     private readonly RelayCommand _exportReportCommand;
     private readonly RelayCommand _toggleSettingsPanelCommand;
+    private readonly RelayCommand _navigateDashboardCommand;
+    private readonly RelayCommand _navigateAppsCommand;
+    private readonly RelayCommand _navigateDriversCommand;
+    private readonly RelayCommand _navigateMyListsCommand;
+    private readonly RelayCommand _navigateHistoryCommand;
+    private readonly RelayCommand _navigateLogsCommand;
     private readonly RelayCommand _requestRestartNowCommand;
     private readonly AsyncRelayCommand _confirmRestartNowCommand;
     private readonly RelayCommand _cancelRestartCommand;
     private readonly RelayCommand _restartLaterCommand;
+    private readonly AsyncRelayCommand _resetSettingsCommand;
 
     private bool _isInitialized;
     private bool _isInstalling;
@@ -49,13 +65,16 @@ public sealed class MainWindowViewModel : ObservableObject
     private bool _restartDecisionFinalized;
     private bool _isSettingsPanelOpen;
     private bool _suppressSettingsLogging;
+    private bool _installedAppsDetected;
     private bool _updatingFilterFlags;
     private string _currentPlatformId = PlatformService.Unknown;
     private string _currentPlatform = "Unknown OS";
+    private string _currentProfileName = "Website Starter";
     private string _statusText = "Ready.";
     private string _installStatusText = "Install has not started.";
     private string _installSummaryText = string.Empty;
     private string _restartStatusText = string.Empty;
+    private string _currentSection = SectionApps;
     private string _searchText = string.Empty;
     private string _selectedFilter = "All";
     private bool _isAllFilter = true;
@@ -63,6 +82,35 @@ public sealed class MainWindowViewModel : ObservableObject
     private bool _isDevToolsFilter;
     private bool _isUtilitiesFilter;
     private double _progressValue;
+    private CancellationTokenSource? _settingsSaveCts;
+
+    private static readonly IReadOnlyList<SettingChoice> RestartBehaviorChoices =
+    [
+        new(AppSettings.RestartAskBeforeRestart, "Ask before restart"),
+        new(AppSettings.RestartAutomatically, "Restart automatically"),
+        new(AppSettings.RestartNever, "Never restart")
+    ];
+
+    private static readonly IReadOnlyList<SettingChoice> DownloadLocationChoices =
+    [
+        new(AppSettings.DownloadSystemDefault, "System default"),
+        new(AppSettings.DownloadCustomFolder, "Custom folder"),
+        new(AppSettings.DownloadAskEveryTime, "Ask every time")
+    ];
+
+    private static readonly IReadOnlyList<SettingChoice> ThemeChoices =
+    [
+        new(AppSettings.ThemeDark, "Dark"),
+        new(AppSettings.ThemeLight, "Light"),
+        new(AppSettings.ThemeSystem, "System")
+    ];
+
+    private static readonly IReadOnlyList<SettingChoice> LanguageChoices =
+    [
+        new(AppSettings.LanguageEnglish, "English"),
+        new(AppSettings.LanguageFarsi, "Farsi"),
+        new(AppSettings.LanguageTurkish, "Turkish")
+    ];
 
     public MainWindowViewModel(
         PlatformService platformService,
@@ -71,7 +119,8 @@ public sealed class MainWindowViewModel : ObservableObject
         DetectionService detectionService,
         InstallerService installerService,
         LoggingService loggingService,
-        BrowserService browserService)
+        BrowserService browserService,
+        SettingsService settingsService)
     {
         _platformService = platformService;
         _catalogService = catalogService;
@@ -80,6 +129,7 @@ public sealed class MainWindowViewModel : ObservableObject
         _installerService = installerService;
         _loggingService = loggingService;
         _browserService = browserService;
+        _settingsService = settingsService;
 
         Settings = new AppSettings();
         Settings.PropertyChanged += HandleSettingsChanged;
@@ -92,10 +142,17 @@ public sealed class MainWindowViewModel : ObservableObject
         _pauseInstallCommand = new RelayCommand(_ => PauseInstallPlaceholder(), _ => IsInstalling);
         _exportReportCommand = new RelayCommand(_ => ExportReportPlaceholder());
         _toggleSettingsPanelCommand = new RelayCommand(_ => ToggleSettingsPanel());
+        _navigateDashboardCommand = new RelayCommand(_ => NavigateTo(SectionDashboard), _ => !IsInstalling);
+        _navigateAppsCommand = new RelayCommand(_ => NavigateTo(SectionApps), _ => !IsInstalling);
+        _navigateDriversCommand = new RelayCommand(_ => NavigateTo(SectionDrivers), _ => !IsInstalling);
+        _navigateMyListsCommand = new RelayCommand(_ => NavigateTo(SectionMyLists), _ => !IsInstalling);
+        _navigateHistoryCommand = new RelayCommand(_ => NavigateTo(SectionHistory), _ => !IsInstalling);
+        _navigateLogsCommand = new RelayCommand(_ => NavigateTo(SectionLogs), _ => !IsInstalling);
         _requestRestartNowCommand = new RelayCommand(_ => RequestRestartNow(), _ => CanShowRestartActions());
         _confirmRestartNowCommand = new AsyncRelayCommand(ConfirmRestartNowAsync, CanConfirmRestartNow);
         _cancelRestartCommand = new RelayCommand(_ => CancelRestartNow(), _ => IsRestartConfirmationVisible);
         _restartLaterCommand = new RelayCommand(_ => RestartLater(), _ => CanShowRestartActions());
+        _resetSettingsCommand = new AsyncRelayCommand(ResetSettingsAsync, () => !IsInstalling);
 
         HookCollectionNotifications();
     }
@@ -116,20 +173,142 @@ public sealed class MainWindowViewModel : ObservableObject
 
     public int VisibleAppCount => _visibleApps.Count;
 
-    public string SelectedFooterText => $"Selected apps: {SelectedCount} • Download size: {SelectedCount * 30} MB";
+    public string SelectedFooterText => $"Visible apps: {VisibleAppCount} • Selected apps: {SelectedCount} • Download size: {SelectedCount * 30} MB";
 
-    public bool IsHomeScreenVisible => !IsInstalling && !HasInstallResults;
+    public string CurrentProfileName
+    {
+        get => _currentProfileName;
+        private set => SetProperty(ref _currentProfileName, string.IsNullOrWhiteSpace(value) ? "Website Starter" : value.Trim());
+    }
+
+    public string HomeTitle => _currentSection switch
+    {
+        SectionDashboard => "Dashboard",
+        SectionDrivers => "Drivers and accessories",
+        SectionMyLists => "My list",
+        _ => "Choose what to install"
+    };
+
+    public string HomeSubtitle => _currentSection switch
+    {
+        SectionDashboard => "Review apps, drivers, and setup choices from one place.",
+        SectionDrivers => "Focused view for drivers, GPU tools, and accessory software.",
+        SectionMyLists => "Only selected apps are shown here so you can review your list quickly.",
+        _ => "Pick apps, drivers, and packs, then press Install"
+    };
+
+    public string LogFilePath => _loggingService.LogFilePath;
+
+    public bool IsDashboardSelected => string.Equals(_currentSection, SectionDashboard, StringComparison.Ordinal);
+    public bool IsDashboardUnselected => !IsDashboardSelected;
+
+    public bool IsAppsSelected => string.Equals(_currentSection, SectionApps, StringComparison.Ordinal);
+    public bool IsAppsUnselected => !IsAppsSelected;
+
+    public bool IsDriversSelected => string.Equals(_currentSection, SectionDrivers, StringComparison.Ordinal);
+    public bool IsDriversUnselected => !IsDriversSelected;
+
+    public bool IsMyListsSelected => string.Equals(_currentSection, SectionMyLists, StringComparison.Ordinal);
+    public bool IsMyListsUnselected => !IsMyListsSelected;
+
+    public bool IsHistorySelected => string.Equals(_currentSection, SectionHistory, StringComparison.Ordinal);
+    public bool IsHistoryUnselected => !IsHistorySelected;
+
+    public bool IsLogsSelected => string.Equals(_currentSection, SectionLogs, StringComparison.Ordinal);
+    public bool IsLogsUnselected => !IsLogsSelected;
+
+    public bool IsHomeScreenVisible => !IsInstalling && !IsHistorySelected && !IsLogsSelected;
 
     public bool IsInstallScreenVisible => IsInstalling;
 
-    public bool IsSummaryScreenVisible => !IsInstalling && HasInstallResults;
+    public bool IsSummaryScreenVisible => !IsInstalling && IsHistorySelected && HasInstallResults;
 
-    public bool IsSelectionPhase => !IsSummaryScreenVisible;
+    public bool IsHistoryEmptyScreenVisible => !IsInstalling && IsHistorySelected && !HasInstallResults;
+
+    public bool IsLogsScreenVisible => !IsInstalling && IsLogsSelected;
+
+    public bool IsSelectionPhase => !IsHistorySelected && !IsLogsSelected;
 
     public bool IsSettingsPanelOpen
     {
         get => _isSettingsPanelOpen;
         private set => SetProperty(ref _isSettingsPanelOpen, value);
+    }
+
+    public bool IsDeveloperModeEnabled => Settings.DeveloperMode;
+
+    public bool IsCustomDownloadFolderVisible => string.Equals(
+        Settings.DownloadLocationMode,
+        AppSettings.DownloadCustomFolder,
+        StringComparison.Ordinal);
+
+    public IReadOnlyList<SettingChoice> RestartBehaviorOptions => RestartBehaviorChoices;
+
+    public IReadOnlyList<SettingChoice> DownloadLocationOptions => DownloadLocationChoices;
+
+    public IReadOnlyList<SettingChoice> ThemeOptions => ThemeChoices;
+
+    public IReadOnlyList<SettingChoice> LanguageOptions => LanguageChoices;
+
+    public SettingChoice? SelectedRestartBehaviorOption
+    {
+        get => RestartBehaviorChoices.FirstOrDefault(choice => choice.Value == Settings.RestartBehavior) ?? RestartBehaviorChoices[0];
+        set
+        {
+            if (value is null || value.Value == Settings.RestartBehavior)
+            {
+                return;
+            }
+
+            Settings.RestartBehavior = value.Value;
+            OnPropertyChanged();
+        }
+    }
+
+    public SettingChoice? SelectedDownloadLocationOption
+    {
+        get => DownloadLocationChoices.FirstOrDefault(choice => choice.Value == Settings.DownloadLocationMode) ?? DownloadLocationChoices[0];
+        set
+        {
+            if (value is null || value.Value == Settings.DownloadLocationMode)
+            {
+                return;
+            }
+
+            Settings.DownloadLocationMode = value.Value;
+            OnPropertyChanged();
+            OnPropertyChanged(nameof(IsCustomDownloadFolderVisible));
+        }
+    }
+
+    public SettingChoice? SelectedThemeOption
+    {
+        get => ThemeChoices.FirstOrDefault(choice => choice.Value == Settings.Theme) ?? ThemeChoices[0];
+        set
+        {
+            if (value is null || value.Value == Settings.Theme)
+            {
+                return;
+            }
+
+            Settings.Theme = value.Value;
+            OnPropertyChanged();
+        }
+    }
+
+    public SettingChoice? SelectedLanguageOption
+    {
+        get => LanguageChoices.FirstOrDefault(choice => choice.Value == Settings.Language) ?? LanguageChoices[0];
+        set
+        {
+            if (value is null || value.Value == Settings.Language)
+            {
+                return;
+            }
+
+            Settings.Language = value.Value;
+            OnPropertyChanged();
+        }
     }
 
     public string SearchText
@@ -315,6 +494,18 @@ public sealed class MainWindowViewModel : ObservableObject
 
     public ICommand ToggleSettingsPanelCommand => _toggleSettingsPanelCommand;
 
+    public ICommand NavigateDashboardCommand => _navigateDashboardCommand;
+
+    public ICommand NavigateAppsCommand => _navigateAppsCommand;
+
+    public ICommand NavigateDriversCommand => _navigateDriversCommand;
+
+    public ICommand NavigateMyListsCommand => _navigateMyListsCommand;
+
+    public ICommand NavigateHistoryCommand => _navigateHistoryCommand;
+
+    public ICommand NavigateLogsCommand => _navigateLogsCommand;
+
     public ICommand RequestRestartNowCommand => _requestRestartNowCommand;
 
     public ICommand ConfirmRestartNowCommand => _confirmRestartNowCommand;
@@ -323,7 +514,9 @@ public sealed class MainWindowViewModel : ObservableObject
 
     public ICommand RestartLaterCommand => _restartLaterCommand;
 
-    public void Initialize()
+    public ICommand ResetSettingsCommand => _resetSettingsCommand;
+
+    public async Task InitializeAsync()
     {
         if (_isInitialized)
         {
@@ -332,14 +525,28 @@ public sealed class MainWindowViewModel : ObservableObject
 
         _isInitialized = true;
 
+        await LoadSettingsAsync();
+
         var platform = _platformService.GetCurrentPlatformInfo();
         _currentPlatformId = platform.Id;
         CurrentPlatform = platform.Label;
 
         var apps = _catalogService.LoadApps(_currentPlatformId);
         var selection = _selectionService.LoadSelection();
-        ApplySettingsFromSelection(selection);
+        ApplySelectionProfile(selection);
+
+        if (_settingsService.LoadedDefaultsOnLastLoad)
+        {
+            ApplySelectionSettingsFallback(selection);
+        }
+
         _selectionService.ApplySelection(apps, selection);
+
+        if (Settings.AutoDetectInstalledAppsOnStartup)
+        {
+            _detectionService.DetectInstalledApps(apps, _currentPlatformId);
+            _installedAppsDetected = true;
+        }
 
         // Recommendation pass runs after platform + catalog + selection are loaded.
         var recommendationSummary = _detectionService.ApplyRecommendations(
@@ -376,6 +583,7 @@ public sealed class MainWindowViewModel : ObservableObject
         _loggingService.LogInfo(StatusText);
         OnPropertyChanged(nameof(SelectedCount));
         OnPropertyChanged(nameof(SelectedFooterText));
+        NotifySettingsOptionBindingsChanged();
         NotifyScreenStateChanged();
         UpdateCommandStates();
     }
@@ -394,20 +602,50 @@ public sealed class MainWindowViewModel : ObservableObject
         _skippedResults.CollectionChanged += (_, _) => OnPropertyChanged(nameof(HasSkippedResults));
         _restartRequiredResults.CollectionChanged += (_, _) => OnPropertyChanged(nameof(HasRestartRequiredResults));
         _unsupportedSkippedResults.CollectionChanged += (_, _) => OnPropertyChanged(nameof(HasUnsupportedSkippedResults));
-        _visibleApps.CollectionChanged += (_, _) => OnPropertyChanged(nameof(VisibleAppCount));
+        _visibleApps.CollectionChanged += (_, _) =>
+        {
+            OnPropertyChanged(nameof(VisibleAppCount));
+            OnPropertyChanged(nameof(SelectedFooterText));
+        };
     }
 
     private void HandleSettingsChanged(object? sender, PropertyChangedEventArgs e)
     {
-        if (e.PropertyName == nameof(AppSettings.ShowUnsupportedApps))
+        if (string.IsNullOrWhiteSpace(e.PropertyName))
         {
-            ApplyVisibilityFilter();
-            if (!_suppressSettingsLogging)
-            {
-                _loggingService.LogInfo($"Setting changed: ShowUnsupportedApps={Settings.ShowUnsupportedApps}");
-            }
-
             return;
+        }
+
+        switch (e.PropertyName)
+        {
+            case nameof(AppSettings.OsSupportedApps):
+            case nameof(AppSettings.ShowAlreadyInstalledApps):
+                ApplyVisibilityFilter();
+                break;
+            case nameof(AppSettings.AutoDetectInstalledAppsOnStartup):
+                if (Settings.AutoDetectInstalledAppsOnStartup && !_installedAppsDetected)
+                {
+                    DetectInstalledAppsNow();
+                }
+                break;
+            case nameof(AppSettings.DownloadLocationMode):
+                OnPropertyChanged(nameof(SelectedDownloadLocationOption));
+                OnPropertyChanged(nameof(IsCustomDownloadFolderVisible));
+                break;
+            case nameof(AppSettings.RestartBehavior):
+                OnPropertyChanged(nameof(SelectedRestartBehaviorOption));
+                break;
+            case nameof(AppSettings.Theme):
+                OnPropertyChanged(nameof(SelectedThemeOption));
+                ApplyTheme();
+                break;
+            case nameof(AppSettings.Language):
+                OnPropertyChanged(nameof(SelectedLanguageOption));
+                break;
+            case nameof(AppSettings.DeveloperMode):
+                OnPropertyChanged(nameof(IsDeveloperModeEnabled));
+                NotifyScreenStateChanged();
+                break;
         }
 
         if (_suppressSettingsLogging)
@@ -415,51 +653,180 @@ public sealed class MainWindowViewModel : ObservableObject
             return;
         }
 
-        switch (e.PropertyName)
+        LogSettingChanged(e.PropertyName);
+        ScheduleSettingsSave();
+
+        if (Settings.SaveProfilesAutomatically)
         {
-            case nameof(AppSettings.SilentInstallEnabled):
-                _loggingService.LogInfo($"Setting changed: SilentInstallEnabled={Settings.SilentInstallEnabled}");
-                break;
-            case nameof(AppSettings.SelfDeleteEnabled):
-                _loggingService.LogInfo($"Setting changed: SelfDeleteEnabled={Settings.SelfDeleteEnabled}");
-                break;
-            case nameof(AppSettings.DefaultInstallLocation):
-                _loggingService.LogInfo($"Setting changed: DefaultInstallLocation='{Settings.DefaultInstallLocation}'");
-                break;
-            case nameof(AppSettings.ProfileName):
-                _loggingService.LogInfo($"Setting changed: ProfileName='{Settings.ProfileName}'");
-                break;
+            SaveCurrentList(showStatusMessage: false);
         }
     }
 
-    private void ApplySettingsFromSelection(SelectionConfig? selection)
+    private async Task LoadSettingsAsync()
     {
-        if (selection is null)
-        {
-            // Defaults stay active:
-            // Silent ON, Self-delete OFF, Show unsupported ON, default location blank.
-            return;
-        }
-
-        var selectionSettings = selection.Settings ?? new SelectionSettings();
+        var loadedSettings = await _settingsService.LoadSettingsAsync();
         _suppressSettingsLogging = true;
         try
         {
-            Settings.ProfileName = string.IsNullOrWhiteSpace(selection.ProfileName)
-                ? Settings.ProfileName
-                : selection.ProfileName;
-            Settings.SilentInstallEnabled = selectionSettings.SilentInstall;
-            Settings.SelfDeleteEnabled = selectionSettings.SelfDelete;
-            Settings.ShowUnsupportedApps = selectionSettings.ShowUnsupportedApps;
-            Settings.DefaultInstallLocation = selectionSettings.DefaultInstallLocation ?? string.Empty;
+            Settings.ApplyFrom(loadedSettings);
         }
         finally
         {
             _suppressSettingsLogging = false;
         }
 
-        _loggingService.LogInfo(
-            $"Applied settings from selection.json: Profile='{Settings.ProfileName}', Silent={Settings.SilentInstallEnabled}, SelfDelete={Settings.SelfDeleteEnabled}, ShowUnsupported={Settings.ShowUnsupportedApps}, InstallLocation='{Settings.DefaultInstallLocation}'");
+        ApplyTheme();
+        NotifySettingsOptionBindingsChanged();
+    }
+
+    private void ApplySelectionProfile(SelectionConfig? selection)
+    {
+        if (selection is null)
+        {
+            return;
+        }
+
+        CurrentProfileName = selection.ProfileName;
+        _loggingService.LogInfo($"Loaded selection profile '{CurrentProfileName}'.");
+    }
+
+    private void ApplySelectionSettingsFallback(SelectionConfig? selection)
+    {
+        if (selection?.Settings is null)
+        {
+            return;
+        }
+
+        var selectionSettings = selection.Settings;
+
+        _suppressSettingsLogging = true;
+        try
+        {
+            Settings.SilentInstall = selectionSettings.SilentInstall;
+            Settings.OsSupportedApps = selectionSettings.OsSupportedApps;
+            Settings.SelfDeleteAfterInstall = selectionSettings.SelfDelete;
+
+            if (!string.IsNullOrWhiteSpace(selectionSettings.DefaultInstallLocation))
+            {
+                Settings.DownloadLocationMode = AppSettings.DownloadCustomFolder;
+                Settings.CustomDownloadFolder = selectionSettings.DefaultInstallLocation;
+            }
+        }
+        finally
+        {
+            _suppressSettingsLogging = false;
+        }
+
+        _loggingService.LogInfo("Applied compatibility settings from selection.json because settings.json was using defaults.");
+        _ = _settingsService.SaveSettingsAsync(Settings.Clone());
+        NotifySettingsOptionBindingsChanged();
+    }
+
+    private void NotifySettingsOptionBindingsChanged()
+    {
+        OnPropertyChanged(nameof(SelectedRestartBehaviorOption));
+        OnPropertyChanged(nameof(SelectedDownloadLocationOption));
+        OnPropertyChanged(nameof(SelectedThemeOption));
+        OnPropertyChanged(nameof(SelectedLanguageOption));
+        OnPropertyChanged(nameof(IsCustomDownloadFolderVisible));
+        OnPropertyChanged(nameof(IsDeveloperModeEnabled));
+    }
+
+    private void ApplyTheme()
+    {
+        if (Application.Current is null)
+        {
+            return;
+        }
+
+        Application.Current.RequestedThemeVariant = Settings.Theme switch
+        {
+            AppSettings.ThemeLight => ThemeVariant.Light,
+            AppSettings.ThemeSystem => ThemeVariant.Default,
+            _ => ThemeVariant.Dark
+        };
+    }
+
+    private void LogSettingChanged(string propertyName)
+    {
+        var property = typeof(AppSettings).GetProperty(propertyName);
+        var value = property?.GetValue(Settings);
+        _loggingService.LogInfo($"Setting changed: {propertyName}={value}");
+    }
+
+    private void ScheduleSettingsSave()
+    {
+        _settingsSaveCts?.Cancel();
+        _settingsSaveCts?.Dispose();
+
+        _settingsSaveCts = new CancellationTokenSource();
+        var cancellationToken = _settingsSaveCts.Token;
+        _ = PersistSettingsAsync(cancellationToken);
+    }
+
+    private async Task PersistSettingsAsync(CancellationToken cancellationToken)
+    {
+        try
+        {
+            await Task.Delay(200, cancellationToken);
+            await _settingsService.SaveSettingsAsync(Settings.Clone(), cancellationToken);
+        }
+        catch (OperationCanceledException)
+        {
+            // A newer settings change superseded this save request.
+        }
+        catch (Exception ex)
+        {
+            _loggingService.LogError($"Failed to save settings: {ex.Message}");
+        }
+    }
+
+    private void DetectInstalledAppsNow()
+    {
+        if (_apps.Count == 0 && _currentPlatformId == PlatformService.Unknown)
+        {
+            return;
+        }
+
+        var appSource = _apps.Count > 0 ? _apps.ToList() : new List<AppItem>();
+        if (appSource.Count == 0)
+        {
+            return;
+        }
+
+        _detectionService.DetectInstalledApps(appSource, _currentPlatformId);
+        foreach (var app in appSource)
+        {
+            ApplyPlatformFlags(app);
+        }
+
+        _installedAppsDetected = true;
+        ApplyVisibilityFilter();
+    }
+
+    private async Task ResetSettingsAsync()
+    {
+        var defaults = await _settingsService.ResetSettingsAsync();
+
+        _suppressSettingsLogging = true;
+        try
+        {
+            Settings.ApplyFrom(defaults);
+        }
+        finally
+        {
+            _suppressSettingsLogging = false;
+        }
+
+        ApplyTheme();
+        NotifySettingsOptionBindingsChanged();
+        if (Settings.AutoDetectInstalledAppsOnStartup && !_installedAppsDetected)
+        {
+            DetectInstalledAppsNow();
+        }
+        ApplyVisibilityFilter();
+        StatusText = "Nova settings reset to defaults.";
+        _loggingService.LogInfo(StatusText);
     }
 
     private void ApplyVisibilityFilter()
@@ -469,13 +836,24 @@ public sealed class MainWindowViewModel : ObservableObject
 
         foreach (var app in _apps)
         {
-            var includeByPlatform = Settings.ShowUnsupportedApps || app.IsSupportedOnCurrentPlatform || app.IsSelected;
+            var includeByPlatform = !Settings.OsSupportedApps || app.IsSupportedOnCurrentPlatform || app.IsSelected;
             if (!includeByPlatform)
             {
                 continue;
             }
 
+            var includeByInstallState = Settings.ShowAlreadyInstalledApps || !app.IsInstalled || app.IsSelected;
+            if (!includeByInstallState)
+            {
+                continue;
+            }
+
             if (!MatchesSelectedFilter(app))
+            {
+                continue;
+            }
+
+            if (!MatchesCurrentSection(app))
             {
                 continue;
             }
@@ -493,6 +871,7 @@ public sealed class MainWindowViewModel : ObservableObject
         }
 
         OnPropertyChanged(nameof(VisibleAppCount));
+        OnPropertyChanged(nameof(SelectedFooterText));
     }
 
     private void SetCategoryFilter(string filter)
@@ -538,33 +917,99 @@ public sealed class MainWindowViewModel : ObservableObject
         };
     }
 
+    private bool MatchesCurrentSection(AppItem app)
+    {
+        var category = app.Category ?? string.Empty;
+
+        return _currentSection switch
+        {
+            SectionDrivers => category.Contains("driver", StringComparison.OrdinalIgnoreCase) ||
+                              category.Contains("accessor", StringComparison.OrdinalIgnoreCase),
+            SectionMyLists => app.IsSelected,
+            _ => true
+        };
+    }
+
     private void NotifyScreenStateChanged()
     {
         OnPropertyChanged(nameof(IsHomeScreenVisible));
         OnPropertyChanged(nameof(IsInstallScreenVisible));
         OnPropertyChanged(nameof(IsSummaryScreenVisible));
+        OnPropertyChanged(nameof(IsHistoryEmptyScreenVisible));
+        OnPropertyChanged(nameof(IsLogsScreenVisible));
         OnPropertyChanged(nameof(IsSelectionPhase));
     }
 
-    private void SaveCurrentList()
+    private void NotifyNavigationStateChanged()
+    {
+        OnPropertyChanged(nameof(HomeTitle));
+        OnPropertyChanged(nameof(HomeSubtitle));
+        OnPropertyChanged(nameof(IsDashboardSelected));
+        OnPropertyChanged(nameof(IsDashboardUnselected));
+        OnPropertyChanged(nameof(IsAppsSelected));
+        OnPropertyChanged(nameof(IsAppsUnselected));
+        OnPropertyChanged(nameof(IsDriversSelected));
+        OnPropertyChanged(nameof(IsDriversUnselected));
+        OnPropertyChanged(nameof(IsMyListsSelected));
+        OnPropertyChanged(nameof(IsMyListsUnselected));
+        OnPropertyChanged(nameof(IsHistorySelected));
+        OnPropertyChanged(nameof(IsHistoryUnselected));
+        OnPropertyChanged(nameof(IsLogsSelected));
+        OnPropertyChanged(nameof(IsLogsUnselected));
+        NotifyScreenStateChanged();
+        ApplyVisibilityFilter();
+    }
+
+    private void NavigateTo(string section)
+    {
+        if (string.Equals(_currentSection, section, StringComparison.Ordinal))
+        {
+            return;
+        }
+
+        _currentSection = section;
+        IsSettingsPanelOpen = false;
+
+        _loggingService.LogInfo($"Navigation changed to '{section}'.");
+
+        if (section == SectionHistory && !HasInstallResults)
+        {
+            StatusText = "No install history yet.";
+        }
+        else if (section == SectionLogs)
+        {
+            StatusText = "Logs page selected. Use Open Log File to inspect the current log.";
+        }
+
+        NotifyNavigationStateChanged();
+    }
+
+    private void SaveCurrentList(bool showStatusMessage = true)
     {
         var selection = new SelectionConfig
         {
-            ProfileName = Settings.ProfileName,
+            ProfileName = CurrentProfileName,
             TargetPlatform = _currentPlatformId,
             SelectedApps = _apps.Where(app => app.IsSelected).Select(app => app.Id).ToList(),
             Settings = new SelectionSettings
             {
-                SilentInstall = Settings.SilentInstallEnabled,
-                SelfDelete = Settings.SelfDeleteEnabled,
-                ShowUnsupportedApps = Settings.ShowUnsupportedApps,
-                DefaultInstallLocation = Settings.DefaultInstallLocation
+                SilentInstall = Settings.SilentInstall,
+                SelfDelete = Settings.SelfDeleteAfterInstall,
+                OsSupportedApps = Settings.OsSupportedApps,
+                DefaultInstallLocation = Settings.CustomDownloadFolder
             }
         };
 
         _selectionService.SaveSelection(selection);
-        StatusText = $"Saved list '{selection.ProfileName}' with {selection.SelectedApps.Count} app(s).";
-        _loggingService.LogInfo(StatusText);
+        if (showStatusMessage)
+        {
+            StatusText = $"Saved list '{selection.ProfileName}' with {selection.SelectedApps.Count} app(s).";
+            _loggingService.LogInfo(StatusText);
+        }
+        else
+        {
+            _loggingService.LogInfo($"Auto-saved list '{selection.ProfileName}' with {selection.SelectedApps.Count} app(s).");
+        }
     }
 
     private void ToggleSettingsPanel()
@@ -639,6 +1084,11 @@ public sealed class MainWindowViewModel : ObservableObject
         OnPropertyChanged(nameof(SelectedCount));
         OnPropertyChanged(nameof(SelectedFooterText));
         UpdateCommandStates();
+
+        if (Settings.SaveProfilesAutomatically)
+        {
+            SaveCurrentList(showStatusMessage: false);
+        }
     }
 
     private bool CanInstall()
@@ -662,7 +1112,12 @@ public sealed class MainWindowViewModel : ObservableObject
         InstallStatusText = $"Starting installation for {selectedApps.Count} app(s)...";
         _loggingService.LogInfo(InstallStatusText);
         _loggingService.LogInfo(
-            $"Install settings: Silent={Settings.SilentInstallEnabled}, SelfDelete={Settings.SelfDeleteEnabled}, ShowUnsupported={Settings.ShowUnsupportedApps}, InstallLocation='{Settings.DefaultInstallLocation}'");
+            $"Install settings: Silent={Settings.SilentInstall}, SelfDelete={Settings.SelfDeleteAfterInstall}, Parallel={Settings.ParallelInstall}, OsSupportedApps={Settings.OsSupportedApps}, DownloadLocationMode={Settings.DownloadLocationMode}, CustomDownloadFolder='{Settings.CustomDownloadFolder}', KeepInstallers={Settings.KeepInstallersAfterInstall}, RestartBehavior={Settings.RestartBehavior}");
+
+        if (Settings.ParallelInstall && selectedApps.Count > 1)
+        {
+            _loggingService.LogInfo("Parallel install is enabled in settings, but the installer currently uses the stable sequential pipeline.");
+        }
 
         var processedCount = 0;
         foreach (var app in selectedApps)
@@ -671,7 +1126,10 @@ public sealed class MainWindowViewModel : ObservableObject
             var batchResults = await _installerService.InstallSelectedAppsAsync(
                 new[] { app },
                 _currentPlatformId,
-                silentInstallEnabled: Settings.SilentInstallEnabled);
+                silentInstallEnabled: Settings.SilentInstall,
+                keepInstallersAfterInstall: Settings.KeepInstallersAfterInstall,
+                downloadLocationMode: Settings.DownloadLocationMode,
+                customDownloadFolder: Settings.CustomDownloadFolder);
 
             foreach (var result in batchResults)
             {
@@ -685,6 +1143,7 @@ public sealed class MainWindowViewModel : ObservableObject
 
         FinalizeInstallSummary();
         IsInstalling = false;
+        await ApplyPostInstallRestartBehaviorAsync();
         UpdateCommandStates();
     }
 
@@ -744,15 +1203,16 @@ public sealed class MainWindowViewModel : ObservableObject
         InstallSummaryText = $"Installed: {successCount} | Failed: {failedCount} | Skipped: {skippedCount} | Restart: {restartCount}";
         StatusText = InstallSummaryText;
 
-        if (Settings.SelfDeleteEnabled)
+        if (Settings.SelfDeleteAfterInstall)
         {
             _loggingService.LogWarning("Self-delete is enabled, but safe placeholder mode is active. No deletion was performed.");
         }
 
-        if (!string.IsNullOrWhiteSpace(Settings.DefaultInstallLocation))
+        if (string.Equals(Settings.DownloadLocationMode, AppSettings.DownloadCustomFolder, StringComparison.Ordinal) &&
+            !string.IsNullOrWhiteSpace(Settings.CustomDownloadFolder))
         {
             _loggingService.LogInfo(
-                $"Default install location '{Settings.DefaultInstallLocation}' is stored for future installer path overrides.");
+                $"Custom download folder '{Settings.CustomDownloadFolder}' is stored for installer downloads.");
         }
 
         if (RestartRequired)
@@ -766,6 +1226,49 @@ public sealed class MainWindowViewModel : ObservableObject
             RestartStatusText = "No restart required.";
             _restartDecisionFinalized = true;
             _loggingService.LogInfo("Installation finished with no restart required.");
+        }
+
+        NavigateTo(SectionHistory);
+    }
+
+    private async Task ApplyPostInstallRestartBehaviorAsync()
+    {
+        if (!RestartRequired)
+        {
+            return;
+        }
+
+        switch (Settings.RestartBehavior)
+        {
+            case AppSettings.RestartAutomatically:
+                _loggingService.LogInfo("Restart behavior is set to RestartAutomatically. Triggering restart now.");
+                var restarted = await TryRestartSystemAsync();
+                if (restarted)
+                {
+                    _restartDecisionFinalized = true;
+                    RestartStatusText = "Automatic restart command sent. System should restart shortly.";
+                    InstallStatusText = "Automatic restart command sent.";
+                }
+                else
+                {
+                    RestartStatusText = "Automatic restart failed. Please restart manually.";
+                }
+
+                OnPropertyChanged(nameof(ShowRestartActions));
+                OnPropertyChanged(nameof(ShowPrimaryRestartActions));
+                break;
+
+            case AppSettings.RestartNever:
+                _restartDecisionFinalized = true;
+                RestartStatusText = "Restart was required, but automatic restart is disabled. Please restart manually later.";
+                _loggingService.LogInfo("Restart behavior is set to NeverRestart. User must restart manually.");
+                OnPropertyChanged(nameof(ShowRestartActions));
+                OnPropertyChanged(nameof(ShowPrimaryRestartActions));
+                break;
+
+            default:
+                RestartStatusText = "Restart recommended: some apps or drivers may not work correctly until the PC is restarted.";
+                break;
         }
     }
 
@@ -846,7 +1349,11 @@ public sealed class MainWindowViewModel : ObservableObject
             return;
         }
 
-        if (!app.IsInstalled && !app.HasInstallFailed)
+        if (app.IsInstalled && !app.HasInstallFailed)
+        {
+            app.StatusBadge = "Installed";
+        }
+        else if (!app.HasInstallFailed)
         {
             app.StatusBadge = app.IsSelected ? "Selected" : "Available";
         }
@@ -981,10 +1488,17 @@ public sealed class MainWindowViewModel : ObservableObject
     {
         _installCommand.RaiseCanExecuteChanged();
         _pauseInstallCommand.RaiseCanExecuteChanged();
+        _navigateDashboardCommand.RaiseCanExecuteChanged();
+        _navigateAppsCommand.RaiseCanExecuteChanged();
+        _navigateDriversCommand.RaiseCanExecuteChanged();
+        _navigateMyListsCommand.RaiseCanExecuteChanged();
+        _navigateHistoryCommand.RaiseCanExecuteChanged();
+        _navigateLogsCommand.RaiseCanExecuteChanged();
         _requestRestartNowCommand.RaiseCanExecuteChanged();
         _confirmRestartNowCommand.RaiseCanExecuteChanged();
         _cancelRestartCommand.RaiseCanExecuteChanged();
         _restartLaterCommand.RaiseCanExecuteChanged();
+        _resetSettingsCommand.RaiseCanExecuteChanged();
     }
 
     private static bool IsUnsupportedSkippedResult(InstallResult result)
@@ -992,4 +1506,6 @@ public sealed class MainWindowViewModel : ObservableObject
         return result.Skipped &&
                result.Message.Contains("unsupported", StringComparison.OrdinalIgnoreCase);
     }
+
+    public sealed record SettingChoice(string Value, string Label);
 }
