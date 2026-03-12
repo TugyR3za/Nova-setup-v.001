@@ -1,4 +1,5 @@
 using Avalonia.Controls;
+using System;
 using NovaSetup.ViewModels;
 
 namespace NovaSetup.Views;
@@ -22,5 +23,13 @@ public partial class MainWindow : Window
 
         _viewModelInitialized = true;
         await viewModel.InitializeAsync();
+    }
+
+    private void AccountMenuPopup_OnClosed(object? sender, EventArgs e)
+    {
+        if (DataContext is MainWindowViewModel viewModel)
+        {
+            viewModel.CloseAccountMenuOverlay();
+        }
     }
 }

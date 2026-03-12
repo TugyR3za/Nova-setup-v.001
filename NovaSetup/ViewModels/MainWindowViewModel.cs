@@ -46,6 +46,9 @@ public sealed class MainWindowViewModel : ObservableObject
     private readonly RelayCommand _pauseInstallCommand;
     private readonly RelayCommand _exportReportCommand;
     private readonly RelayCommand _toggleSettingsPanelCommand;
+    private readonly RelayCommand _toggleAccountMenuCommand;
+    private readonly RelayCommand _openAccountProfileCommand;
+    private readonly RelayCommand _openAccountSettingsCommand;
     private readonly RelayCommand _navigateDashboardCommand;
     private readonly RelayCommand _navigateAppsCommand;
     private readonly RelayCommand _navigateDriversCommand;
@@ -64,6 +67,7 @@ public sealed class MainWindowViewModel : ObservableObject
     private bool _isRestartConfirmationVisible;
     private bool _restartDecisionFinalized;
     private bool _isSettingsPanelOpen;
+    private bool _isAccountMenuOpen;
     private bool _suppressSettingsLogging;
     private bool _installedAppsDetected;
     private bool _updatingFilterFlags;
@@ -142,6 +146,9 @@ public sealed class MainWindowViewModel : ObservableObject
         _pauseInstallCommand = new RelayCommand(_ => PauseInstallPlaceholder(), _ => IsInstalling);
         _exportReportCommand = new RelayCommand(_ => ExportReportPlaceholder());
         _toggleSettingsPanelCommand = new RelayCommand(_ => ToggleSettingsPanel());
+        _toggleAccountMenuCommand = new RelayCommand(_ => ToggleAccountMenu());
+        _openAccountProfileCommand = new RelayCommand(_ => OpenAccountProfile(), _ => !IsInstalling);
+        _openAccountSettingsCommand = new RelayCommand(_ => OpenAccountSettings());
         _navigateDashboardCommand = new RelayCommand(_ => NavigateTo(SectionDashboard), _ => !IsInstalling);
         _navigateAppsCommand = new RelayCommand(_ => NavigateTo(SectionApps), _ => !IsInstalling);
         _navigateDriversCommand = new RelayCommand(_ => NavigateTo(SectionDrivers), _ => !IsInstalling);
@@ -173,7 +180,19 @@ public sealed class MainWindowViewModel : ObservableObject
 
     public int VisibleAppCount => _visibleApps.Count;
 
+    public int RecommendedCount => _apps.Count(app => app.IsRecommended);
+
+    public int UnsupportedSelectedCount => _apps.Count(app => app.WillBeSkipped);
+
+    public bool HasRecommendedApps => RecommendedCount > 0;
+
+    public bool HasUnsupportedSelectedApps => UnsupportedSelectedCount > 0;
+
     public string SelectedFooterText => $"Visible apps: {VisibleAppCount} • Selected apps: {SelectedCount} • Download size: {SelectedCount * 30} MB";
+
+    public string RecommendedAppsSummary => HasRecommendedApps
+        ? string.Join(" • ", _apps.Where(app => app.IsRecommended).Take(4).Select(app => app.Name))
+        : "No hardware-based recommendations detected.";
 
     public string CurrentProfileName
     {
@@ -234,6 +253,20 @@ public sealed class MainWindowViewModel : ObservableObject
         get => _isSettingsPanelOpen;
         private set => SetProperty(ref _isSettingsPanelOpen, value);
     }
+
+    public bool IsAccountMenuOpen
+    {
+        get => _isAccountMenuOpen;
+        private set
+        {
+            if (SetProperty(ref _isAccountMenuOpen, value))
+            {
+                OnPropertyChanged(nameof(IsAccountMenuClosed));
+            }
+        }
+    }
+
+    public bool IsAccountMenuClosed => !IsAccountMenuOpen;
 
     public bool IsDeveloperModeEnabled => Settings.DeveloperMode;
 
@@ -416,6 +449,10 @@ public sealed class MainWindowViewModel : ObservableObject
 
     public bool HasInstallResults => _installResults.Count > 0;
 
+    public string DashboardHistoryText => HasInstallResults
+        ? InstallSummaryText
+        : "No install history yet. Run an install and the summary screen will appear here.";
+
     public bool HasInstalledResults => _installedResults.Count > 0;
 
     public bool HasFailedResults => _failedResults.Count > 0;
@@ -493,6 +530,12 @@ public sealed class MainWindowViewModel : ObservableObject
     public ICommand ExportReportCommand => _exportReportCommand;
 
     public ICommand ToggleSettingsPanelCommand => _toggleSettingsPanelCommand;
+
+    public ICommand ToggleAccountMenuCommand => _toggleAccountMenuCommand;
+
+    public ICommand OpenAccountProfileCommand => _openAccountProfileCommand;
+
+    public ICommand OpenAccountSettingsCommand => _openAccountSettingsCommand;
 
     public ICommand NavigateDashboardCommand => _navigateDashboardCommand;
 
@@ -581,8 +624,7 @@ public sealed class MainWindowViewModel : ObservableObject
             : $"Loaded {_apps.Count} apps for {CurrentPlatform}. Recommended: {recommendedCount}.";
 
         _loggingService.LogInfo(StatusText);
-        OnPropertyChanged(nameof(SelectedCount));
-        OnPropertyChanged(nameof(SelectedFooterText));
+        NotifyAppSummaryStateChanged();
         NotifySettingsOptionBindingsChanged();
         NotifyScreenStateChanged();
         UpdateCommandStates();
@@ -594,6 +636,7 @@ public sealed class MainWindowViewModel : ObservableObject
         {
             OnPropertyChanged(nameof(HasInstallResults));
             OnPropertyChanged(nameof(IsRestartSectionVisible));
+            OnPropertyChanged(nameof(DashboardHistoryText));
             NotifyScreenStateChanged();
         };
 
@@ -969,6 +1012,7 @@ public sealed class MainWindowViewModel : ObservableObject
 
         _currentSection = section;
         IsSettingsPanelOpen = false;
+        IsAccountMenuOpen = false;
 
         _loggingService.LogInfo($"Navigation changed to '{section}'.");
 
@@ -1015,7 +1059,47 @@ public sealed class MainWindowViewModel : ObservableObject
     private void ToggleSettingsPanel()
     {
         IsSettingsPanelOpen = !IsSettingsPanelOpen;
+        if (IsSettingsPanelOpen)
+        {
+            IsAccountMenuOpen = false;
+        }
+
         _loggingService.LogInfo($"Settings panel {(IsSettingsPanelOpen ? "opened" : "closed")}.");
+    }
+
+    private void ToggleAccountMenu()
+    {
+        IsAccountMenuOpen = !IsAccountMenuOpen;
+        if (IsAccountMenuOpen)
+        {
+            IsSettingsPanelOpen = false;
+        }
+
+        _loggingService.LogInfo($"Account menu {(IsAccountMenuOpen ? "opened" : "closed")}.");
+    }
+
+    private void OpenAccountProfile()
+    {
+        IsAccountMenuOpen = false;
+        NavigateTo(SectionMyLists);
+    }
+
+    private void OpenAccountSettings()
+    {
+        IsAccountMenuOpen = false;
+        IsSettingsPanelOpen = true;
+        _loggingService.LogInfo("Settings opened from account menu.");
+    }
+
+    public void CloseAccountMenuOverlay()
+    {
+        if (!IsAccountMenuOpen)
+        {
+            return;
+        }
+
+        IsAccountMenuOpen = false;
+        _loggingService.LogInfo("Account menu closed.");
     }
 
     private void OpenPublisherHomepage(object? parameter)
@@ -1081,8 +1165,7 @@ public sealed class MainWindowViewModel : ObservableObject
 
         ApplyPlatformFlags(app);
         ApplyVisibilityFilter();
-        OnPropertyChanged(nameof(SelectedCount));
-        OnPropertyChanged(nameof(SelectedFooterText));
+        NotifyAppSummaryStateChanged();
         UpdateCommandStates();
 
         if (Settings.SaveProfilesAutomatically)
@@ -1494,11 +1577,24 @@ public sealed class MainWindowViewModel : ObservableObject
         _navigateMyListsCommand.RaiseCanExecuteChanged();
         _navigateHistoryCommand.RaiseCanExecuteChanged();
         _navigateLogsCommand.RaiseCanExecuteChanged();
+        _openAccountProfileCommand.RaiseCanExecuteChanged();
+        _openAccountSettingsCommand.RaiseCanExecuteChanged();
         _requestRestartNowCommand.RaiseCanExecuteChanged();
         _confirmRestartNowCommand.RaiseCanExecuteChanged();
         _cancelRestartCommand.RaiseCanExecuteChanged();
         _restartLaterCommand.RaiseCanExecuteChanged();
         _resetSettingsCommand.RaiseCanExecuteChanged();
+    }
+
+    private void NotifyAppSummaryStateChanged()
+    {
+        OnPropertyChanged(nameof(SelectedCount));
+        OnPropertyChanged(nameof(SelectedFooterText));
+        OnPropertyChanged(nameof(RecommendedCount));
+        OnPropertyChanged(nameof(HasRecommendedApps));
+        OnPropertyChanged(nameof(RecommendedAppsSummary));
+        OnPropertyChanged(nameof(UnsupportedSelectedCount));
+        OnPropertyChanged(nameof(HasUnsupportedSelectedApps));
     }
 
     private static bool IsUnsupportedSkippedResult(InstallResult result)

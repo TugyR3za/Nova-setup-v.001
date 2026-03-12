@@ -1,0 +1,238 @@
+2026-03-11 00:07:56 [INFO] Logging initialized.
+2026-03-11 00:07:57 [INFO] Loaded settings from C:\Users\naime\OneDrive\Desktop\Nova setup v.001\NovaSetup\bin\Debug\net8.0\Configs\settings.json
+2026-03-11 00:07:57 [INFO] Loaded 9 apps from apps.json.
+2026-03-11 00:07:57 [INFO] Loaded selection profile 'Website Starter'.
+2026-03-11 00:07:59 [INFO] Installed app detection completed. DetectedInstalledApps=3
+2026-03-11 00:07:59 [INFO] Detected GPU vendor: NVIDIA
+2026-03-11 00:07:59 [INFO] Detected motherboard vendor: ASUS
+2026-03-11 00:08:02 [INFO] Recommended app 'NVIDIA App' for NVIDIA GPU. Supported=True, AutoSelected=True
+2026-03-11 00:08:02 [INFO] No catalog app found for recommendation rule: ASUS motherboard
+2026-03-11 00:08:02 [INFO] Recommendation summary: Total=1, Supported=1, Unsupported=0
+2026-03-11 00:08:02 [INFO] Recommendations applied. Total=1, Supported=1, Unsupported=0
+2026-03-11 00:08:02 [INFO] Loaded 9 apps for Windows. Recommended: 1. 1 selected app(s) are unsupported and will be skipped.
+2026-03-11 00:08:08 [INFO] Saved selection profile to C:\Users\naime\OneDrive\Desktop\Nova setup v.001\NovaSetup\bin\Debug\net8.0\Configs\selection.json
+2026-03-11 00:08:08 [INFO] Auto-saved list 'Website Starter' with 2 app(s).
+2026-03-11 00:08:09 [INFO] Saved selection profile to C:\Users\naime\OneDrive\Desktop\Nova setup v.001\NovaSetup\bin\Debug\net8.0\Configs\selection.json
+2026-03-11 00:08:09 [INFO] Saved list 'Website Starter' with 2 app(s).
+2026-03-11 00:08:11 [INFO] Settings panel opened.
+2026-03-11 00:08:15 [INFO] Setting changed: Theme=Light
+2026-03-11 00:08:15 [INFO] Saved selection profile to C:\Users\naime\OneDrive\Desktop\Nova setup v.001\NovaSetup\bin\Debug\net8.0\Configs\selection.json
+2026-03-11 00:08:15 [INFO] Auto-saved list 'Website Starter' with 2 app(s).
+2026-03-11 00:08:16 [INFO] Saved settings to C:\Users\naime\OneDrive\Desktop\Nova setup v.001\NovaSetup\bin\Debug\net8.0\Configs\settings.json
+2026-03-11 00:08:19 [INFO] Settings panel closed.
+2026-03-11 00:08:26 [INFO] Settings panel opened.
+2026-03-11 00:08:34 [INFO] Settings panel closed.
+2026-03-11 00:09:43 [INFO] Logging initialized.
+2026-03-11 00:09:44 [INFO] Loaded settings from C:\Users\naime\OneDrive\Desktop\Nova setup v.001\NovaSetup\bin\Debug\net8.0\Configs\settings.json
+2026-03-11 00:09:44 [INFO] Loaded 9 apps from apps.json.
+2026-03-11 00:09:44 [INFO] Loaded selection profile 'Website Starter'.
+2026-03-11 00:09:44 [INFO] Installed app detection completed. DetectedInstalledApps=3
+2026-03-11 00:09:45 [INFO] Detected GPU vendor: NVIDIA
+2026-03-11 00:09:45 [INFO] Detected motherboard vendor: ASUS
+2026-03-11 00:09:48 [INFO] Recommended app 'NVIDIA App' for NVIDIA GPU. Supported=True, AutoSelected=True
+2026-03-11 00:09:48 [INFO] No catalog app found for recommendation rule: ASUS motherboard
+2026-03-11 00:09:48 [INFO] Recommendation summary: Total=1, Supported=1, Unsupported=0
+2026-03-11 00:09:48 [INFO] Recommendations applied. Total=1, Supported=1, Unsupported=0
+2026-03-11 00:09:48 [INFO] Loaded 9 apps for Windows. Recommended: 1. 1 selected app(s) are unsupported and will be skipped.
+2026-03-11 00:14:44 [INFO] Logging initialized.
+2026-03-11 00:14:45 [INFO] Loaded settings from C:\Users\naime\OneDrive\Desktop\Nova setup v.001\NovaSetup\bin\Debug\net8.0\Configs\settings.json
+2026-03-11 00:14:45 [INFO] Loaded 9 apps from apps.json.
+2026-03-11 00:14:45 [INFO] Loaded selection profile 'Website Starter'.
+2026-03-11 00:14:46 [INFO] Installed app detection completed. DetectedInstalledApps=3
+2026-03-11 00:14:47 [INFO] Detected GPU vendor: NVIDIA
+2026-03-11 00:14:47 [INFO] Detected motherboard vendor: ASUS
+2026-03-11 00:14:50 [INFO] Recommended app 'NVIDIA App' for NVIDIA GPU. Supported=True, AutoSelected=True
+2026-03-11 00:14:50 [INFO] No catalog app found for recommendation rule: ASUS motherboard
+2026-03-11 00:14:50 [INFO] Recommendation summary: Total=1, Supported=1, Unsupported=0
+2026-03-11 00:14:50 [INFO] Recommendations applied. Total=1, Supported=1, Unsupported=0
+2026-03-11 00:14:50 [INFO] Loaded 9 apps for Windows. Recommended: 1. 1 selected app(s) are unsupported and will be skipped.
+2026-03-11 00:14:52 [INFO] Navigation changed to 'My Lists'.
+2026-03-11 00:14:57 [INFO] Navigation changed to 'Dashboard'.
+2026-03-11 00:14:59 [INFO] Settings panel opened.
+2026-03-11 00:15:01 [INFO] Navigation changed to 'My Lists'.
+2026-03-11 00:24:46 [INFO] Logging initialized.
+2026-03-11 00:24:47 [INFO] Loaded settings from C:\Users\naime\OneDrive\Desktop\Nova setup v.001\NovaSetup\bin\Debug\net8.0\Configs\settings.json
+2026-03-11 00:24:47 [INFO] Loaded 9 apps from apps.json.
+2026-03-11 00:24:47 [INFO] Loaded selection profile 'Website Starter'.
+2026-03-11 00:24:48 [INFO] Installed app detection completed. DetectedInstalledApps=3
+2026-03-11 00:24:48 [INFO] Detected GPU vendor: NVIDIA
+2026-03-11 00:24:48 [INFO] Detected motherboard vendor: ASUS
+2026-03-11 00:24:51 [INFO] Recommended app 'NVIDIA App' for NVIDIA GPU. Supported=True, AutoSelected=True
+2026-03-11 00:24:51 [INFO] No catalog app found for recommendation rule: ASUS motherboard
+2026-03-11 00:24:51 [INFO] Recommendation summary: Total=1, Supported=1, Unsupported=0
+2026-03-11 00:24:51 [INFO] Recommendations applied. Total=1, Supported=1, Unsupported=0
+2026-03-11 00:24:51 [INFO] Loaded 9 apps for Windows. Recommended: 1. 1 selected app(s) are unsupported and will be skipped.
+2026-03-11 00:25:02 [INFO] Account menu opened.
+2026-03-11 00:25:03 [INFO] Account menu closed.
+2026-03-11 00:25:04 [INFO] Account menu opened.
+2026-03-11 00:25:05 [INFO] Settings opened from account menu.
+2026-03-11 00:25:07 [INFO] Settings panel closed.
+2026-03-11 00:25:08 [INFO] Account menu opened.
+2026-03-11 00:25:09 [INFO] Settings opened from account menu.
+2026-03-11 00:25:10 [INFO] Account menu opened.
+2026-03-11 00:25:11 [INFO] Account menu closed.
+2026-03-11 00:25:12 [INFO] Account menu opened.
+2026-03-11 00:25:12 [INFO] Account menu closed.
+2026-03-11 00:25:14 [INFO] Account menu opened.
+2026-03-11 00:25:17 [INFO] Account menu closed.
+2026-03-11 00:25:19 [INFO] Account menu opened.
+2026-03-11 00:25:20 [INFO] Account menu closed.
+2026-03-11 00:25:21 [INFO] Account menu opened.
+2026-03-11 00:25:22 [INFO] Account menu closed.
+2026-03-11 00:25:22 [INFO] Account menu opened.
+2026-03-11 00:25:24 [INFO] Account menu closed.
+2026-03-11 00:25:25 [INFO] Account menu opened.
+2026-03-11 00:25:25 [INFO] Account menu closed.
+2026-03-11 00:26:11 [INFO] Account menu opened.
+2026-03-11 00:55:15 [INFO] Logging initialized.
+2026-03-11 00:55:16 [INFO] Loaded settings from C:\Users\naime\OneDrive\Desktop\Nova setup v.001\NovaSetup\bin\Debug\net8.0\Configs\settings.json
+2026-03-11 00:55:16 [INFO] Loaded 9 apps from apps.json.
+2026-03-11 00:55:16 [INFO] Loaded selection profile 'Website Starter'.
+2026-03-11 00:55:17 [INFO] Installed app detection completed. DetectedInstalledApps=3
+2026-03-11 00:55:18 [INFO] Detected GPU vendor: NVIDIA
+2026-03-11 00:55:18 [INFO] Detected motherboard vendor: ASUS
+2026-03-11 00:55:21 [INFO] Recommended app 'NVIDIA App' for NVIDIA GPU. Supported=True, AutoSelected=True
+2026-03-11 00:55:21 [INFO] No catalog app found for recommendation rule: ASUS motherboard
+2026-03-11 00:55:21 [INFO] Recommendation summary: Total=1, Supported=1, Unsupported=0
+2026-03-11 00:55:21 [INFO] Recommendations applied. Total=1, Supported=1, Unsupported=0
+2026-03-11 00:55:21 [INFO] Loaded 9 apps for Windows. Recommended: 1. 1 selected app(s) are unsupported and will be skipped.
+2026-03-11 00:55:24 [INFO] Account menu opened.
+2026-03-11 00:55:26 [INFO] Navigation changed to 'My Lists'.
+2026-03-11 00:55:27 [INFO] Account menu opened.
+2026-03-11 00:55:29 [INFO] Account menu closed.
+2026-03-11 00:55:29 [INFO] Account menu opened.
+2026-03-11 00:55:32 [INFO] Account menu opened.
+2026-03-11 00:55:33 [INFO] Account menu closed.
+2026-03-11 00:56:06 [INFO] Navigation changed to 'History'.
+2026-03-11 00:56:07 [INFO] Navigation changed to 'Logs'.
+2026-03-11 00:56:08 [INFO] Navigation changed to 'Dashboard'.
+2026-03-11 00:56:13 [INFO] Navigation changed to 'Apps'.
+2026-03-11 00:56:14 [INFO] Navigation changed to 'Drivers'.
+2026-03-11 00:56:16 [INFO] Navigation changed to 'My Lists'.
+2026-03-11 00:56:17 [INFO] Navigation changed to 'History'.
+2026-03-11 00:56:18 [INFO] Navigation changed to 'My Lists'.
+2026-03-11 00:56:21 [INFO] Navigation changed to 'History'.
+2026-03-11 00:56:22 [INFO] Navigation changed to 'Logs'.
+2026-03-11 00:56:33 [INFO] Opened log file: C:\Users\naime\OneDrive\Desktop\Nova setup v.001\NovaSetup\bin\Debug\net8.0\Logs\NovaSetup-20260311.log
+2026-03-11 00:57:55 [INFO] Logging initialized.
+2026-03-11 00:57:56 [INFO] Loaded settings from C:\Users\naime\OneDrive\Desktop\Nova setup v.001\NovaSetup\bin\Debug\net8.0\Configs\settings.json
+2026-03-11 00:57:56 [INFO] Loaded 9 apps from apps.json.
+2026-03-11 00:57:56 [INFO] Loaded selection profile 'Website Starter'.
+2026-03-11 00:57:57 [INFO] Installed app detection completed. DetectedInstalledApps=3
+2026-03-11 00:57:57 [INFO] Detected GPU vendor: NVIDIA
+2026-03-11 00:57:57 [INFO] Detected motherboard vendor: ASUS
+2026-03-11 00:58:00 [INFO] Recommended app 'NVIDIA App' for NVIDIA GPU. Supported=True, AutoSelected=True
+2026-03-11 00:58:00 [INFO] No catalog app found for recommendation rule: ASUS motherboard
+2026-03-11 00:58:00 [INFO] Recommendation summary: Total=1, Supported=1, Unsupported=0
+2026-03-11 00:58:00 [INFO] Recommendations applied. Total=1, Supported=1, Unsupported=0
+2026-03-11 00:58:00 [INFO] Loaded 9 apps for Windows. Recommended: 1. 1 selected app(s) are unsupported and will be skipped.
+2026-03-11 00:58:02 [INFO] Account menu opened.
+2026-03-11 00:58:04 [INFO] Navigation changed to 'My Lists'.
+2026-03-11 00:58:14 [INFO] Account menu opened.
+2026-03-11 00:58:16 [INFO] Account menu closed.
+2026-03-11 01:02:33 [INFO] Logging initialized.
+2026-03-11 01:02:34 [INFO] Loaded settings from C:\Users\naime\OneDrive\Desktop\Nova setup v.001\NovaSetup\bin\Debug\net8.0\Configs\settings.json
+2026-03-11 01:02:34 [INFO] Loaded 9 apps from apps.json.
+2026-03-11 01:02:34 [INFO] Loaded selection profile 'Website Starter'.
+2026-03-11 01:02:35 [INFO] Installed app detection completed. DetectedInstalledApps=3
+2026-03-11 01:02:35 [INFO] Detected GPU vendor: NVIDIA
+2026-03-11 01:02:35 [INFO] Detected motherboard vendor: ASUS
+2026-03-11 01:02:38 [INFO] Recommended app 'NVIDIA App' for NVIDIA GPU. Supported=True, AutoSelected=True
+2026-03-11 01:02:38 [INFO] No catalog app found for recommendation rule: ASUS motherboard
+2026-03-11 01:02:38 [INFO] Recommendation summary: Total=1, Supported=1, Unsupported=0
+2026-03-11 01:02:38 [INFO] Recommendations applied. Total=1, Supported=1, Unsupported=0
+2026-03-11 01:02:38 [INFO] Loaded 9 apps for Windows. Recommended: 1. 1 selected app(s) are unsupported and will be skipped.
+2026-03-11 01:03:03 [INFO] Navigation changed to 'Drivers'.
+2026-03-11 01:03:04 [INFO] Navigation changed to 'My Lists'.
+2026-03-11 01:03:04 [INFO] Navigation changed to 'History'.
+2026-03-11 01:03:05 [INFO] Navigation changed to 'Logs'.
+2026-03-11 01:03:06 [INFO] Account menu opened.
+2026-03-11 01:03:08 [INFO] Settings opened from account menu.
+2026-03-11 01:03:12 [INFO] Setting changed: Theme=System
+2026-03-11 01:03:12 [INFO] Saved selection profile to C:\Users\naime\OneDrive\Desktop\Nova setup v.001\NovaSetup\bin\Debug\net8.0\Configs\selection.json
+2026-03-11 01:03:12 [INFO] Auto-saved list 'Website Starter' with 3 app(s).
+2026-03-11 01:03:12 [INFO] Saved settings to C:\Users\naime\OneDrive\Desktop\Nova setup v.001\NovaSetup\bin\Debug\net8.0\Configs\settings.json
+2026-03-11 01:03:14 [INFO] Settings panel closed.
+2026-03-11 01:03:16 [INFO] Navigation changed to 'Dashboard'.
+2026-03-11 01:03:23 [INFO] Navigation changed to 'History'.
+2026-03-11 01:03:25 [INFO] Navigation changed to 'My Lists'.
+2026-03-11 01:03:25 [INFO] Navigation changed to 'Drivers'.
+2026-03-11 01:03:26 [INFO] Navigation changed to 'Apps'.
+2026-03-11 01:03:30 [INFO] Account menu opened.
+2026-03-11 01:03:31 [INFO] Settings opened from account menu.
+2026-03-11 01:03:42 [INFO] Settings panel closed.
+2026-03-11 01:04:01 [INFO] Logging initialized.
+2026-03-11 01:04:02 [INFO] Loaded settings from C:\Users\naime\OneDrive\Desktop\Nova setup v.001\NovaSetup\bin\Debug\net8.0\Configs\settings.json
+2026-03-11 01:04:02 [INFO] Loaded 9 apps from apps.json.
+2026-03-11 01:04:02 [INFO] Loaded selection profile 'Website Starter'.
+2026-03-11 01:04:03 [INFO] Installed app detection completed. DetectedInstalledApps=3
+2026-03-11 01:04:03 [INFO] Detected GPU vendor: NVIDIA
+2026-03-11 01:04:03 [INFO] Detected motherboard vendor: ASUS
+2026-03-11 01:04:06 [INFO] Recommended app 'NVIDIA App' for NVIDIA GPU. Supported=True, AutoSelected=True
+2026-03-11 01:04:06 [INFO] No catalog app found for recommendation rule: ASUS motherboard
+2026-03-11 01:04:06 [INFO] Recommendation summary: Total=1, Supported=1, Unsupported=0
+2026-03-11 01:04:06 [INFO] Recommendations applied. Total=1, Supported=1, Unsupported=0
+2026-03-11 01:04:06 [INFO] Loaded 9 apps for Windows. Recommended: 1. 1 selected app(s) are unsupported and will be skipped.
+2026-03-11 01:04:09 [INFO] Saved selection profile to C:\Users\naime\OneDrive\Desktop\Nova setup v.001\NovaSetup\bin\Debug\net8.0\Configs\selection.json
+2026-03-11 01:04:09 [INFO] Auto-saved list 'Website Starter' with 4 app(s).
+2026-03-11 01:04:10 [INFO] Saved selection profile to C:\Users\naime\OneDrive\Desktop\Nova setup v.001\NovaSetup\bin\Debug\net8.0\Configs\selection.json
+2026-03-11 01:04:10 [INFO] Auto-saved list 'Website Starter' with 3 app(s).
+2026-03-11 01:04:11 [INFO] Saved selection profile to C:\Users\naime\OneDrive\Desktop\Nova setup v.001\NovaSetup\bin\Debug\net8.0\Configs\selection.json
+2026-03-11 01:04:11 [INFO] Auto-saved list 'Website Starter' with 2 app(s).
+2026-03-11 19:00:08 [INFO] Logging initialized.
+2026-03-11 19:00:09 [INFO] Loaded settings from C:\Users\naime\OneDrive\Desktop\Nova setup v.001\NovaSetup\bin\Debug\net8.0\Configs\settings.json
+2026-03-11 19:00:09 [INFO] Loaded 9 apps from apps.json.
+2026-03-11 19:00:09 [INFO] Loaded selection profile 'Website Starter'.
+2026-03-11 19:00:11 [INFO] Installed app detection completed. DetectedInstalledApps=3
+2026-03-11 19:00:11 [INFO] Detected GPU vendor: NVIDIA
+2026-03-11 19:00:11 [INFO] Detected motherboard vendor: ASUS
+2026-03-11 19:00:14 [INFO] Recommended app 'NVIDIA App' for NVIDIA GPU. Supported=True, AutoSelected=True
+2026-03-11 19:00:14 [INFO] No catalog app found for recommendation rule: ASUS motherboard
+2026-03-11 19:00:14 [INFO] Recommendation summary: Total=1, Supported=1, Unsupported=0
+2026-03-11 19:00:14 [INFO] Recommendations applied. Total=1, Supported=1, Unsupported=0
+2026-03-11 19:00:14 [INFO] Loaded 9 apps for Windows. Recommended: 1. 1 selected app(s) are unsupported and will be skipped.
+2026-03-11 19:07:59 [INFO] Account menu opened.
+2026-03-11 19:08:00 [INFO] Account menu closed.
+2026-03-11 19:08:00 [INFO] Account menu opened.
+2026-03-11 19:08:01 [INFO] Account menu closed.
+2026-03-11 19:08:08 [INFO] Account menu opened.
+2026-03-11 19:08:09 [INFO] Account menu closed.
+2026-03-11 19:13:37 [INFO] Account menu opened.
+2026-03-11 19:13:39 [INFO] Settings opened from account menu.
+2026-03-11 19:13:41 [INFO] Settings panel closed.
+2026-03-11 19:39:25 [INFO] Logging initialized.
+2026-03-11 19:39:26 [INFO] Loaded settings from C:\Users\naime\OneDrive\Desktop\Nova setup v.001\NovaSetup\bin\Debug\net8.0\Configs\settings.json
+2026-03-11 19:39:26 [INFO] Loaded 9 apps from apps.json.
+2026-03-11 19:39:26 [INFO] Loaded selection profile 'Website Starter'.
+2026-03-11 19:39:28 [INFO] Installed app detection completed. DetectedInstalledApps=3
+2026-03-11 19:39:28 [INFO] Detected GPU vendor: NVIDIA
+2026-03-11 19:39:28 [INFO] Detected motherboard vendor: ASUS
+2026-03-11 19:39:31 [INFO] Recommended app 'NVIDIA App' for NVIDIA GPU. Supported=True, AutoSelected=True
+2026-03-11 19:39:31 [INFO] No catalog app found for recommendation rule: ASUS motherboard
+2026-03-11 19:39:31 [INFO] Recommendation summary: Total=1, Supported=1, Unsupported=0
+2026-03-11 19:39:31 [INFO] Recommendations applied. Total=1, Supported=1, Unsupported=0
+2026-03-11 19:39:31 [INFO] Loaded 9 apps for Windows. Recommended: 1. 1 selected app(s) are unsupported and will be skipped.
+2026-03-11 19:39:33 [INFO] Account menu opened.
+2026-03-11 19:39:38 [INFO] Account menu closed.
+2026-03-11 19:39:59 [INFO] Account menu opened.
+2026-03-11 19:40:00 [INFO] Settings opened from account menu.
+2026-03-11 19:40:05 [INFO] Setting changed: Theme=Light
+2026-03-11 19:40:05 [INFO] Saved selection profile to C:\Users\naime\OneDrive\Desktop\Nova setup v.001\NovaSetup\bin\Debug\net8.0\Configs\selection.json
+2026-03-11 19:40:05 [INFO] Auto-saved list 'Website Starter' with 3 app(s).
+2026-03-11 19:40:05 [INFO] Saved settings to C:\Users\naime\OneDrive\Desktop\Nova setup v.001\NovaSetup\bin\Debug\net8.0\Configs\settings.json
+2026-03-11 19:40:08 [INFO] Settings panel closed.
+2026-03-11 19:40:14 [INFO] Account menu opened.
+2026-03-11 19:40:16 [INFO] Navigation changed to 'My Lists'.
+2026-03-11 19:40:18 [INFO] Account menu opened.
+2026-03-11 19:40:18 [INFO] Account menu closed.
+2026-03-11 19:40:29 [INFO] Account menu opened.
+2026-03-11 19:40:30 [INFO] Account menu closed.
+2026-03-11 19:40:31 [INFO] Account menu opened.
+2026-03-11 19:40:31 [INFO] Account menu closed.
+2026-03-11 19:40:34 [INFO] Account menu opened.
+2026-03-11 19:40:35 [INFO] Account menu closed.
+2026-03-11 19:40:52 [INFO] Navigation changed to 'Dashboard'.
+2026-03-11 19:40:53 [INFO] Navigation changed to 'Apps'.
+2026-03-11 19:40:54 [INFO] Navigation changed to 'Drivers'.
+2026-03-11 19:40:55 [INFO] Navigation changed to 'Dashboard'.
+2026-03-11 19:41:00 [INFO] Navigation changed to 'Apps'.
