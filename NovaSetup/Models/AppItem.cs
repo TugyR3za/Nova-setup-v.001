@@ -202,7 +202,13 @@ public class InstallDefinition
 
     public bool RequiresRestart { get; set; }
 
+    public bool RequiresElevation { get; set; }
+
     public bool NeedsManualInstall { get; set; }
+
+    public int VerificationTimeoutSeconds { get; set; } = 35;
+
+    public string DetectDisplayNameContains { get; set; } = string.Empty;
 
     public string DetectExecutable { get; set; } = string.Empty;
 }

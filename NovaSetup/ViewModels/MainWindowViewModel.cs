@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Windows.Input;
 using Avalonia;
+using Avalonia.Threading;
 using Avalonia.Styling;
 using NovaSetup.Models;
 using NovaSetup.Services;
@@ -41,8 +42,10 @@ public sealed class MainWindowViewModel : ObservableObject
     private readonly AsyncRelayCommand _installCommand;
     private readonly RelayCommand _saveListCommand;
     private readonly RelayCommand _openLogFileCommand;
+    private readonly RelayCommand _showHelpCommand;
     private readonly RelayCommand _openPublisherCommand;
     private readonly RelayCommand _showAppDetailsCommand;
+    private readonly RelayCommand _closeAppDetailsCommand;
     private readonly RelayCommand _pauseInstallCommand;
     private readonly RelayCommand _exportReportCommand;
     private readonly RelayCommand _toggleSettingsPanelCommand;
@@ -68,7 +71,9 @@ public sealed class MainWindowViewModel : ObservableObject
     private bool _restartDecisionFinalized;
     private bool _isSettingsPanelOpen;
     private bool _isAccountMenuOpen;
+    private bool _isAppDetailsOpen;
     private bool _suppressSettingsLogging;
+    private bool _suppressAppSelectionHandling;
     private bool _installedAppsDetected;
     private bool _updatingFilterFlags;
     private string _currentPlatformId = PlatformService.Unknown;
@@ -81,12 +86,15 @@ public sealed class MainWindowViewModel : ObservableObject
     private string _currentSection = SectionApps;
     private string _searchText = string.Empty;
     private string _selectedFilter = "All";
+    private AppItem? _selectedDetailApp;
     private bool _isAllFilter = true;
     private bool _isGamesFilter;
+    private bool _isDriversFilter;
     private bool _isDevToolsFilter;
     private bool _isUtilitiesFilter;
     private double _progressValue;
     private CancellationTokenSource? _settingsSaveCts;
+    private CancellationTokenSource? _startupDetectionCts;
 
     private static readonly IReadOnlyList<SettingChoice> RestartBehaviorChoices =
     [
@@ -141,8 +149,10 @@ public sealed class MainWindowViewModel : ObservableObject
         _installCommand = new AsyncRelayCommand(InstallSelectedAsync, CanInstall);
         _saveListCommand = new RelayCommand(_ => SaveCurrentList());
         _openLogFileCommand = new RelayCommand(_ => OpenLogFile());
+        _showHelpCommand = new RelayCommand(_ => ShowHelpPlaceholder());
         _openPublisherCommand = new RelayCommand(OpenPublisherHomepage);
         _showAppDetailsCommand = new RelayCommand(ShowAppDetails);
+        _closeAppDetailsCommand = new RelayCommand(_ => CloseAppDetails());
         _pauseInstallCommand = new RelayCommand(_ => PauseInstallPlaceholder(), _ => IsInstalling);
         _exportReportCommand = new RelayCommand(_ => ExportReportPlaceholder());
         _toggleSettingsPanelCommand = new RelayCommand(_ => ToggleSettingsPanel());
@@ -151,7 +161,7 @@ public sealed class MainWindowViewModel : ObservableObject
         _openAccountSettingsCommand = new RelayCommand(_ => OpenAccountSettings());
         _navigateDashboardCommand = new RelayCommand(_ => NavigateTo(SectionDashboard), _ => !IsInstalling);
         _navigateAppsCommand = new RelayCommand(_ => NavigateTo(SectionApps), _ => !IsInstalling);
-        _navigateDriversCommand = new RelayCommand(_ => NavigateTo(SectionDrivers), _ => !IsInstalling);
+        _navigateDriversCommand = new RelayCommand(_ => NavigateToDriversFilter(), _ => !IsInstalling);
         _navigateMyListsCommand = new RelayCommand(_ => NavigateTo(SectionMyLists), _ => !IsInstalling);
         _navigateHistoryCommand = new RelayCommand(_ => NavigateTo(SectionHistory), _ => !IsInstalling);
         _navigateLogsCommand = new RelayCommand(_ => NavigateTo(SectionLogs), _ => !IsInstalling);
@@ -398,6 +408,18 @@ public sealed class MainWindowViewModel : ObservableObject
         }
     }
 
+    public bool IsDriversFilter
+    {
+        get => _isDriversFilter;
+        set
+        {
+            if (SetProperty(ref _isDriversFilter, value) && value && !_updatingFilterFlags)
+            {
+                SetCategoryFilter("Drivers");
+            }
+        }
+    }
+
     public bool IsUtilitiesFilter
     {
         get => _isUtilitiesFilter;
@@ -503,6 +525,71 @@ public sealed class MainWindowViewModel : ObservableObject
         private set => SetProperty(ref _restartStatusText, value);
     }
 
+    public bool IsAppDetailsOpen
+    {
+        get => _isAppDetailsOpen;
+        private set => SetProperty(ref _isAppDetailsOpen, value);
+    }
+
+    public AppItem? SelectedDetailApp
+    {
+        get => _selectedDetailApp;
+        private set
+        {
+            if (SetProperty(ref _selectedDetailApp, value))
+            {
+                NotifyAppDetailsStateChanged();
+            }
+        }
+    }
+
+    public string SelectedDetailDescription =>
+        string.IsNullOrWhiteSpace(SelectedDetailApp?.Description)
+            ? "No description is available for this app yet."
+            : SelectedDetailApp.Description;
+
+    public string SelectedDetailPlatformsText
+    {
+        get
+        {
+            if (SelectedDetailApp?.SupportedPlatforms is null)
+            {
+                return "No platform metadata";
+            }
+
+            var supportedPlatforms = new List<string>();
+            if (SelectedDetailApp.SupportedPlatforms.Windows)
+            {
+                supportedPlatforms.Add("Windows");
+            }
+
+            if (SelectedDetailApp.SupportedPlatforms.Linux)
+            {
+                supportedPlatforms.Add("Linux");
+            }
+
+            return supportedPlatforms.Count == 0 ? "No supported platforms listed" : string.Join(" • ", supportedPlatforms);
+        }
+    }
+
+    public string SelectedDetailInstallSupportText =>
+        SelectedDetailApp is null
+            ? string.Empty
+            : SelectedDetailApp.SupportsSilentInstall
+                ? "Silent install is available when the package supports it."
+                : "This app may require an interactive or manual installer flow.";
+
+    public string SelectedDetailSupportStatusText =>
+        SelectedDetailApp is null
+            ? string.Empty
+            : SelectedDetailApp.IsSupportedOnCurrentPlatform
+                ? $"Supported on {CurrentPlatform}"
+                : $"Unsupported on {CurrentPlatform}; it will be skipped if selected.";
+
+    public bool HasSelectedDetailRecommendation =>
+        SelectedDetailApp?.IsRecommended == true &&
+        !string.IsNullOrWhiteSpace(SelectedDetailApp.RecommendationReason);
+
     public double ProgressValue
     {
         get => _progressValue;
@@ -521,9 +608,13 @@ public sealed class MainWindowViewModel : ObservableObject
 
     public ICommand OpenLogFileCommand => _openLogFileCommand;
 
+    public ICommand ShowHelpCommand => _showHelpCommand;
+
     public ICommand OpenPublisherCommand => _openPublisherCommand;
 
     public ICommand ShowAppDetailsCommand => _showAppDetailsCommand;
+
+    public ICommand CloseAppDetailsCommand => _closeAppDetailsCommand;
 
     public ICommand PauseInstallCommand => _pauseInstallCommand;
 
@@ -585,28 +676,6 @@ public sealed class MainWindowViewModel : ObservableObject
 
         _selectionService.ApplySelection(apps, selection);
 
-        if (Settings.AutoDetectInstalledAppsOnStartup)
-        {
-            _detectionService.DetectInstalledApps(apps, _currentPlatformId);
-            _installedAppsDetected = true;
-        }
-
-        // Recommendation pass runs after platform + catalog + selection are loaded.
-        var recommendationSummary = _detectionService.ApplyRecommendations(
-            apps,
-            _currentPlatformId,
-            autoSelectSupportedApps: true);
-
-        if (recommendationSummary.RecommendedAppIds.Count > 0)
-        {
-            _loggingService.LogInfo(
-                $"Recommendations applied. Total={recommendationSummary.RecommendedAppIds.Count}, Supported={recommendationSummary.SupportedRecommendations}, Unsupported={recommendationSummary.UnsupportedRecommendations}");
-        }
-        else
-        {
-            _loggingService.LogInfo("No recommendation matches found in catalog for detected hardware/accessories.");
-        }
-
         _apps.Clear();
         foreach (var app in apps)
         {
@@ -616,18 +685,13 @@ public sealed class MainWindowViewModel : ObservableObject
         }
 
         ApplyVisibilityFilter();
-
-        var skippedCount = _apps.Count(app => app.WillBeSkipped);
-        var recommendedCount = _apps.Count(app => app.IsRecommended);
-        StatusText = skippedCount > 0
-            ? $"Loaded {_apps.Count} apps for {CurrentPlatform}. Recommended: {recommendedCount}. {skippedCount} selected app(s) are unsupported and will be skipped."
-            : $"Loaded {_apps.Count} apps for {CurrentPlatform}. Recommended: {recommendedCount}.";
-
+        StatusText = BuildLoadedStatusText(detectionPending: true);
         _loggingService.LogInfo(StatusText);
         NotifyAppSummaryStateChanged();
         NotifySettingsOptionBindingsChanged();
         NotifyScreenStateChanged();
         UpdateCommandStates();
+        StartBackgroundStartupDetection();
     }
 
     private void HookCollectionNotifications()
@@ -661,9 +725,12 @@ public sealed class MainWindowViewModel : ObservableObject
 
         switch (e.PropertyName)
         {
+            case nameof(AppSettings.SilentInstall):
+                RefreshAllAppVisualStates();
+                break;
             case nameof(AppSettings.OsSupportedApps):
             case nameof(AppSettings.ShowAlreadyInstalledApps):
-                ApplyVisibilityFilter();
+                RefreshAllAppVisualStates();
                 break;
             case nameof(AppSettings.AutoDetectInstalledAppsOnStartup):
                 if (Settings.AutoDetectInstalledAppsOnStartup && !_installedAppsDetected)
@@ -720,6 +787,18 @@ public sealed class MainWindowViewModel : ObservableObject
 
         ApplyTheme();
         NotifySettingsOptionBindingsChanged();
+    }
+
+    private void RefreshAllAppVisualStates()
+    {
+        foreach (var app in _apps)
+        {
+            ApplyPlatformFlags(app);
+        }
+
+        ApplyVisibilityFilter();
+        NotifyAppSummaryStateChanged();
+        UpdateCommandStates();
     }
 
     private void ApplySelectionProfile(SelectionConfig? selection)
@@ -837,14 +916,7 @@ public sealed class MainWindowViewModel : ObservableObject
             return;
         }
 
-        _detectionService.DetectInstalledApps(appSource, _currentPlatformId);
-        foreach (var app in appSource)
-        {
-            ApplyPlatformFlags(app);
-        }
-
-        _installedAppsDetected = true;
-        ApplyVisibilityFilter();
+        _ = RunInstalledAppDetectionAsync(appSource);
     }
 
     private async Task ResetSettingsAsync()
@@ -930,6 +1002,7 @@ public sealed class MainWindowViewModel : ObservableObject
         {
             IsAllFilter = string.Equals(filter, "All", StringComparison.OrdinalIgnoreCase);
             IsGamesFilter = string.Equals(filter, "Games", StringComparison.OrdinalIgnoreCase);
+            IsDriversFilter = string.Equals(filter, "Drivers", StringComparison.OrdinalIgnoreCase);
             IsDevToolsFilter = string.Equals(filter, "Dev Tools", StringComparison.OrdinalIgnoreCase);
             IsUtilitiesFilter = string.Equals(filter, "Utilities", StringComparison.OrdinalIgnoreCase);
         }
@@ -953,6 +1026,7 @@ public sealed class MainWindowViewModel : ObservableObject
         return SelectedFilter switch
         {
             "Games" => category.Contains("gaming", StringComparison.OrdinalIgnoreCase),
+            "Drivers" => IsDriverCategory(category),
             "Dev Tools" => category.Contains("coding", StringComparison.OrdinalIgnoreCase) ||
                            category.Contains("dev", StringComparison.OrdinalIgnoreCase),
             "Utilities" => category.Contains("util", StringComparison.OrdinalIgnoreCase),
@@ -966,12 +1040,15 @@ public sealed class MainWindowViewModel : ObservableObject
 
         return _currentSection switch
         {
-            SectionDrivers => category.Contains("driver", StringComparison.OrdinalIgnoreCase) ||
-                              category.Contains("accessor", StringComparison.OrdinalIgnoreCase),
+            SectionDrivers => IsDriverCategory(category),
             SectionMyLists => app.IsSelected,
             _ => true
         };
     }
+
+    private static bool IsDriverCategory(string category) =>
+        category.Contains("driver", StringComparison.OrdinalIgnoreCase) ||
+        category.Contains("accessor", StringComparison.OrdinalIgnoreCase);
 
     private void NotifyScreenStateChanged()
     {
@@ -1013,6 +1090,7 @@ public sealed class MainWindowViewModel : ObservableObject
         _currentSection = section;
         IsSettingsPanelOpen = false;
         IsAccountMenuOpen = false;
+        CloseAppDetails(logAction: false);
 
         _loggingService.LogInfo($"Navigation changed to '{section}'.");
 
@@ -1026,6 +1104,213 @@ public sealed class MainWindowViewModel : ObservableObject
         }
 
         NotifyNavigationStateChanged();
+    }
+
+    private void NavigateToDriversFilter()
+    {
+        if (!string.Equals(_currentSection, SectionApps, StringComparison.Ordinal))
+        {
+            NavigateTo(SectionApps);
+        }
+
+        SetCategoryFilter("Drivers");
+    }
+
+    private void StartBackgroundStartupDetection()
+    {
+        if (_apps.Count == 0 || string.Equals(_currentPlatformId, PlatformService.Unknown, StringComparison.Ordinal))
+        {
+            return;
+        }
+
+        var selectionSnapshot = _apps.ToDictionary(app => app.Id, app => app.IsSelected, StringComparer.OrdinalIgnoreCase);
+        _ = RunBackgroundStartupDetectionAsync(_apps.ToList(), selectionSnapshot);
+    }
+
+    private async Task RunBackgroundStartupDetectionAsync(
+        IReadOnlyList<AppItem> appSnapshot,
+        IReadOnlyDictionary<string, bool> selectionSnapshot)
+    {
+        _startupDetectionCts?.Cancel();
+        _startupDetectionCts?.Dispose();
+
+        var detectionCts = new CancellationTokenSource();
+        _startupDetectionCts = detectionCts;
+        var cancellationToken = detectionCts.Token;
+
+        try
+        {
+            IReadOnlyList<string> installedIds = Array.Empty<string>();
+            if (Settings.AutoDetectInstalledAppsOnStartup)
+            {
+                installedIds = await Task.Run(
+                    () => _detectionService.DetectInstalledAppIds(appSnapshot, _currentPlatformId),
+                    cancellationToken);
+            }
+
+            var hardwareDetection = await Task.Run(
+                () => _detectionService.DetectHardware(_currentPlatformId),
+                cancellationToken);
+
+            cancellationToken.ThrowIfCancellationRequested();
+
+            await Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                ApplyBackgroundDetectionResults(installedIds, hardwareDetection, selectionSnapshot);
+            });
+        }
+        catch (OperationCanceledException)
+        {
+            _loggingService.LogInfo("Background startup detection was cancelled.");
+        }
+        catch (Exception ex)
+        {
+            _loggingService.LogError($"Background startup detection failed: {ex.Message}");
+            await Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                StatusText = BuildLoadedStatusText(detectionPending: false);
+            });
+        }
+        finally
+        {
+            if (ReferenceEquals(_startupDetectionCts, detectionCts))
+            {
+                _startupDetectionCts = null;
+            }
+
+            detectionCts.Dispose();
+        }
+    }
+
+    private void ApplyBackgroundDetectionResults(
+        IReadOnlyList<string> installedIds,
+        HardwareDetectionResult hardwareDetection,
+        IReadOnlyDictionary<string, bool> selectionSnapshot)
+    {
+        if (Settings.AutoDetectInstalledAppsOnStartup)
+        {
+            ApplyInstalledAppResults(installedIds);
+        }
+
+        _suppressAppSelectionHandling = true;
+        try
+        {
+            var recommendationSummary = _detectionService.ApplyRecommendations(
+                _apps,
+                _currentPlatformId,
+                hardwareDetection,
+                autoSelectSupportedApps: false);
+
+            var autoSelectedCount = ApplyRecommendedSelections(selectionSnapshot);
+
+            foreach (var app in _apps)
+            {
+                ApplyPlatformFlags(app);
+            }
+
+            if (recommendationSummary.RecommendedAppIds.Count > 0)
+            {
+                _loggingService.LogInfo(
+                    $"Recommendations applied in background. Total={recommendationSummary.RecommendedAppIds.Count}, Supported={recommendationSummary.SupportedRecommendations}, Unsupported={recommendationSummary.UnsupportedRecommendations}, AutoSelectedLater={autoSelectedCount}");
+            }
+            else
+            {
+                _loggingService.LogInfo("No recommendation matches found in catalog for detected hardware/accessories.");
+            }
+        }
+        finally
+        {
+            _suppressAppSelectionHandling = false;
+        }
+
+        ApplyVisibilityFilter();
+        NotifyAppSummaryStateChanged();
+        UpdateCommandStates();
+
+        if (Settings.SaveProfilesAutomatically)
+        {
+            SaveCurrentList(showStatusMessage: false);
+        }
+
+        StatusText = BuildLoadedStatusText(detectionPending: false);
+        _loggingService.LogInfo(StatusText);
+    }
+
+    private async Task RunInstalledAppDetectionAsync(IReadOnlyList<AppItem> appSnapshot)
+    {
+        StatusText = $"{BuildLoadedStatusText(detectionPending: false)} Scanning installed apps...";
+
+        try
+        {
+            var installedIds = await Task.Run(
+                () => _detectionService.DetectInstalledAppIds(appSnapshot, _currentPlatformId));
+
+            await Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                ApplyInstalledAppResults(installedIds);
+                ApplyVisibilityFilter();
+                NotifyAppSummaryStateChanged();
+                StatusText = BuildLoadedStatusText(detectionPending: false);
+            });
+        }
+        catch (Exception ex)
+        {
+            _loggingService.LogError($"Installed app scan failed: {ex.Message}");
+            await Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                StatusText = BuildLoadedStatusText(detectionPending: false);
+            });
+        }
+    }
+
+    private void ApplyInstalledAppResults(IReadOnlyList<string> installedIds)
+    {
+        var installedIdSet = new HashSet<string>(installedIds, StringComparer.OrdinalIgnoreCase);
+        foreach (var app in _apps)
+        {
+            app.IsInstalled = installedIdSet.Contains(app.Id);
+            ApplyPlatformFlags(app);
+        }
+
+        _installedAppsDetected = true;
+    }
+
+    private int ApplyRecommendedSelections(IReadOnlyDictionary<string, bool> selectionSnapshot)
+    {
+        var autoSelectedCount = 0;
+
+        foreach (var app in _apps.Where(app => app.IsRecommended && app.IsSupportedOnCurrentPlatform))
+        {
+            var wasSelectedAtDetectionStart = selectionSnapshot.TryGetValue(app.Id, out var selected) && selected;
+            if (wasSelectedAtDetectionStart || app.IsSelected)
+            {
+                continue;
+            }
+
+            app.IsSelected = true;
+            if (!string.IsNullOrWhiteSpace(app.RecommendationReason))
+            {
+                app.RecommendationReason = $"{app.RecommendationReason} Auto-selected for convenience.";
+            }
+
+            autoSelectedCount++;
+        }
+
+        return autoSelectedCount;
+    }
+
+    private string BuildLoadedStatusText(bool detectionPending)
+    {
+        var skippedCount = _apps.Count(app => app.WillBeSkipped);
+        var recommendedCount = _apps.Count(app => app.IsRecommended);
+
+        var summary = skippedCount > 0
+            ? $"Loaded {_apps.Count} apps for {CurrentPlatform}. Recommended: {recommendedCount}. {skippedCount} selected app(s) are unsupported and will be skipped."
+            : $"Loaded {_apps.Count} apps for {CurrentPlatform}. Recommended: {recommendedCount}.";
+
+        return detectionPending
+            ? $"{summary} Scanning system in background..."
+            : summary;
     }
 
     private void SaveCurrentList(bool showStatusMessage = true)
@@ -1062,6 +1347,7 @@ public sealed class MainWindowViewModel : ObservableObject
         if (IsSettingsPanelOpen)
         {
             IsAccountMenuOpen = false;
+            CloseAppDetails(logAction: false);
         }
 
         _loggingService.LogInfo($"Settings panel {(IsSettingsPanelOpen ? "opened" : "closed")}.");
@@ -1122,7 +1408,27 @@ public sealed class MainWindowViewModel : ObservableObject
             return;
         }
 
-        StatusText = $"{app.Name}: {app.Description}";
+        SelectedDetailApp = app;
+        IsAppDetailsOpen = true;
+        IsSettingsPanelOpen = false;
+        StatusText = $"Viewing details for {app.Name}.";
+        _loggingService.LogInfo($"Opened details panel for '{app.Name}'.");
+    }
+
+    private void CloseAppDetails(bool logAction = true)
+    {
+        if (!IsAppDetailsOpen && SelectedDetailApp is null)
+        {
+            return;
+        }
+
+        IsAppDetailsOpen = false;
+        SelectedDetailApp = null;
+
+        if (logAction)
+        {
+            _loggingService.LogInfo("Closed app details panel.");
+        }
     }
 
     private void PauseInstallPlaceholder()
@@ -1156,9 +1462,15 @@ public sealed class MainWindowViewModel : ObservableObject
         }
     }
 
+    private void ShowHelpPlaceholder()
+    {
+        StatusText = "Help and documentation are not available yet.";
+        _loggingService.LogInfo(StatusText);
+    }
+
     private void HandleAppPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
-        if (sender is not AppItem app || e.PropertyName != nameof(AppItem.IsSelected))
+        if (_suppressAppSelectionHandling || sender is not AppItem app || e.PropertyName != nameof(AppItem.IsSelected))
         {
             return;
         }
@@ -1190,6 +1502,7 @@ public sealed class MainWindowViewModel : ObservableObject
 
         ResetInstallOutputState();
         IsSettingsPanelOpen = false;
+        CloseAppDetails(logAction: false);
         IsInstalling = true;
 
         InstallStatusText = $"Starting installation for {selectedApps.Count} app(s)...";
@@ -1224,6 +1537,7 @@ public sealed class MainWindowViewModel : ObservableObject
             ProgressValue = Math.Round((double)processedCount / selectedApps.Count * 100.0, 1);
         }
 
+        await RefreshInstalledStatesAfterInstallAsync();
         FinalizeInstallSummary();
         IsInstalling = false;
         await ApplyPostInstallRestartBehaviorAsync();
@@ -1371,7 +1685,22 @@ public sealed class MainWindowViewModel : ObservableObject
         }
         else if (result.Skipped)
         {
-            app.StatusBadge = app.WillBeSkipped ? "Will Be Skipped" : "Skipped";
+            if (result.Message.Contains("Already installed on this PC", StringComparison.OrdinalIgnoreCase))
+            {
+                app.IsInstalled = true;
+                app.HasInstallFailed = false;
+                app.StatusBadge = "Installed";
+            }
+            else if (result.Message.Contains("requires manual installer interaction", StringComparison.OrdinalIgnoreCase) ||
+                     result.Message.Contains("requires manual install", StringComparison.OrdinalIgnoreCase))
+            {
+                app.HasInstallFailed = false;
+                app.StatusBadge = "Needs Manual Install";
+            }
+            else
+            {
+                app.StatusBadge = app.WillBeSkipped ? "Will Be Skipped" : "Skipped";
+            }
         }
         else
         {
@@ -1383,6 +1712,26 @@ public sealed class MainWindowViewModel : ObservableObject
         {
             app.RequiresRestartHint = true;
         }
+
+        if (ReferenceEquals(SelectedDetailApp, app))
+        {
+            NotifyAppDetailsStateChanged();
+        }
+    }
+
+    private async Task RefreshInstalledStatesAfterInstallAsync()
+    {
+        var detectedIds = await Task.Run(() =>
+            _detectionService.DetectInstalledAppIds(_apps.ToList(), _currentPlatformId));
+
+        var installedSet = new HashSet<string>(detectedIds, StringComparer.OrdinalIgnoreCase);
+        foreach (var app in _apps)
+        {
+            app.IsInstalled = installedSet.Contains(app.Id);
+            ApplyPlatformFlags(app);
+        }
+
+        NotifyAppSummaryStateChanged();
     }
 
     private void ApplyPlatformFlags(AppItem app)
@@ -1436,6 +1785,10 @@ public sealed class MainWindowViewModel : ObservableObject
         {
             app.StatusBadge = "Installed";
         }
+        else if (app.IsSelected && Settings.SilentInstall && !app.SupportsSilentInstall && !app.HasInstallFailed)
+        {
+            app.StatusBadge = "Needs Manual Install";
+        }
         else if (!app.HasInstallFailed)
         {
             app.StatusBadge = app.IsSelected ? "Selected" : "Available";
@@ -1444,6 +1797,11 @@ public sealed class MainWindowViewModel : ObservableObject
         if (app.RecommendationReason == UnsupportedSelectionNote)
         {
             app.RecommendationReason = string.Empty;
+        }
+
+        if (ReferenceEquals(SelectedDetailApp, app))
+        {
+            NotifyAppDetailsStateChanged();
         }
     }
 
@@ -1595,6 +1953,16 @@ public sealed class MainWindowViewModel : ObservableObject
         OnPropertyChanged(nameof(RecommendedAppsSummary));
         OnPropertyChanged(nameof(UnsupportedSelectedCount));
         OnPropertyChanged(nameof(HasUnsupportedSelectedApps));
+    }
+
+    private void NotifyAppDetailsStateChanged()
+    {
+        OnPropertyChanged(nameof(SelectedDetailApp));
+        OnPropertyChanged(nameof(SelectedDetailDescription));
+        OnPropertyChanged(nameof(SelectedDetailPlatformsText));
+        OnPropertyChanged(nameof(SelectedDetailInstallSupportText));
+        OnPropertyChanged(nameof(SelectedDetailSupportStatusText));
+        OnPropertyChanged(nameof(HasSelectedDetailRecommendation));
     }
 
     private static bool IsUnsupportedSkippedResult(InstallResult result)

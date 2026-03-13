@@ -3,7 +3,6 @@
   "TargetPlatform": "Windows",
   "SelectedApps": [
     "firefox",
-    "nvidia-app",
     "htop"
   ],
   "Settings": {

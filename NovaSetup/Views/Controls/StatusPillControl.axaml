@@ -1,0 +1,57 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="clr-namespace:NovaSetup.Views.Controls"
+             x:Class="NovaSetup.Views.Controls.StatusPillControl"
+             x:CompileBindings="False"
+             x:Name="Root">
+  <UserControl.Styles>
+    <Style Selector="Border.statusPill">
+      <Setter Property="Background" Value="{DynamicResource ElevatedCardBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource InputBorderBrush}" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="CornerRadius" Value="8" />
+      <Setter Property="Padding" Value="8,3" />
+    </Style>
+    <Style Selector="Border.statusPill.success">
+      <Setter Property="Background" Value="{DynamicResource SuccessSurfaceBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource SuccessBrush}" />
+    </Style>
+    <Style Selector="Border.statusPill.info">
+      <Setter Property="Background" Value="{DynamicResource InfoSurfaceBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource InfoBrush}" />
+    </Style>
+    <Style Selector="Border.statusPill.warning">
+      <Setter Property="Background" Value="{DynamicResource WarningSurfaceBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource WarningBrush}" />
+    </Style>
+    <Style Selector="Border.statusPill.error">
+      <Setter Property="Background" Value="{DynamicResource DangerSurfaceBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource DangerBrush}" />
+    </Style>
+    <Style Selector="TextBlock.statusPillLabel">
+      <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+      <Setter Property="FontSize" Value="12" />
+    </Style>
+    <Style Selector="TextBlock.statusPillLabel.success">
+      <Setter Property="Foreground" Value="{DynamicResource SuccessBrush}" />
+    </Style>
+    <Style Selector="TextBlock.statusPillLabel.info">
+      <Setter Property="Foreground" Value="{DynamicResource InfoBrush}" />
+    </Style>
+    <Style Selector="TextBlock.statusPillLabel.warning">
+      <Setter Property="Foreground" Value="{DynamicResource WarningBrush}" />
+    </Style>
+    <Style Selector="TextBlock.statusPillLabel.error">
+      <Setter Property="Foreground" Value="{DynamicResource DangerBrush}" />
+    </Style>
+  </UserControl.Styles>
+
+  <Border x:Name="PART_Pill"
+          Classes="statusPill"
+          VerticalAlignment="Center"
+          HorizontalAlignment="Left">
+    <TextBlock x:Name="PART_Label"
+               Classes="statusPillLabel"
+               Text="{Binding #Root.Text}" />
+  </Border>
+</UserControl>

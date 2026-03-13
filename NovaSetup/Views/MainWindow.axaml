@@ -2,10 +2,13 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:controls="clr-namespace:NovaSetup.Views.Controls"
+        xmlns:design="clr-namespace:NovaSetup.Design"
         mc:Ignorable="d"
         d:DesignWidth="1500"
         d:DesignHeight="980"
         x:Class="NovaSetup.Views.MainWindow"
+        x:Name="RootWindow"
         x:CompileBindings="False"
         Title="NovaSetup"
         Icon="avares://NovaSetup/Assets/nova_logo.ico"
@@ -14,548 +17,36 @@
         Foreground="{DynamicResource TextPrimaryBrush}"
         MinWidth="1120"
         MinHeight="720">
-    <Window.Resources>
-        <ResourceDictionary>
-            <ResourceDictionary.ThemeDictionaries>
-                <ResourceDictionary x:Key="Dark">
-                    <SolidColorBrush x:Key="ShellBorderBrush" Color="#2B313C" />
-                    <SolidColorBrush x:Key="ShellBackgroundBrush" Color="#111315" />
-                    <SolidColorBrush x:Key="SidebarBrush" Color="#171A1F" />
-                    <SolidColorBrush x:Key="PanelBrush" Color="#171A1F" />
-                    <SolidColorBrush x:Key="CardBrush" Color="#1D2128" />
-                    <SolidColorBrush x:Key="ElevatedCardBrush" Color="#232833" />
-                    <SolidColorBrush x:Key="CardBorderBrush" Color="#2B313C" />
-                    <SolidColorBrush x:Key="HoverSurfaceBrush" Color="#262C37" />
-                    <SolidColorBrush x:Key="PressedSurfaceBrush" Color="#2E3441" />
-                    <SolidColorBrush x:Key="InputBrush" Color="#171A1F" />
-                    <SolidColorBrush x:Key="InputBorderBrush" Color="#2B313C" />
-                    <SolidColorBrush x:Key="TextPrimaryBrush" Color="#F5F7FA" />
-                    <SolidColorBrush x:Key="TextSecondaryBrush" Color="#B5BEC9" />
-                    <SolidColorBrush x:Key="TextMutedBrush" Color="#8A94A3" />
-                    <SolidColorBrush x:Key="TextDisabledBrush" Color="#687180" />
-                    <SolidColorBrush x:Key="AccentBrush" Color="#5D7DFF" />
-                    <SolidColorBrush x:Key="AccentHoverBrush" Color="#738FFF" />
-                    <SolidColorBrush x:Key="AccentPressedBrush" Color="#4A68FF" />
-                    <SolidColorBrush x:Key="FocusBrush" Color="#8FA5FF" />
-                    <SolidColorBrush x:Key="AccentSoftBrush" Color="#1F2C47" />
-                    <SolidColorBrush x:Key="SuccessBrush" Color="#45B578" />
-                    <SolidColorBrush x:Key="WarningBrush" Color="#E5B74F" />
-                    <SolidColorBrush x:Key="DangerBrush" Color="#E15959" />
-                    <SolidColorBrush x:Key="InfoBrush" Color="#5CA9FF" />
-                    <SolidColorBrush x:Key="SuccessSurfaceBrush" Color="#18241D" />
-                    <SolidColorBrush x:Key="WarningSurfaceBrush" Color="#2A2317" />
-                    <SolidColorBrush x:Key="DangerSurfaceBrush" Color="#281B1B" />
-                    <SolidColorBrush x:Key="InfoSurfaceBrush" Color="#1A2534" />
-                    <SolidColorBrush x:Key="WarningMessageBrush" Color="#E5C387" />
-                    <SolidColorBrush x:Key="BrandTileBrush" Color="#1A2231" />
-                    <SolidColorBrush x:Key="AppIconBackgroundBrush" Color="#293650" />
-                    <SolidColorBrush x:Key="RecommendedBadgeBrush" Color="#243A63" />
-                    <SolidColorBrush x:Key="LinkBrush" Color="#7EA2FF" />
-                </ResourceDictionary>
-                <ResourceDictionary x:Key="Light">
-                    <SolidColorBrush x:Key="ShellBorderBrush" Color="#D9DEE6" />
-                    <SolidColorBrush x:Key="ShellBackgroundBrush" Color="#F5F6F8" />
-                    <SolidColorBrush x:Key="SidebarBrush" Color="#FFFFFF" />
-                    <SolidColorBrush x:Key="PanelBrush" Color="#FFFFFF" />
-                    <SolidColorBrush x:Key="CardBrush" Color="#FBFBFC" />
-                    <SolidColorBrush x:Key="ElevatedCardBrush" Color="#F0F2F5" />
-                    <SolidColorBrush x:Key="CardBorderBrush" Color="#D9DEE6" />
-                    <SolidColorBrush x:Key="HoverSurfaceBrush" Color="#EEF2F7" />
-                    <SolidColorBrush x:Key="PressedSurfaceBrush" Color="#E5EAF2" />
-                    <SolidColorBrush x:Key="InputBrush" Color="#FFFFFF" />
-                    <SolidColorBrush x:Key="InputBorderBrush" Color="#D9DEE6" />
-                    <SolidColorBrush x:Key="TextPrimaryBrush" Color="#151821" />
-                    <SolidColorBrush x:Key="TextSecondaryBrush" Color="#4F5A6B" />
-                    <SolidColorBrush x:Key="TextMutedBrush" Color="#748094" />
-                    <SolidColorBrush x:Key="TextDisabledBrush" Color="#99A3B2" />
-                    <SolidColorBrush x:Key="AccentBrush" Color="#4E6EFF" />
-                    <SolidColorBrush x:Key="AccentHoverBrush" Color="#3A59E5" />
-                    <SolidColorBrush x:Key="AccentPressedBrush" Color="#2945C3" />
-                    <SolidColorBrush x:Key="FocusBrush" Color="#8B9FFF" />
-                    <SolidColorBrush x:Key="AccentSoftBrush" Color="#E6ECFF" />
-                    <SolidColorBrush x:Key="SuccessBrush" Color="#38A968" />
-                    <SolidColorBrush x:Key="WarningBrush" Color="#C89726" />
-                    <SolidColorBrush x:Key="DangerBrush" Color="#D94E4E" />
-                    <SolidColorBrush x:Key="InfoBrush" Color="#2D7BEA" />
-                    <SolidColorBrush x:Key="SuccessSurfaceBrush" Color="#EAF6EF" />
-                    <SolidColorBrush x:Key="WarningSurfaceBrush" Color="#FBF3E3" />
-                    <SolidColorBrush x:Key="DangerSurfaceBrush" Color="#FBEDED" />
-                    <SolidColorBrush x:Key="InfoSurfaceBrush" Color="#EBF2FF" />
-                    <SolidColorBrush x:Key="WarningMessageBrush" Color="#7C5B1A" />
-                    <SolidColorBrush x:Key="BrandTileBrush" Color="#E7EEFF" />
-                    <SolidColorBrush x:Key="AppIconBackgroundBrush" Color="#DDE7FF" />
-                    <SolidColorBrush x:Key="RecommendedBadgeBrush" Color="#E8EEFF" />
-                    <SolidColorBrush x:Key="LinkBrush" Color="#2D7BEA" />
-                </ResourceDictionary>
-            </ResourceDictionary.ThemeDictionaries>
-        </ResourceDictionary>
-    </Window.Resources>
-
-    <Window.Styles>
-        <Style Selector="TextBlock">
-            <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
-            <Setter Property="FontFamily" Value="Segoe UI Variable Text, Segoe UI, Inter, Arial" />
-        </Style>
-
-        <Style Selector="Border.shellPanel">
-            <Setter Property="BorderBrush" Value="{DynamicResource ShellBorderBrush}" />
-            <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="CornerRadius" Value="24" />
-            <Setter Property="BoxShadow" Value="0 4 16 0 rgba(0, 0, 0, 0.08)" />
-        </Style>
-
-        <Style Selector="Border.card">
-            <Setter Property="Background" Value="{DynamicResource CardBrush}" />
-            <Setter Property="BorderBrush" Value="{DynamicResource CardBorderBrush}" />
-            <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="CornerRadius" Value="18" />
-            <Setter Property="Padding" Value="12" />
-            <Setter Property="BoxShadow" Value="0 2 8 0 rgba(0, 0, 0, 0.08)" />
-        </Style>
-
-        <Style Selector="Border.rowCard">
-            <Setter Property="Background" Value="{DynamicResource ElevatedCardBrush}" />
-            <Setter Property="BorderBrush" Value="{DynamicResource CardBorderBrush}" />
-            <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="CornerRadius" Value="14" />
-            <Setter Property="Padding" Value="8" />
-            <Setter Property="Margin" Value="0,0,0,6" />
-            <Setter Property="BoxShadow" Value="0 1 4 0 rgba(0, 0, 0, 0.05)" />
-        </Style>
-
-        <Style Selector="Border.metaChip">
-            <Setter Property="Background" Value="{DynamicResource InputBrush}" />
-            <Setter Property="BorderBrush" Value="{DynamicResource InputBorderBrush}" />
-            <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="CornerRadius" Value="999" />
-            <Setter Property="Padding" Value="10,5" />
-            <Setter Property="BoxShadow" Value="0 1 3 0 rgba(0, 0, 0, 0.04)" />
-        </Style>
-
-        <Style Selector="TextBox">
-            <Setter Property="Background" Value="{DynamicResource InputBrush}" />
-            <Setter Property="BorderBrush" Value="{DynamicResource InputBorderBrush}" />
-            <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
-            <Setter Property="CornerRadius" Value="12" />
-            <Setter Property="Padding" Value="11,7" />
-        </Style>
-
-        <Style Selector="TextBox:pointerover">
-            <Setter Property="Background" Value="{DynamicResource HoverSurfaceBrush}" />
-        </Style>
-
-        <Style Selector="TextBox:focus">
-            <Setter Property="BorderBrush" Value="{DynamicResource FocusBrush}" />
-            <Setter Property="BorderThickness" Value="1.5" />
-        </Style>
-
-        <Style Selector="ComboBox">
-            <Setter Property="Background" Value="{DynamicResource InputBrush}" />
-            <Setter Property="BorderBrush" Value="{DynamicResource InputBorderBrush}" />
-            <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
-            <Setter Property="Padding" Value="9,6" />
-        </Style>
-
-        <Style Selector="ComboBox:pointerover">
-            <Setter Property="Background" Value="{DynamicResource HoverSurfaceBrush}" />
-        </Style>
-
-        <Style Selector="ComboBox:focus">
-            <Setter Property="BorderBrush" Value="{DynamicResource FocusBrush}" />
-            <Setter Property="BorderThickness" Value="1.5" />
-        </Style>
-
-        <Style Selector="ComboBoxItem">
-            <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
-            <Setter Property="Background" Value="{DynamicResource InputBrush}" />
-        </Style>
-
-        <Style Selector="Button">
-            <Setter Property="Background" Value="{DynamicResource CardBrush}" />
-            <Setter Property="BorderBrush" Value="{DynamicResource CardBorderBrush}" />
-            <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
-            <Setter Property="CornerRadius" Value="12" />
-            <Setter Property="Padding" Value="12,8" />
-        </Style>
-
-        <Style Selector="Button:pointerover">
-            <Setter Property="Background" Value="{DynamicResource HoverSurfaceBrush}" />
-        </Style>
-
-        <Style Selector="Button:pressed">
-            <Setter Property="Background" Value="{DynamicResource PressedSurfaceBrush}" />
-        </Style>
-
-        <Style Selector="Button:disabled">
-            <Setter Property="Foreground" Value="{DynamicResource TextDisabledBrush}" />
-        </Style>
-
-        <Style Selector="Button.primary">
-            <Setter Property="Background" Value="{DynamicResource AccentBrush}" />
-            <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}" />
-            <Setter Property="Foreground" Value="#FFFFFF" />
-            <Setter Property="FontWeight" Value="SemiBold" />
-            <Setter Property="Padding" Value="18,9" />
-            <Setter Property="FontSize" Value="15" />
-            <Setter Property="CornerRadius" Value="12" />
-        </Style>
-
-        <Style Selector="Button.primary:pointerover">
-            <Setter Property="Background" Value="{DynamicResource AccentHoverBrush}" />
-            <Setter Property="BorderBrush" Value="{DynamicResource AccentHoverBrush}" />
-        </Style>
-
-        <Style Selector="Button.primary:pressed">
-            <Setter Property="Background" Value="{DynamicResource AccentPressedBrush}" />
-            <Setter Property="BorderBrush" Value="{DynamicResource AccentPressedBrush}" />
-        </Style>
-
-        <Style Selector="Button.ghost">
-            <Setter Property="Background" Value="{DynamicResource InputBrush}" />
-            <Setter Property="BorderBrush" Value="{DynamicResource InputBorderBrush}" />
-        </Style>
-
-        <Style Selector="Button.icon">
-            <Setter Property="Width" Value="38" />
-            <Setter Property="Height" Value="38" />
-            <Setter Property="Padding" Value="0" />
-            <Setter Property="FontSize" Value="15" />
-            <Setter Property="CornerRadius" Value="10" />
-        </Style>
-
-        <Style Selector="Button.compact">
-            <Setter Property="Padding" Value="12,6" />
-            <Setter Property="FontSize" Value="13" />
-            <Setter Property="CornerRadius" Value="10" />
-        </Style>
-
-        <Style Selector="Border.accountPrimary">
-            <Setter Property="Background" Value="{DynamicResource PanelBrush}" />
-            <Setter Property="BorderBrush" Value="{DynamicResource InputBorderBrush}" />
-            <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="CornerRadius" Value="14" />
-            <Setter Property="Padding" Value="10,9" />
-            <Setter Property="BoxShadow" Value="0 0 0 0 rgba(0, 0, 0, 0)" />
-        </Style>
-
-        <Style Selector="Border.accountPrimary:pointerover">
-            <Setter Property="Background" Value="{DynamicResource HoverSurfaceBrush}" />
-            <Setter Property="BorderBrush" Value="{DynamicResource CardBorderBrush}" />
-        </Style>
-
-        <Style Selector="Button.accountSecondary">
-            <Setter Property="Background" Value="{DynamicResource ElevatedCardBrush}" />
-            <Setter Property="BorderBrush" Value="{DynamicResource CardBorderBrush}" />
-            <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="CornerRadius" Value="12" />
-            <Setter Property="Padding" Value="10,8" />
-            <Setter Property="HorizontalContentAlignment" Value="Left" />
-        </Style>
-
-        <Style Selector="Button.accountSecondary:pointerover">
-            <Setter Property="Background" Value="{DynamicResource HoverSurfaceBrush}" />
-        </Style>
-
-        <Style Selector="Button.accountArrow">
-            <Setter Property="Width" Value="22" />
-            <Setter Property="Height" Value="22" />
-            <Setter Property="Padding" Value="0" />
-            <Setter Property="Background" Value="Transparent" />
-            <Setter Property="BorderBrush" Value="Transparent" />
-            <Setter Property="BorderThickness" Value="0" />
-            <Setter Property="CornerRadius" Value="7" />
-        </Style>
-
-        <Style Selector="Button.accountArrow:pointerover">
-            <Setter Property="Background" Value="{DynamicResource HoverSurfaceBrush}" />
-        </Style>
-
-        <Style Selector="Button.accountArrow:pressed">
-            <Setter Property="Background" Value="{DynamicResource PressedSurfaceBrush}" />
-        </Style>
-
-        <Style Selector="Border.accountMenuPopup">
-            <Setter Property="Background" Value="{DynamicResource CardBrush}" />
-            <Setter Property="BorderBrush" Value="{DynamicResource CardBorderBrush}" />
-            <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="CornerRadius" Value="16" />
-            <Setter Property="Padding" Value="8" />
-            <Setter Property="BoxShadow" Value="0 12 32 0 rgba(0, 0, 0, 0.20)" />
-        </Style>
-
-        <Style Selector="Button.accountMenuItem">
-            <Setter Property="Background" Value="Transparent" />
-            <Setter Property="BorderBrush" Value="Transparent" />
-            <Setter Property="BorderThickness" Value="0" />
-            <Setter Property="CornerRadius" Value="10" />
-            <Setter Property="Padding" Value="12,10" />
-            <Setter Property="HorizontalContentAlignment" Value="Left" />
-        </Style>
-
-        <Style Selector="Button.accountMenuItem:pointerover">
-            <Setter Property="Background" Value="{DynamicResource HoverSurfaceBrush}" />
-        </Style>
-
-        <Style Selector="Button.link">
-            <Setter Property="Background" Value="Transparent" />
-            <Setter Property="BorderThickness" Value="0" />
-            <Setter Property="Padding" Value="0" />
-            <Setter Property="Foreground" Value="{DynamicResource LinkBrush}" />
-            <Setter Property="HorizontalAlignment" Value="Left" />
-            <Setter Property="Cursor" Value="Hand" />
-        </Style>
-
-        <Style Selector="Button.link:pointerover">
-            <Setter Property="Opacity" Value="0.8" />
-        </Style>
-
-        <Style Selector="Button.nav">
-            <Setter Property="Background" Value="Transparent" />
-            <Setter Property="BorderBrush" Value="Transparent" />
-            <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="CornerRadius" Value="12" />
-            <Setter Property="Padding" Value="11,8" />
-            <Setter Property="HorizontalContentAlignment" Value="Left" />
-            <Setter Property="FontSize" Value="15" />
-        </Style>
-
-        <Style Selector="Button.nav:pointerover">
-            <Setter Property="Background" Value="{DynamicResource HoverSurfaceBrush}" />
-        </Style>
-
-        <Style Selector="Button.navActive">
-            <Setter Property="Background" Value="{DynamicResource AccentSoftBrush}" />
-            <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}" />
-            <Setter Property="BorderThickness" Value="1.2" />
-            <Setter Property="FontWeight" Value="SemiBold" />
-        </Style>
-
-        <Style Selector="RadioButton.pill">
-            <Setter Property="Background" Value="{DynamicResource InputBrush}" />
-            <Setter Property="BorderBrush" Value="{DynamicResource InputBorderBrush}" />
-            <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="Foreground" Value="{DynamicResource TextMutedBrush}" />
-            <Setter Property="CornerRadius" Value="999" />
-            <Setter Property="Padding" Value="10,5" />
-            <Setter Property="FontSize" Value="13" />
-        </Style>
-
-        <Style Selector="RadioButton.pill:pointerover">
-            <Setter Property="Background" Value="{DynamicResource HoverSurfaceBrush}" />
-        </Style>
-
-        <Style Selector="RadioButton.pill:checked">
-            <Setter Property="Background" Value="{DynamicResource AccentSoftBrush}" />
-            <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}" />
-            <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
-            <Setter Property="BorderThickness" Value="1.5" />
-        </Style>
-
-        <Style Selector="CheckBox">
-            <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
-            <Setter Property="FontSize" Value="14" />
-        </Style>
-
-        <Style Selector="CheckBox.appCheck">
-            <Setter Property="Width" Value="22" />
-            <Setter Property="Height" Value="22" />
-            <Setter Property="Background" Value="Transparent" />
-            <Setter Property="BorderBrush" Value="Transparent" />
-            <Setter Property="BorderThickness" Value="0" />
-            <Setter Property="Padding" Value="0" />
-            <Setter Property="Cursor" Value="Hand" />
-        </Style>
-    </Window.Styles>
+    <Design.DataContext>
+        <design:MainWindowSampleData />
+    </Design.DataContext>
 
     <Border Margin="10"
             Classes="shellPanel"
             Padding="8"
             Background="{DynamicResource ShellBackgroundBrush}">
         <Grid ColumnDefinitions="220,*" ColumnSpacing="10">
-            <Border Grid.Column="0"
-                    Classes="shellPanel"
-                    Background="{DynamicResource SidebarBrush}"
-                    Padding="12">
-                <Grid RowDefinitions="Auto,*,Auto" RowSpacing="14">
-                    <Grid ColumnDefinitions="44,*" ColumnSpacing="10">
-                        <Border Width="44"
-                                Height="44"
-                                CornerRadius="12"
-                                Background="{DynamicResource BrandTileBrush}"
-                                ClipToBounds="True">
-                            <Image Source="avares://NovaSetup/Assets/nova_logo_512.png"
-                                   Stretch="UniformToFill" />
-                        </Border>
-                        <StackPanel Grid.Column="1"
-                                    Spacing="0"
-                                    VerticalAlignment="Center">
-                            <TextBlock Text="Nova"
-                                       FontSize="22"
-                                       FontWeight="Bold" />
-                            <TextBlock Text="Setup everything fast"
-                                       FontSize="13"
-                                       Foreground="{DynamicResource TextMutedBrush}" />
-                        </StackPanel>
-                    </Grid>
-
-                    <ScrollViewer Grid.Row="1"
-                                  VerticalScrollBarVisibility="Auto"
-                                  HorizontalScrollBarVisibility="Disabled">
-                        <StackPanel Spacing="6">
-                            <Button Classes="nav navActive"
-                                    IsVisible="{Binding IsDashboardSelected}"
-                                    Content="Dashboard"
-                                    Command="{Binding NavigateDashboardCommand}" />
-                            <Button Classes="nav"
-                                    IsVisible="{Binding IsDashboardUnselected}"
-                                    Content="Dashboard"
-                                    Command="{Binding NavigateDashboardCommand}" />
-
-                            <Button Classes="nav navActive"
-                                    IsVisible="{Binding IsAppsSelected}"
-                                    Content="Apps"
-                                    Command="{Binding NavigateAppsCommand}" />
-                            <Button Classes="nav"
-                                    IsVisible="{Binding IsAppsUnselected}"
-                                    Content="Apps"
-                                    Command="{Binding NavigateAppsCommand}" />
-
-                            <Button Classes="nav navActive"
-                                    IsVisible="{Binding IsDriversSelected}"
-                                    Content="Drivers"
-                                    Command="{Binding NavigateDriversCommand}" />
-                            <Button Classes="nav"
-                                    IsVisible="{Binding IsDriversUnselected}"
-                                    Content="Drivers"
-                                    Command="{Binding NavigateDriversCommand}" />
-
-                            <Button Classes="nav navActive"
-                                    IsVisible="{Binding IsMyListsSelected}"
-                                    Content="My Lists"
-                                    Command="{Binding NavigateMyListsCommand}" />
-                            <Button Classes="nav"
-                                    IsVisible="{Binding IsMyListsUnselected}"
-                                    Content="My Lists"
-                                    Command="{Binding NavigateMyListsCommand}" />
-
-                            <Button Classes="nav navActive"
-                                    IsVisible="{Binding IsHistorySelected}"
-                                    Content="History"
-                                    Command="{Binding NavigateHistoryCommand}" />
-                            <Button Classes="nav"
-                                    IsVisible="{Binding IsHistoryUnselected}"
-                                    Content="History"
-                                    Command="{Binding NavigateHistoryCommand}" />
-
-                            <Button Classes="nav navActive"
-                                    IsVisible="{Binding IsLogsSelected}"
-                                    Content="Logs"
-                                    Command="{Binding NavigateLogsCommand}" />
-                            <Button Classes="nav"
-                                    IsVisible="{Binding IsLogsUnselected}"
-                                    Content="Logs"
-                                    Command="{Binding NavigateLogsCommand}" />
-                        </StackPanel>
-                    </ScrollViewer>
-
-                    <Grid Grid.Row="2">
-                        <Border Classes="accountPrimary">
-                            <Grid ColumnDefinitions="Auto,*,Auto"
-                                  ColumnSpacing="8">
-                                <Border Width="34"
-                                        Height="34"
-                                        CornerRadius="10"
-                                        Background="{DynamicResource SuccessBrush}"
-                                        VerticalAlignment="Center">
-                                    <Viewbox Width="16" Height="16">
-                                        <Path Fill="#FFFFFF"
-                                              Data="M12,4A4,4 0 0,1 16,8A4,4 0 0,1 12,12A4,4 0 0,1 8,8A4,4 0 0,1 12,4M12,14C16.42,14 20,15.79 20,18V20H4V18C4,15.79 7.58,14 12,14Z" />
-                                    </Viewbox>
-                                </Border>
-
-                                <StackPanel Grid.Column="1"
-                                            Spacing="0"
-                                            VerticalAlignment="Center">
-                                    <TextBlock Text="My Account"
-                                               FontSize="14"
-                                               FontWeight="SemiBold"
-                                               TextWrapping="NoWrap" />
-                                    <TextBlock Text="{Binding CurrentProfileName}"
-                                               Foreground="{DynamicResource TextMutedBrush}"
-                                               FontSize="11"
-                                               TextWrapping="NoWrap"
-                                               TextTrimming="CharacterEllipsis" />
-                                </StackPanel>
-
-                                <Button x:Name="AccountMenuAnchor"
-                                        Grid.Column="2"
-                                        Classes="accountArrow"
-                                        Command="{Binding ToggleAccountMenuCommand}"
-                                        VerticalAlignment="Center">
-                                    <Viewbox Width="12"
-                                             Height="12">
-                                        <Path Fill="{DynamicResource TextMutedBrush}"
-                                              Data="M8.59,16.59L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.59Z" />
-                                    </Viewbox>
-                                </Button>
-                            </Grid>
-                        </Border>
-
-                        <Popup IsOpen="{Binding IsAccountMenuOpen}"
-                               PlacementTarget="{Binding #AccountMenuAnchor}"
-                               Placement="RightEdgeAlignedBottom"
-                               HorizontalOffset="10"
-                               VerticalOffset="-8"
-                               IsLightDismissEnabled="True"
-                               Closed="AccountMenuPopup_OnClosed">
-                            <Border Classes="accountMenuPopup"
-                                    MinWidth="188">
-                                <StackPanel Spacing="2">
-                                    <Button Classes="accountMenuItem"
-                                            Command="{Binding OpenAccountProfileCommand}">
-                                        <StackPanel Orientation="Horizontal"
-                                                    Spacing="10">
-                                            <Viewbox Width="14" Height="14">
-                                                <Path Fill="{DynamicResource TextMutedBrush}"
-                                                      Data="M4,5H20V7H4V5M4,11H20V13H4V11M4,17H14V19H4V17Z" />
-                                            </Viewbox>
-                                            <TextBlock Text="Profile" />
-                                        </StackPanel>
-                                    </Button>
-
-                                    <Button Classes="accountMenuItem"
-                                            Command="{Binding OpenAccountSettingsCommand}">
-                                        <StackPanel Orientation="Horizontal"
-                                                    Spacing="10">
-                                            <Viewbox Width="14" Height="14">
-                                                <Path Fill="{DynamicResource TextMutedBrush}"
-                                                      Data="M19.14,12.94A7.43,7.43 0 0,0 19.19,12A7.43,7.43 0 0,0 19.14,11.06L21.19,9.47C21.37,9.33 21.42,9.08 21.31,8.88L19.31,5.42C19.2,5.22 18.95,5.13 18.74,5.2L16.33,6.17C15.83,5.79 15.29,5.47 14.7,5.23L14.34,2.67C14.31,2.44 14.11,2.27 13.88,2.27H10.12C9.89,2.27 9.69,2.44 9.66,2.67L9.3,5.23C8.71,5.47 8.17,5.79 7.67,6.17L5.26,5.2C5.05,5.13 4.8,5.22 4.69,5.42L2.69,8.88C2.58,9.08 2.63,9.33 2.81,9.47L4.86,11.06A7.43,7.43 0 0,0 4.81,12A7.43,7.43 0 0,0 4.86,12.94L2.81,14.53C2.63,14.67 2.58,14.92 2.69,15.12L4.69,18.58C4.8,18.78 5.05,18.87 5.26,18.8L7.67,17.83C8.17,18.21 8.71,18.53 9.3,18.77L9.66,21.33C9.69,21.56 9.89,21.73 10.12,21.73H13.88C14.11,21.73 14.31,21.56 14.34,21.33L14.7,18.77C15.29,18.53 15.83,18.21 16.33,17.83L18.74,18.8C18.95,18.87 19.2,18.78 19.31,18.58L21.31,15.12C21.42,14.92 21.37,14.67 21.19,14.53L19.14,12.94M12,15.5A3.5,3.5 0 0,1 8.5,12A3.5,3.5 0 0,1 12,8.5A3.5,3.5 0 0,1 15.5,12A3.5,3.5 0 0,1 12,15.5Z" />
-                                            </Viewbox>
-                                            <TextBlock Text="Settings" />
-                                        </StackPanel>
-                                    </Button>
-
-                                    <Button Classes="accountMenuItem"
-                                            IsEnabled="False">
-                                        <StackPanel Orientation="Horizontal"
-                                                    Spacing="10">
-                                            <Viewbox Width="14" Height="14">
-                                                <Path Fill="{DynamicResource TextMutedBrush}"
-                                                      Data="M10,17L15,12L10,7V17M4,19H6V5H4V19Z" />
-                                            </Viewbox>
-                                            <TextBlock Text="Sign Out"
-                                                       Foreground="{DynamicResource TextMutedBrush}" />
-                                        </StackPanel>
-                                    </Button>
-                                </StackPanel>
-                            </Border>
-                        </Popup>
-                    </Grid>
-                </Grid>
-            </Border>
+            <controls:SidebarControl Grid.Column="0"
+                                     CurrentProfileName="{Binding CurrentProfileName}"
+                                     IsDashboardSelected="{Binding IsDashboardSelected}"
+                                     IsDashboardUnselected="{Binding IsDashboardUnselected}"
+                                     IsAppsSelected="{Binding IsAppsSelected}"
+                                     IsAppsUnselected="{Binding IsAppsUnselected}"
+                                     IsMyListsSelected="{Binding IsMyListsSelected}"
+                                     IsMyListsUnselected="{Binding IsMyListsUnselected}"
+                                     IsHistorySelected="{Binding IsHistorySelected}"
+                                     IsHistoryUnselected="{Binding IsHistoryUnselected}"
+                                     IsLogsSelected="{Binding IsLogsSelected}"
+                                     IsLogsUnselected="{Binding IsLogsUnselected}"
+                                     NavigateDashboardCommand="{Binding NavigateDashboardCommand}"
+                                     NavigateAppsCommand="{Binding NavigateAppsCommand}"
+                                     NavigateMyListsCommand="{Binding NavigateMyListsCommand}"
+                                     NavigateHistoryCommand="{Binding NavigateHistoryCommand}"
+                                     NavigateLogsCommand="{Binding NavigateLogsCommand}"
+                                     ToggleAccountMenuCommand="{Binding ToggleAccountMenuCommand}"
+                                     OpenAccountProfileCommand="{Binding OpenAccountProfileCommand}"
+                                     OpenAccountSettingsCommand="{Binding OpenAccountSettingsCommand}"
+                                     IsAccountMenuOpen="{Binding IsAccountMenuOpen, Mode=TwoWay}" />
 
             <Border Grid.Column="1"
                     Classes="shellPanel"
@@ -565,60 +56,15 @@
                     <Grid IsVisible="{Binding IsHomeScreenVisible}"
                           RowDefinitions="Auto,*"
                           RowSpacing="10">
-                        <StackPanel Grid.Row="0"
-                                    Spacing="8">
-                            <Grid ColumnDefinitions="*,Auto"
-                                  ColumnSpacing="12">
-                                <StackPanel Spacing="2">
-                                    <TextBlock Text="{Binding HomeTitle}"
-                                               FontSize="23"
-                                               FontWeight="Bold"
-                                               TextWrapping="Wrap" />
-                                    <TextBlock Text="{Binding HomeSubtitle}"
-                                               FontSize="14"
-                                               Foreground="{DynamicResource TextMutedBrush}"
-                                               TextWrapping="Wrap" />
-                                </StackPanel>
-
-                                <Grid Grid.Column="1"
-                                      ColumnDefinitions="*,Auto"
-                                      ColumnSpacing="8"
-                                      VerticalAlignment="Top">
-                                    <ScrollViewer HorizontalScrollBarVisibility="Auto"
-                                                  VerticalScrollBarVisibility="Disabled"
-                                                  MaxWidth="620">
-                                        <StackPanel Orientation="Horizontal" Spacing="8">
-                                            <Border Classes="metaChip">
-                                                <TextBlock Text="{Binding CurrentProfileName, StringFormat='Profile: {0}'}"
-                                                           FontSize="12"
-                                                           Foreground="{DynamicResource TextMutedBrush}" />
-                                            </Border>
-                                            <Border Classes="metaChip">
-                                                <TextBlock Text="{Binding SelectedCount, StringFormat='Selected: {0}'}"
-                                                           FontSize="12"
-                                                           Foreground="{DynamicResource TextMutedBrush}" />
-                                            </Border>
-                                            <Border Classes="metaChip"
-                                                    IsVisible="{Binding HasRecommendedApps}">
-                                                <TextBlock Text="{Binding RecommendedCount, StringFormat='Recommended: {0}'}"
-                                                           FontSize="12"
-                                                           Foreground="{DynamicResource TextMutedBrush}" />
-                                            </Border>
-                                            <Border Classes="metaChip">
-                                                <TextBlock Text="{Binding CurrentPlatform, StringFormat='OS: {0}'}"
-                                                           FontSize="12"
-                                                           Foreground="{DynamicResource TextMutedBrush}" />
-                                            </Border>
-                                        </StackPanel>
-                                    </ScrollViewer>
-
-                                    <Button Grid.Column="1"
-                                            Classes="icon ghost"
-                                            Content="?"
-                                            FontSize="18" />
-                                </Grid>
-                            </Grid>
-                        </StackPanel>
+                        <controls:HeaderControl Grid.Row="0"
+                                                Title="{Binding HomeTitle}"
+                                                Subtitle="{Binding HomeSubtitle}"
+                                                ProfileName="{Binding CurrentProfileName}"
+                                                SelectedCount="{Binding SelectedCount}"
+                                                RecommendedCount="{Binding RecommendedCount}"
+                                                HasRecommendedApps="{Binding HasRecommendedApps}"
+                                                CurrentPlatform="{Binding CurrentPlatform}"
+                                                HelpCommand="{Binding ShowHelpCommand}" />
 
                         <ScrollViewer Grid.Row="1"
                                       IsVisible="{Binding IsDashboardSelected}"
@@ -726,187 +172,32 @@
                                 </Grid>
                             </StackPanel>
                         </ScrollViewer>
+
                         <Border Grid.Row="1"
                                 Classes="card"
                                 IsVisible="{Binding IsDashboardUnselected}"
                                 Padding="12">
-                            <Grid RowDefinitions="Auto,Auto,*,Auto" RowSpacing="8">
-                                <Grid Grid.Row="0"
-                                      ColumnDefinitions="*,300"
-                                      ColumnSpacing="16"
-                                      VerticalAlignment="Center">
-                                    <ScrollViewer HorizontalScrollBarVisibility="Auto"
-                                                  VerticalScrollBarVisibility="Disabled">
-                                        <StackPanel Orientation="Horizontal" Spacing="6">
-                                            <RadioButton GroupName="filter"
-                                                         Classes="pill"
-                                                         IsChecked="{Binding IsAllFilter}"
-                                                         Content="All" />
-                                            <RadioButton GroupName="filter"
-                                                         Classes="pill"
-                                                         IsChecked="{Binding IsGamesFilter}"
-                                                         Content="Games" />
-                                            <RadioButton GroupName="filter"
-                                                         Classes="pill"
-                                                         IsChecked="{Binding IsDevToolsFilter}"
-                                                         Content="Dev Tools" />
-                                            <RadioButton GroupName="filter"
-                                                         Classes="pill"
-                                                         IsChecked="{Binding IsUtilitiesFilter}"
-                                                         Content="Utilities" />
-                                        </StackPanel>
-                                    </ScrollViewer>
+                            <Grid RowDefinitions="Auto,*,Auto" RowSpacing="8">
+                                <controls:FilterBarControl Grid.Row="0"
+                                                           SearchText="{Binding SearchText, Mode=TwoWay}"
+                                                           IsAllFilter="{Binding IsAllFilter, Mode=TwoWay}"
+                                                           IsGamesFilter="{Binding IsGamesFilter, Mode=TwoWay}"
+                                                           IsDriversFilter="{Binding IsDriversFilter, Mode=TwoWay}"
+                                                           IsDevToolsFilter="{Binding IsDevToolsFilter, Mode=TwoWay}"
+                                                           IsUtilitiesFilter="{Binding IsUtilitiesFilter, Mode=TwoWay}" />
 
-                                    <TextBox Grid.Column="1"
-                                             Watermark="Search apps..."
-                                             Text="{Binding SearchText}"
-                                             HorizontalAlignment="Stretch" />
-                                </Grid>
+                                <controls:AppListControl Grid.Row="1"
+                                                         Items="{Binding VisibleApps}"
+                                                         OpenPublisherCommand="{Binding OpenPublisherCommand}"
+                                                         ShowAppDetailsCommand="{Binding ShowAppDetailsCommand}" />
 
-                                <Grid Grid.Row="1"
-                                      ColumnDefinitions="36,*,84,108,56"
-                                      Margin="2,0,8,0">
-                                    <TextBlock Text="Sel"
-                                               FontWeight="SemiBold"
-                                               Foreground="{DynamicResource TextMutedBrush}" />
-                                    <TextBlock Grid.Column="1"
-                                               Text="App"
-                                               FontWeight="SemiBold"
-                                               Foreground="{DynamicResource TextMutedBrush}" />
-                                    <TextBlock Grid.Column="2"
-                                               Text="Size"
-                                               FontWeight="SemiBold"
-                                               Foreground="{DynamicResource TextMutedBrush}" />
-                                    <TextBlock Grid.Column="3"
-                                               Text="Status"
-                                               FontWeight="SemiBold"
-                                               Foreground="{DynamicResource TextMutedBrush}" />
-                                    <TextBlock Grid.Column="4"
-                                               Text="Details"
-                                               FontWeight="SemiBold"
-                                               Foreground="{DynamicResource TextMutedBrush}" />
-                                </Grid>
-
-                                <ScrollViewer Grid.Row="2"
-                                              VerticalScrollBarVisibility="Auto"
-                                              HorizontalScrollBarVisibility="Disabled">
-                                    <ItemsControl ItemsSource="{Binding VisibleApps}">
-                                        <ItemsControl.ItemTemplate>
-                                            <DataTemplate>
-                                                <Border Classes="rowCard"
-                                                        Opacity="{Binding RowOpacity}">
-                                                    <Grid ColumnDefinitions="36,*,84,108,56"
-                                                          ColumnSpacing="8">
-                                                        <CheckBox Classes="appCheck"
-                                                                  IsChecked="{Binding IsSelected}"
-                                                                  IsEnabled="{Binding IsSupportedOnCurrentPlatform}"
-                                                                  VerticalAlignment="Center"
-                                                                  HorizontalAlignment="Center" />
-
-                                                        <Grid Grid.Column="1"
-                                                              ColumnDefinitions="36,*"
-                                                              ColumnSpacing="10">
-                                                            <Border Width="32"
-                                                                    Height="32"
-                                                                    CornerRadius="16"
-                                                                    Background="{DynamicResource AppIconBackgroundBrush}"
-                                                                    VerticalAlignment="Center">
-                                                                <TextBlock Text="{Binding IconGlyph}"
-                                                                           HorizontalAlignment="Center"
-                                                                           VerticalAlignment="Center"
-                                                                           FontWeight="Bold" />
-                                                            </Border>
-
-                                                            <StackPanel Grid.Column="1"
-                                                                        Spacing="1">
-                                                                <StackPanel Orientation="Horizontal"
-                                                                            Spacing="6">
-                                                                    <TextBlock Text="{Binding Name}"
-                                                                               FontSize="15"
-                                                                               FontWeight="SemiBold" />
-                                                                    <Border IsVisible="{Binding IsRecommended}"
-                                                                            Background="{DynamicResource RecommendedBadgeBrush}"
-                                                                            BorderBrush="{DynamicResource AccentBrush}"
-                                                                            BorderThickness="1"
-                                                                            CornerRadius="7"
-                                                                            Padding="6,2">
-                                                                        <TextBlock Text="Recommended"
-                                                                                   FontSize="10" />
-                                                                    </Border>
-                                                                </StackPanel>
-
-                                                                <StackPanel Orientation="Horizontal"
-                                                                            Spacing="8">
-                                                                    <TextBlock Text="{Binding Category}"
-                                                                               Foreground="{DynamicResource TextMutedBrush}"
-                                                                               FontSize="12" />
-                                                                    <Button Classes="link"
-                                                                            Content="{Binding PublisherName}"
-                                                                            Command="{Binding $parent[Window].DataContext.OpenPublisherCommand}"
-                                                                            CommandParameter="{Binding .}" />
-                                                                </StackPanel>
-                                                            </StackPanel>
-                                                        </Grid>
-
-                                                        <TextBlock Grid.Column="2"
-                                                                   Text="~ 20 MB"
-                                                                   VerticalAlignment="Center"
-                                                                   Foreground="{DynamicResource TextMutedBrush}" />
-
-                                                        <Border Grid.Column="3"
-                                                                Background="{DynamicResource ElevatedCardBrush}"
-                                                                BorderBrush="{DynamicResource InputBorderBrush}"
-                                                                BorderThickness="1"
-                                                                CornerRadius="8"
-                                                                Padding="8,3"
-                                                                VerticalAlignment="Center"
-                                                                HorizontalAlignment="Left">
-                                                            <TextBlock Text="{Binding StatusBadge}"
-                                                                       FontSize="12" />
-                                                        </Border>
-
-                                                        <Button Grid.Column="4"
-                                                                Classes="ghost compact"
-                                                                Content="..."
-                                                                Width="48"
-                                                                HorizontalAlignment="Left"
-                                                                Command="{Binding $parent[Window].DataContext.ShowAppDetailsCommand}"
-                                                                CommandParameter="{Binding .}" />
-                                                    </Grid>
-                                                </Border>
-                                            </DataTemplate>
-                                        </ItemsControl.ItemTemplate>
-                                    </ItemsControl>
-                                </ScrollViewer>
-
-                                <Border Grid.Row="3"
-                                        Background="{DynamicResource InputBrush}"
-                                        BorderBrush="{DynamicResource CardBorderBrush}"
-                                        BorderThickness="1"
-                                        CornerRadius="14"
-                                        Padding="12">
-                                    <Grid ColumnDefinitions="*,Auto,Auto"
-                                          ColumnSpacing="10">
-                                        <TextBlock Text="{Binding SelectedFooterText}"
-                                                   Foreground="{DynamicResource TextMutedBrush}"
-                                                   VerticalAlignment="Center"
-                                                   TextWrapping="Wrap" />
-
-                                        <Button Grid.Column="1"
-                                                Classes="ghost"
-                                                Content="Save List"
-                                                Command="{Binding SaveListCommand}"
-                                                Padding="22,9" />
-                                        <Button Grid.Column="2"
-                                                Classes="primary"
-                                                Content="Install Selected"
-                                                Command="{Binding InstallCommand}" />
-                                    </Grid>
-                                </Border>
+                                <controls:BottomBarControl Grid.Row="2"
+                                                           FooterText="{Binding SelectedFooterText}"
+                                                           SaveListCommand="{Binding SaveListCommand}"
+                                                           InstallSelectedCommand="{Binding InstallCommand}" />
                             </Grid>
                         </Border>
                     </Grid>
-
                     <ScrollViewer IsVisible="{Binding IsInstallScreenVisible}"
                                   VerticalScrollBarVisibility="Auto"
                                   HorizontalScrollBarVisibility="Disabled">
@@ -1243,11 +534,14 @@
                                                TextWrapping="Wrap" />
                                 </StackPanel>
                                 <Button Grid.Column="1"
-                                        Classes="icon ghost"
-                                        Width="34"
-                                        Height="34"
-                                        Content="X"
-                                        Command="{Binding ToggleSettingsPanelCommand}" />
+                                        Classes="closeIcon"
+                                        Command="{Binding ToggleSettingsPanelCommand}">
+                                    <Viewbox Width="14"
+                                             Height="14">
+                                        <Path Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                                              Data="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z" />
+                                    </Viewbox>
+                                </Button>
                             </Grid>
 
                             <ScrollViewer Grid.Row="1"
@@ -1468,8 +762,140 @@
                             </ScrollViewer>
                         </Grid>
                     </Border>
+
+                    <Border IsVisible="{Binding IsAppDetailsOpen}"
+                            Classes="card"
+                            Width="360"
+                            MaxHeight="720"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Top"
+                            Margin="0,10,10,0"
+                            Padding="14"
+                            Background="{DynamicResource ElevatedCardBrush}"
+                            BorderBrush="{DynamicResource CardBorderBrush}">
+                        <Grid RowDefinitions="Auto,*"
+                              RowSpacing="12">
+                            <Grid ColumnDefinitions="*,Auto"
+                                  ColumnSpacing="10">
+                                <StackPanel Spacing="2">
+                                    <TextBlock Text="App details"
+                                               FontSize="20"
+                                               FontWeight="SemiBold" />
+                                    <TextBlock Text="{Binding SelectedDetailApp.Name}"
+                                               FontSize="13"
+                                               Foreground="{DynamicResource TextMutedBrush}"
+                                               TextWrapping="Wrap" />
+                                </StackPanel>
+
+                                <Button Grid.Column="1"
+                                        Classes="closeIcon"
+                                        Command="{Binding CloseAppDetailsCommand}">
+                                    <Viewbox Width="14"
+                                             Height="14">
+                                        <Path Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                                              Data="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z" />
+                                    </Viewbox>
+                                </Button>
+                            </Grid>
+
+                            <ScrollViewer Grid.Row="1"
+                                          VerticalScrollBarVisibility="Auto"
+                                          HorizontalScrollBarVisibility="Disabled">
+                                <StackPanel Spacing="14">
+                                    <Grid ColumnDefinitions="Auto,*"
+                                          ColumnSpacing="12">
+                                        <Border Width="46"
+                                                Height="46"
+                                                CornerRadius="23"
+                                                Background="{DynamicResource AppIconBackgroundBrush}"
+                                                VerticalAlignment="Top">
+                                            <TextBlock Text="{Binding SelectedDetailApp.IconGlyph}"
+                                                       HorizontalAlignment="Center"
+                                                       VerticalAlignment="Center"
+                                                       FontSize="18"
+                                                       FontWeight="Bold" />
+                                        </Border>
+
+                                        <StackPanel Grid.Column="1"
+                                                    Spacing="4">
+                                            <TextBlock Text="{Binding SelectedDetailApp.Name}"
+                                                       FontSize="22"
+                                                       FontWeight="SemiBold"
+                                                       TextWrapping="Wrap" />
+                                            <Button Classes="link"
+                                                    Content="{Binding SelectedDetailApp.PublisherName}"
+                                                    Command="{Binding OpenPublisherCommand}"
+                                                    CommandParameter="{Binding SelectedDetailApp}" />
+                                            <TextBlock Text="{Binding SelectedDetailApp.Category, StringFormat='Category: {0}'}"
+                                                       Foreground="{DynamicResource TextMutedBrush}"
+                                                       FontSize="12" />
+                                        </StackPanel>
+                                    </Grid>
+
+                                    <StackPanel Spacing="8">
+                                        <Border Classes="metaChip">
+                                            <TextBlock Text="{Binding SelectedDetailSupportStatusText}"
+                                                       Foreground="{DynamicResource TextMutedBrush}"
+                                                       TextWrapping="Wrap" />
+                                        </Border>
+                                        <Border Classes="metaChip">
+                                            <TextBlock Text="{Binding SelectedDetailPlatformsText, StringFormat='Platforms: {0}'}"
+                                                       Foreground="{DynamicResource TextMutedBrush}"
+                                                       TextWrapping="Wrap" />
+                                        </Border>
+                                        <Border Classes="metaChip">
+                                            <TextBlock Text="{Binding SelectedDetailInstallSupportText}"
+                                                       Foreground="{DynamicResource TextMutedBrush}"
+                                                       TextWrapping="Wrap" />
+                                        </Border>
+                                        <Border Classes="metaChip">
+                                            <TextBlock Text="{Binding SelectedDetailApp.StatusBadge, StringFormat='Status: {0}'}"
+                                                       Foreground="{DynamicResource TextMutedBrush}"
+                                                       TextWrapping="Wrap" />
+                                        </Border>
+                                    </StackPanel>
+
+                                    <StackPanel Spacing="6">
+                                        <TextBlock Text="Description"
+                                                   FontWeight="SemiBold" />
+                                        <TextBlock Text="{Binding SelectedDetailDescription}"
+                                                   Foreground="{DynamicResource TextSecondaryBrush}"
+                                                   TextWrapping="Wrap" />
+                                    </StackPanel>
+
+                                    <StackPanel Spacing="6"
+                                                IsVisible="{Binding HasSelectedDetailRecommendation}">
+                                        <TextBlock Text="Recommendation"
+                                                   FontWeight="SemiBold"
+                                                   Foreground="{DynamicResource AccentBrush}" />
+                                        <Border Background="{DynamicResource AccentSoftBrush}"
+                                                BorderBrush="{DynamicResource AccentBrush}"
+                                                BorderThickness="1"
+                                                CornerRadius="12"
+                                                Padding="10">
+                                            <TextBlock Text="{Binding SelectedDetailApp.RecommendationReason}"
+                                                       Foreground="{DynamicResource TextPrimaryBrush}"
+                                                       TextWrapping="Wrap" />
+                                        </Border>
+                                    </StackPanel>
+
+                                    <StackPanel Spacing="6">
+                                        <TextBlock Text="Selection"
+                                                   FontWeight="SemiBold" />
+                                        <TextBlock Text="{Binding SelectedDetailApp.IsSelected, StringFormat='Selected: {0}'}"
+                                                   Foreground="{DynamicResource TextMutedBrush}" />
+                                        <TextBlock Text="{Binding SelectedDetailApp.IsInstalled, StringFormat='Installed: {0}'}"
+                                                   Foreground="{DynamicResource TextMutedBrush}" />
+                                        <TextBlock Text="{Binding SelectedDetailApp.RequiresRestartHint, StringFormat='Restart may be required: {0}'}"
+                                                   Foreground="{DynamicResource TextMutedBrush}" />
+                                    </StackPanel>
+                                </StackPanel>
+                            </ScrollViewer>
+                        </Grid>
+                    </Border>
                 </Grid>
             </Border>
         </Grid>
     </Border>
 </Window>
+

@@ -12,10 +12,14 @@
       "Linux": true
     },
     "WindowsInstall": {
+      "InstallerUrl": "https://download.mozilla.org/?product=firefox-latest&os=win64&lang=en-US",
+      "InstallerFileName": "FirefoxInstaller.exe",
       "Command": "winget install --id Mozilla.Firefox -e --accept-source-agreements --accept-package-agreements",
       "SilentCommand": "winget install --id Mozilla.Firefox -e --silent --accept-source-agreements --accept-package-agreements",
+      "SilentArguments": "-ms",
       "RequiresRestart": false,
       "NeedsManualInstall": false,
+      "DetectDisplayNameContains": "Mozilla Firefox",
       "DetectExecutable": "firefox"
     },
     "LinuxInstall": {
@@ -40,10 +44,14 @@
       "Linux": true
     },
     "WindowsInstall": {
+      "InstallerUrl": "https://dl.google.com/chrome/install/latest/chrome_installer.exe",
+      "InstallerFileName": "ChromeInstaller.exe",
       "Command": "winget install --id Google.Chrome -e --accept-source-agreements --accept-package-agreements",
       "SilentCommand": "winget install --id Google.Chrome -e --silent --accept-source-agreements --accept-package-agreements",
+      "SilentArguments": "/silent /install",
       "RequiresRestart": false,
       "NeedsManualInstall": false,
+      "DetectDisplayNameContains": "Google Chrome",
       "DetectExecutable": "chrome"
     },
     "LinuxInstall": {
@@ -68,10 +76,14 @@
       "Linux": true
     },
     "WindowsInstall": {
+      "InstallerUrl": "https://discord.com/api/download?platform=win",
+      "InstallerFileName": "DiscordSetup.exe",
       "Command": "winget install --id Discord.Discord -e --accept-source-agreements --accept-package-agreements",
       "SilentCommand": "winget install --id Discord.Discord -e --silent --accept-source-agreements --accept-package-agreements",
+      "SilentArguments": "-s",
       "RequiresRestart": false,
       "NeedsManualInstall": false,
+      "DetectDisplayNameContains": "Discord",
       "DetectExecutable": "Discord"
     },
     "LinuxInstall": {
@@ -96,10 +108,14 @@
       "Linux": true
     },
     "WindowsInstall": {
+      "InstallerUrl": "https://cdn.cloudflare.steamstatic.com/client/installer/SteamSetup.exe",
+      "InstallerFileName": "SteamSetup.exe",
       "Command": "winget install --id Valve.Steam -e --accept-source-agreements --accept-package-agreements",
       "SilentCommand": "winget install --id Valve.Steam -e --silent --accept-source-agreements --accept-package-agreements",
+      "SilentArguments": "/S",
       "RequiresRestart": false,
       "NeedsManualInstall": false,
+      "DetectDisplayNameContains": "Steam",
       "DetectExecutable": "steam"
     },
     "LinuxInstall": {
@@ -124,10 +140,14 @@
       "Linux": true
     },
     "WindowsInstall": {
+      "InstallerUrl": "https://update.code.visualstudio.com/latest/win32-x64-user/stable",
+      "InstallerFileName": "VSCodeUserSetup-x64.exe",
       "Command": "winget install --id Microsoft.VisualStudioCode -e --accept-source-agreements --accept-package-agreements",
       "SilentCommand": "winget install --id Microsoft.VisualStudioCode -e --silent --accept-source-agreements --accept-package-agreements",
+      "SilentArguments": "/VERYSILENT /NORESTART /MERGETASKS=!runcode",
       "RequiresRestart": false,
       "NeedsManualInstall": false,
+      "DetectDisplayNameContains": "Microsoft Visual Studio Code",
       "DetectExecutable": "code"
     },
     "LinuxInstall": {
@@ -152,10 +172,14 @@
       "Linux": true
     },
     "WindowsInstall": {
+      "InstallerUrl": "https://github.com/git-for-windows/git/releases/latest/download/Git-64-bit.exe",
+      "InstallerFileName": "Git-64-bit.exe",
       "Command": "winget install --id Git.Git -e --accept-source-agreements --accept-package-agreements",
       "SilentCommand": "winget install --id Git.Git -e --silent --accept-source-agreements --accept-package-agreements",
+      "SilentArguments": "/VERYSILENT /NORESTART /NOCANCEL /SP-",
       "RequiresRestart": false,
       "NeedsManualInstall": false,
+      "DetectDisplayNameContains": "Git",
       "DetectExecutable": "git"
     },
     "LinuxInstall": {
@@ -180,10 +204,14 @@
       "Linux": false
     },
     "WindowsInstall": {
+      "InstallerUrl": "https://us.download.nvidia.com/nvapp/client/11.0.6.383/NVIDIA_app_v11.0.6.383.exe",
+      "InstallerFileName": "NVIDIA_app.exe",
       "Command": "winget install --id NVIDIA.NVIDIAApp -e --accept-source-agreements --accept-package-agreements",
       "SilentCommand": "winget install --id NVIDIA.NVIDIAApp -e --silent --accept-source-agreements --accept-package-agreements",
       "RequiresRestart": true,
+      "RequiresElevation": true,
       "NeedsManualInstall": false,
+      "DetectDisplayNameContains": "NVIDIA App",
       "DetectExecutable": "nvidia-smi"
     },
     "LinuxInstall": {
@@ -193,7 +221,7 @@
       "NeedsManualInstall": true,
       "DetectExecutable": "nvidia-smi"
     },
-    "SupportsSilentInstall": true
+    "SupportsSilentInstall": false
   },
   {
     "Id": "logitech-ghub",
@@ -208,10 +236,15 @@
       "Linux": false
     },
     "WindowsInstall": {
+      "InstallerUrl": "https://download01.logi.com/web/ftp/pub/techsupport/gaming/lghub_installer.exe",
+      "InstallerFileName": "lghub_installer.exe",
       "Command": "winget install --id Logitech.GHUB -e --accept-source-agreements --accept-package-agreements",
       "SilentCommand": "winget install --id Logitech.GHUB -e --silent --accept-source-agreements --accept-package-agreements",
       "RequiresRestart": false,
+      "RequiresElevation": true,
       "NeedsManualInstall": false,
+      "VerificationTimeoutSeconds": 240,
+      "DetectDisplayNameContains": "Logitech G HUB",
       "DetectExecutable": "lghub"
     },
     "LinuxInstall": {
@@ -221,7 +254,7 @@
       "NeedsManualInstall": true,
       "DetectExecutable": ""
     },
-    "SupportsSilentInstall": true
+    "SupportsSilentInstall": false
   },
   {
     "Id": "htop",

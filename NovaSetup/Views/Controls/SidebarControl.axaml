@@ -1,0 +1,259 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="NovaSetup.Views.Controls.SidebarControl"
+             x:CompileBindings="False"
+             x:Name="Root">
+  <Border Classes="shellPanel"
+          Background="{DynamicResource SidebarBrush}"
+          Padding="12">
+    <Grid RowDefinitions="Auto,*,Auto"
+          RowSpacing="14">
+      <Grid ColumnDefinitions="44,*"
+            ColumnSpacing="10">
+        <Border Width="44"
+                Height="44"
+                CornerRadius="12"
+                Background="{DynamicResource BrandTileBrush}"
+                ClipToBounds="True">
+          <Image Source="avares://NovaSetup/Assets/nova_logo_512.png"
+                 Stretch="UniformToFill" />
+        </Border>
+        <StackPanel Grid.Column="1"
+                    Spacing="0"
+                    VerticalAlignment="Center">
+          <TextBlock Text="Nova"
+                     FontSize="22"
+                     FontWeight="Bold" />
+          <TextBlock Text="Setup everything fast"
+                     FontSize="13"
+                     Foreground="{DynamicResource TextMutedBrush}" />
+        </StackPanel>
+      </Grid>
+
+      <ScrollViewer Grid.Row="1"
+                    VerticalScrollBarVisibility="Auto"
+                    HorizontalScrollBarVisibility="Disabled">
+        <StackPanel Spacing="6">
+          <Button Classes="nav navActive"
+                  IsVisible="{Binding #Root.IsDashboardSelected}"
+                  Command="{Binding #Root.NavigateDashboardCommand}">
+            <Grid ColumnDefinitions="18,*" ColumnSpacing="10">
+              <Path Data="{DynamicResource IconDashboardGeometry}"
+                    Fill="{DynamicResource TextPrimaryBrush}"
+                    Width="16"
+                    Height="16"
+                    VerticalAlignment="Center" />
+              <TextBlock Grid.Column="1" Text="Dashboard" VerticalAlignment="Center" />
+            </Grid>
+          </Button>
+          <Button Classes="nav"
+                  IsVisible="{Binding #Root.IsDashboardUnselected}"
+                  Command="{Binding #Root.NavigateDashboardCommand}">
+            <Grid ColumnDefinitions="18,*" ColumnSpacing="10">
+              <Path Data="{DynamicResource IconDashboardGeometry}"
+                    Fill="{DynamicResource TextMutedBrush}"
+                    Width="16"
+                    Height="16"
+                    VerticalAlignment="Center" />
+              <TextBlock Grid.Column="1" Text="Dashboard" VerticalAlignment="Center" />
+            </Grid>
+          </Button>
+
+          <Button Classes="nav navActive"
+                  IsVisible="{Binding #Root.IsAppsSelected}"
+                  Command="{Binding #Root.NavigateAppsCommand}">
+            <Grid ColumnDefinitions="18,*" ColumnSpacing="10">
+              <Path Data="{DynamicResource IconAppsGeometry}"
+                    Fill="{DynamicResource TextPrimaryBrush}"
+                    Width="16"
+                    Height="16"
+                    VerticalAlignment="Center" />
+              <TextBlock Grid.Column="1" Text="Apps" VerticalAlignment="Center" />
+            </Grid>
+          </Button>
+          <Button Classes="nav"
+                  IsVisible="{Binding #Root.IsAppsUnselected}"
+                  Command="{Binding #Root.NavigateAppsCommand}">
+            <Grid ColumnDefinitions="18,*" ColumnSpacing="10">
+              <Path Data="{DynamicResource IconAppsGeometry}"
+                    Fill="{DynamicResource TextMutedBrush}"
+                    Width="16"
+                    Height="16"
+                    VerticalAlignment="Center" />
+              <TextBlock Grid.Column="1" Text="Apps" VerticalAlignment="Center" />
+            </Grid>
+          </Button>
+
+          <Button Classes="nav navActive"
+                  IsVisible="{Binding #Root.IsMyListsSelected}"
+                  Command="{Binding #Root.NavigateMyListsCommand}">
+            <Grid ColumnDefinitions="18,*" ColumnSpacing="10">
+              <Path Data="{DynamicResource IconMyListsGeometry}"
+                    Fill="{DynamicResource TextPrimaryBrush}"
+                    Width="16"
+                    Height="16"
+                    VerticalAlignment="Center" />
+              <TextBlock Grid.Column="1" Text="My Lists" VerticalAlignment="Center" />
+            </Grid>
+          </Button>
+          <Button Classes="nav"
+                  IsVisible="{Binding #Root.IsMyListsUnselected}"
+                  Command="{Binding #Root.NavigateMyListsCommand}">
+            <Grid ColumnDefinitions="18,*" ColumnSpacing="10">
+              <Path Data="{DynamicResource IconMyListsGeometry}"
+                    Fill="{DynamicResource TextMutedBrush}"
+                    Width="16"
+                    Height="16"
+                    VerticalAlignment="Center" />
+              <TextBlock Grid.Column="1" Text="My Lists" VerticalAlignment="Center" />
+            </Grid>
+          </Button>
+
+          <Button Classes="nav navActive"
+                  IsVisible="{Binding #Root.IsHistorySelected}"
+                  Command="{Binding #Root.NavigateHistoryCommand}">
+            <Grid ColumnDefinitions="18,*" ColumnSpacing="10">
+              <Path Data="{DynamicResource IconHistoryGeometry}"
+                    Fill="{DynamicResource TextPrimaryBrush}"
+                    Width="16"
+                    Height="16"
+                    VerticalAlignment="Center" />
+              <TextBlock Grid.Column="1" Text="History" VerticalAlignment="Center" />
+            </Grid>
+          </Button>
+          <Button Classes="nav"
+                  IsVisible="{Binding #Root.IsHistoryUnselected}"
+                  Command="{Binding #Root.NavigateHistoryCommand}">
+            <Grid ColumnDefinitions="18,*" ColumnSpacing="10">
+              <Path Data="{DynamicResource IconHistoryGeometry}"
+                    Fill="{DynamicResource TextMutedBrush}"
+                    Width="16"
+                    Height="16"
+                    VerticalAlignment="Center" />
+              <TextBlock Grid.Column="1" Text="History" VerticalAlignment="Center" />
+            </Grid>
+          </Button>
+
+          <Button Classes="nav navActive"
+                  IsVisible="{Binding #Root.IsLogsSelected}"
+                  Command="{Binding #Root.NavigateLogsCommand}">
+            <Grid ColumnDefinitions="18,*" ColumnSpacing="10">
+              <Path Data="{DynamicResource IconLogsGeometry}"
+                    Fill="{DynamicResource TextPrimaryBrush}"
+                    Width="16"
+                    Height="16"
+                    VerticalAlignment="Center" />
+              <TextBlock Grid.Column="1" Text="Logs" VerticalAlignment="Center" />
+            </Grid>
+          </Button>
+          <Button Classes="nav"
+                  IsVisible="{Binding #Root.IsLogsUnselected}"
+                  Command="{Binding #Root.NavigateLogsCommand}">
+            <Grid ColumnDefinitions="18,*" ColumnSpacing="10">
+              <Path Data="{DynamicResource IconLogsGeometry}"
+                    Fill="{DynamicResource TextMutedBrush}"
+                    Width="16"
+                    Height="16"
+                    VerticalAlignment="Center" />
+              <TextBlock Grid.Column="1" Text="Logs" VerticalAlignment="Center" />
+            </Grid>
+          </Button>
+        </StackPanel>
+      </ScrollViewer>
+
+      <Grid Grid.Row="2">
+        <Border Classes="accountPrimary">
+          <Grid ColumnDefinitions="Auto,*,Auto"
+                ColumnSpacing="8">
+            <Border Width="34"
+                    Height="34"
+                    CornerRadius="10"
+                    Background="{DynamicResource SuccessBrush}"
+                    VerticalAlignment="Center">
+              <Viewbox Width="16" Height="16">
+                <Path Fill="#FFFFFF"
+                      Data="{DynamicResource IconProfileGeometry}" />
+              </Viewbox>
+            </Border>
+
+            <StackPanel Grid.Column="1"
+                        Spacing="0"
+                        VerticalAlignment="Center">
+              <TextBlock Text="My Account"
+                         FontSize="14"
+                         FontWeight="SemiBold"
+                         TextWrapping="NoWrap" />
+              <TextBlock Text="{Binding #Root.CurrentProfileName}"
+                         Foreground="{DynamicResource TextMutedBrush}"
+                         FontSize="11"
+                         TextWrapping="NoWrap"
+                         TextTrimming="CharacterEllipsis" />
+            </StackPanel>
+
+            <Button x:Name="AccountMenuAnchor"
+                    Grid.Column="2"
+                    Classes="accountArrow"
+                    Command="{Binding #Root.ToggleAccountMenuCommand}"
+                    VerticalAlignment="Center">
+              <Viewbox Width="12"
+                       Height="12">
+                <Path Fill="{DynamicResource TextMutedBrush}"
+                      Data="{DynamicResource IconChevronRightGeometry}" />
+              </Viewbox>
+            </Button>
+          </Grid>
+        </Border>
+
+        <Popup IsOpen="{Binding #Root.IsAccountMenuOpen, Mode=TwoWay}"
+               PlacementTarget="{Binding #AccountMenuAnchor}"
+               Placement="RightEdgeAlignedBottom"
+               HorizontalOffset="10"
+               VerticalOffset="-8"
+               IsLightDismissEnabled="True"
+               Closed="AccountMenuPopup_OnClosed">
+          <Border Classes="accountMenuPopup"
+                  MinWidth="188">
+            <StackPanel Spacing="2">
+              <Button Classes="accountMenuItem"
+                      Command="{Binding #Root.OpenAccountProfileCommand}">
+                <StackPanel Orientation="Horizontal"
+                            Spacing="10">
+                  <Viewbox Width="14" Height="14">
+                    <Path Fill="{DynamicResource TextMutedBrush}"
+                          Data="{DynamicResource IconMyListsGeometry}" />
+                  </Viewbox>
+                  <TextBlock Text="Profile" />
+                </StackPanel>
+              </Button>
+
+              <Button Classes="accountMenuItem"
+                      Command="{Binding #Root.OpenAccountSettingsCommand}">
+                <StackPanel Orientation="Horizontal"
+                            Spacing="10">
+                  <Viewbox Width="14" Height="14">
+                    <Path Fill="{DynamicResource TextMutedBrush}"
+                          Data="{DynamicResource IconSettingsGeometry}" />
+                  </Viewbox>
+                  <TextBlock Text="Settings" />
+                </StackPanel>
+              </Button>
+
+              <Button Classes="accountMenuItem"
+                      IsEnabled="False">
+                <StackPanel Orientation="Horizontal"
+                            Spacing="10">
+                  <Viewbox Width="14" Height="14">
+                    <Path Fill="{DynamicResource TextMutedBrush}"
+                          Data="{DynamicResource IconSignOutGeometry}" />
+                  </Viewbox>
+                  <TextBlock Text="Sign Out"
+                             Foreground="{DynamicResource TextMutedBrush}" />
+                </StackPanel>
+              </Button>
+            </StackPanel>
+          </Border>
+        </Popup>
+      </Grid>
+    </Grid>
+  </Border>
+</UserControl>

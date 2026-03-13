@@ -1,0 +1,29 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="NovaSetup.Views.Controls.BottomBarControl"
+             x:CompileBindings="False"
+             x:Name="Root">
+  <Border Background="{DynamicResource InputBrush}"
+          BorderBrush="{DynamicResource CardBorderBrush}"
+          BorderThickness="1"
+          CornerRadius="14"
+          Padding="12">
+    <Grid ColumnDefinitions="*,Auto,Auto"
+          ColumnSpacing="10">
+      <TextBlock Text="{Binding #Root.FooterText}"
+                 Foreground="{DynamicResource TextMutedBrush}"
+                 VerticalAlignment="Center"
+                 TextWrapping="Wrap" />
+
+      <Button Grid.Column="1"
+              Classes="ghost"
+              Content="Save List"
+              Command="{Binding #Root.SaveListCommand}"
+              Padding="22,9" />
+      <Button Grid.Column="2"
+              Classes="primary"
+              Content="Install Selected"
+              Command="{Binding #Root.InstallSelectedCommand}" />
+    </Grid>
+  </Border>
+</UserControl>

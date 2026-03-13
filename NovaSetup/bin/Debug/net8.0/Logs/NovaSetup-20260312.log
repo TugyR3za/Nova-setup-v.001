@@ -1,0 +1,787 @@
+2026-03-12 15:56:42 [INFO] Logging initialized.
+2026-03-12 15:56:43 [INFO] Loaded settings from C:\Users\naime\OneDrive\Desktop\Nova setup v.001\NovaSetup\bin\Debug\net8.0\Configs\settings.json
+2026-03-12 15:56:43 [INFO] Loaded 9 apps from apps.json.
+2026-03-12 15:56:43 [INFO] Loaded selection profile 'Website Starter'.
+2026-03-12 15:56:43 [INFO] Loaded 9 apps for Windows. Recommended: 0. 1 selected app(s) are unsupported and will be skipped. Scanning system in background...
+2026-03-12 15:56:44 [INFO] Detected installed app 'Mozilla Firefox' via Windows registry.
+2026-03-12 15:56:44 [INFO] Detected installed app 'Google Chrome' via Windows registry.
+2026-03-12 15:56:44 [INFO] Detected installed app 'Discord' via Windows registry.
+2026-03-12 15:56:44 [INFO] Detected installed app 'Steam' via Windows registry.
+2026-03-12 15:56:44 [INFO] Detected installed app 'Visual Studio Code' via Windows registry.
+2026-03-12 15:56:44 [INFO] Detected installed app 'Git' via Windows registry.
+2026-03-12 15:56:44 [INFO] Detected installed app 'NVIDIA App' via Windows registry.
+2026-03-12 15:56:44 [INFO] Windows install index prepared. RegistryEntries=428, AppPathMatches=3
+2026-03-12 15:56:44 [INFO] Installed app detection completed. Platform=Windows, DetectedInstalledApps=7
+2026-03-12 15:56:45 [INFO] Detected GPU vendor: NVIDIA
+2026-03-12 15:56:45 [INFO] Detected motherboard vendor: ASUS
+2026-03-12 15:56:48 [INFO] Recommended app 'NVIDIA App' for NVIDIA GPU. Supported=True, AutoSelected=False
+2026-03-12 15:56:48 [INFO] No catalog app found for recommendation rule: ASUS motherboard
+2026-03-12 15:56:48 [INFO] Recommendation summary: Total=1, Supported=1, Unsupported=0
+2026-03-12 15:56:48 [INFO] Recommendations applied in background. Total=1, Supported=1, Unsupported=0, AutoSelectedLater=0
+2026-03-12 15:56:48 [INFO] Saved selection profile to C:\Users\naime\OneDrive\Desktop\Nova setup v.001\NovaSetup\bin\Debug\net8.0\Configs\selection.json
+2026-03-12 15:56:48 [INFO] Auto-saved list 'Website Starter' with 2 app(s).
+2026-03-12 15:56:48 [INFO] Loaded 9 apps for Windows. Recommended: 1. 1 selected app(s) are unsupported and will be skipped.
+2026-03-12 15:57:01 [INFO] Navigation changed to 'Dashboard'.
+2026-03-12 15:57:02 [INFO] Navigation changed to 'History'.
+2026-03-12 15:57:03 [INFO] Navigation changed to 'My Lists'.
+2026-03-12 15:57:04 [INFO] Navigation changed to 'History'.
+2026-03-12 15:57:04 [INFO] Navigation changed to 'Logs'.
+2026-03-12 15:57:05 [INFO] Navigation changed to 'Dashboard'.
+2026-03-12 15:57:06 [INFO] Navigation changed to 'Apps'.
+2026-03-12 15:57:08 [INFO] Opened details panel for 'Mozilla Firefox'.
+2026-03-12 15:57:40 [INFO] Logging initialized.
+2026-03-12 15:57:41 [INFO] Loaded settings from C:\Users\naime\OneDrive\Desktop\Nova setup v.001\NovaSetup\bin\Debug\net8.0\Configs\settings.json
+2026-03-12 15:57:41 [INFO] Loaded 9 apps from apps.json.
+2026-03-12 15:57:41 [INFO] Loaded selection profile 'Website Starter'.
+2026-03-12 15:57:41 [INFO] Loaded 9 apps for Windows. Recommended: 0. 1 selected app(s) are unsupported and will be skipped. Scanning system in background...
+2026-03-12 15:57:41 [INFO] Detected installed app 'Mozilla Firefox' via Windows registry.
+2026-03-12 15:57:41 [INFO] Detected installed app 'Google Chrome' via Windows registry.
+2026-03-12 15:57:41 [INFO] Detected installed app 'Discord' via Windows registry.
+2026-03-12 15:57:41 [INFO] Detected installed app 'Steam' via Windows registry.
+2026-03-12 15:57:41 [INFO] Detected installed app 'Visual Studio Code' via Windows registry.
+2026-03-12 15:57:41 [INFO] Detected installed app 'Git' via Windows registry.
+2026-03-12 15:57:41 [INFO] Detected installed app 'NVIDIA App' via Windows registry.
+2026-03-12 15:57:42 [INFO] Windows install index prepared. RegistryEntries=428, AppPathMatches=3
+2026-03-12 15:57:42 [INFO] Installed app detection completed. Platform=Windows, DetectedInstalledApps=7
+2026-03-12 15:57:42 [INFO] Detected GPU vendor: NVIDIA
+2026-03-12 15:57:42 [INFO] Detected motherboard vendor: ASUS
+2026-03-12 15:57:43 [INFO] Account menu opened.
+2026-03-12 15:57:44 [INFO] Account menu closed.
+2026-03-12 15:57:44 [INFO] Account menu opened.
+2026-03-12 15:57:45 [INFO] Account menu closed.
+2026-03-12 15:57:45 [INFO] Recommended app 'NVIDIA App' for NVIDIA GPU. Supported=True, AutoSelected=False
+2026-03-12 15:57:45 [INFO] No catalog app found for recommendation rule: ASUS motherboard
+2026-03-12 15:57:45 [INFO] Recommendation summary: Total=1, Supported=1, Unsupported=0
+2026-03-12 15:57:45 [INFO] Recommendations applied in background. Total=1, Supported=1, Unsupported=0, AutoSelectedLater=0
+2026-03-12 15:57:45 [INFO] Saved selection profile to C:\Users\naime\OneDrive\Desktop\Nova setup v.001\NovaSetup\bin\Debug\net8.0\Configs\selection.json
+2026-03-12 15:57:45 [INFO] Auto-saved list 'Website Starter' with 2 app(s).
+2026-03-12 15:57:45 [INFO] Loaded 9 apps for Windows. Recommended: 1. 1 selected app(s) are unsupported and will be skipped.
+2026-03-12 15:57:53 [INFO] Saved selection profile to C:\Users\naime\OneDrive\Desktop\Nova setup v.001\NovaSetup\bin\Debug\net8.0\Configs\selection.json
+2026-03-12 15:57:53 [INFO] Auto-saved list 'Website Starter' with 3 app(s).
+2026-03-12 15:57:54 [INFO] Saved selection profile to C:\Users\naime\OneDrive\Desktop\Nova setup v.001\NovaSetup\bin\Debug\net8.0\Configs\selection.json
+2026-03-12 15:57:54 [INFO] Auto-saved list 'Website Starter' with 2 app(s).
+2026-03-12 15:57:56 [INFO] Starting installation for 2 app(s)...
+2026-03-12 15:57:56 [INFO] Install settings: Silent=True, SelfDelete=False, Parallel=True, OsSupportedApps=True, DownloadLocationMode=SystemDefault, CustomDownloadFolder='', KeepInstallers=False, RestartBehavior=AskBeforeRestart
+2026-03-12 15:57:56 [INFO] Parallel install is enabled in settings, but the installer currently uses the stable sequential pipeline.
+2026-03-12 15:57:56 [INFO] Install started. Platform=Windows, CandidateCount=1, Silent=True.
+2026-03-12 15:57:56 [INFO] Installing app: Logitech G HUB
+2026-03-12 15:57:56 [INFO] Executing install command: winget install --id Logitech.GHUB -e --silent --accept-source-agreements --accept-package-agreements --disable-interactivity
+2026-03-12 15:59:16 [INFO] Command completed. ExitCode=-1978335226
+2026-03-12 15:59:16 [INFO] Command output: -    \    |                                                                                                                           â–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–’â–’â–’â–’â–’â–’â–’â–’â–’â–’â–’â–’â–’â–’â–’â–’â–’â–’â–’  1024 KB / 2.69 MB  â–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ...
+2026-03-12 15:59:16 [ERROR] Install failed for Logitech G HUB. ExitCode=-1978335226. Install command failed with exit code -1978335226.
+2026-03-12 15:59:16 [INFO] Deleted temp installer directory: C:\Users\naime\AppData\Local\Temp\NovaSetup\install-20260312-225756-89c2c680346747d8953954af56b3a844
+2026-03-12 15:59:16 [INFO] Install finished. ResultCount=1.
+2026-03-12 15:59:16 [INFO] Install started. Platform=Windows, CandidateCount=1, Silent=True.
+2026-03-12 15:59:16 [WARN] Skipping htop: unsupported on Windows.
+2026-03-12 15:59:16 [INFO] No install actions generated.
+2026-03-12 15:59:16 [INFO] Installation finished with no restart required.
+2026-03-12 15:59:16 [INFO] Navigation changed to 'History'.
+2026-03-12 15:59:25 [INFO] Opened log file: C:\Users\naime\OneDrive\Desktop\Nova setup v.001\NovaSetup\bin\Debug\net8.0\Logs\NovaSetup-20260312.log
+2026-03-12 15:59:55 [INFO] Navigation changed to 'Dashboard'.
+2026-03-12 15:59:55 [INFO] Navigation changed to 'Apps'.
+2026-03-12 15:59:57 [INFO] Starting installation for 2 app(s)...
+2026-03-12 15:59:57 [INFO] Install settings: Silent=True, SelfDelete=False, Parallel=True, OsSupportedApps=True, DownloadLocationMode=SystemDefault, CustomDownloadFolder='', KeepInstallers=False, RestartBehavior=AskBeforeRestart
+2026-03-12 15:59:57 [INFO] Parallel install is enabled in settings, but the installer currently uses the stable sequential pipeline.
+2026-03-12 15:59:57 [INFO] Install started. Platform=Windows, CandidateCount=1, Silent=True.
+2026-03-12 15:59:57 [INFO] Installing app: Logitech G HUB
+2026-03-12 15:59:57 [INFO] Executing install command: winget install --id Logitech.GHUB -e --silent --accept-source-agreements --accept-package-agreements --disable-interactivity
+2026-03-12 16:00:11 [INFO] Command completed. ExitCode=0
+2026-03-12 16:00:11 [INFO] Command output: -    \                                                                                                                            -    \    |    /    -    \    |    /                                                                                                                         ...
+2026-03-12 16:00:11 [INFO] Install succeeded for Logitech G HUB. ExitCode=0.
+2026-03-12 16:00:11 [INFO] Deleted temp installer directory: C:\Users\naime\AppData\Local\Temp\NovaSetup\install-20260312-225957-5e3d5082a4a74725a417e474ba292ee5
+2026-03-12 16:00:11 [INFO] Install finished. ResultCount=1.
+2026-03-12 16:00:11 [INFO] Install started. Platform=Windows, CandidateCount=1, Silent=True.
+2026-03-12 16:00:11 [WARN] Skipping htop: unsupported on Windows.
+2026-03-12 16:00:11 [INFO] No install actions generated.
+2026-03-12 16:00:11 [INFO] Installation finished with no restart required.
+2026-03-12 16:00:11 [INFO] Navigation changed to 'History'.
+2026-03-12 16:01:38 [INFO] Logging initialized.
+2026-03-12 16:01:39 [INFO] Loaded settings from C:\Users\naime\OneDrive\Desktop\Nova setup v.001\NovaSetup\bin\Debug\net8.0\Configs\settings.json
+2026-03-12 16:01:39 [INFO] Loaded 9 apps from apps.json.
+2026-03-12 16:01:39 [INFO] Loaded selection profile 'Website Starter'.
+2026-03-12 16:01:39 [INFO] Loaded 9 apps for Windows. Recommended: 0. 1 selected app(s) are unsupported and will be skipped. Scanning system in background...
+2026-03-12 16:01:39 [INFO] Detected installed app 'Mozilla Firefox' via Windows registry.
+2026-03-12 16:01:39 [INFO] Detected installed app 'Google Chrome' via Windows registry.
+2026-03-12 16:01:39 [INFO] Detected installed app 'Discord' via Windows registry.
+2026-03-12 16:01:39 [INFO] Detected installed app 'Steam' via Windows registry.
+2026-03-12 16:01:39 [INFO] Detected installed app 'Visual Studio Code' via Windows registry.
+2026-03-12 16:01:39 [INFO] Detected installed app 'Git' via Windows registry.
+2026-03-12 16:01:39 [INFO] Detected installed app 'NVIDIA App' via Windows registry.
+2026-03-12 16:01:39 [INFO] Windows install index prepared. RegistryEntries=428, AppPathMatches=3
+2026-03-12 16:01:39 [INFO] Installed app detection completed. Platform=Windows, DetectedInstalledApps=7
+2026-03-12 16:01:40 [INFO] Detected GPU vendor: NVIDIA
+2026-03-12 16:01:40 [INFO] Detected motherboard vendor: ASUS
+2026-03-12 16:01:43 [INFO] Recommended app 'NVIDIA App' for NVIDIA GPU. Supported=True, AutoSelected=False
+2026-03-12 16:01:43 [INFO] No catalog app found for recommendation rule: ASUS motherboard
+2026-03-12 16:01:43 [INFO] Recommendation summary: Total=1, Supported=1, Unsupported=0
+2026-03-12 16:01:43 [INFO] Recommendations applied in background. Total=1, Supported=1, Unsupported=0, AutoSelectedLater=1
+2026-03-12 16:01:43 [INFO] Saved selection profile to C:\Users\naime\OneDrive\Desktop\Nova setup v.001\NovaSetup\bin\Debug\net8.0\Configs\selection.json
+2026-03-12 16:01:43 [INFO] Auto-saved list 'Website Starter' with 3 app(s).
+2026-03-12 16:01:43 [INFO] Loaded 9 apps for Windows. Recommended: 1. 1 selected app(s) are unsupported and will be skipped.
+2026-03-12 16:02:11 [INFO] Saved selection profile to C:\Users\naime\OneDrive\Desktop\Nova setup v.001\NovaSetup\bin\Debug\net8.0\Configs\selection.json
+2026-03-12 16:02:11 [INFO] Auto-saved list 'Website Starter' with 2 app(s).
+2026-03-12 16:02:13 [INFO] Starting installation for 2 app(s)...
+2026-03-12 16:02:13 [INFO] Install settings: Silent=True, SelfDelete=False, Parallel=True, OsSupportedApps=True, DownloadLocationMode=SystemDefault, CustomDownloadFolder='', KeepInstallers=False, RestartBehavior=AskBeforeRestart
+2026-03-12 16:02:13 [INFO] Parallel install is enabled in settings, but the installer currently uses the stable sequential pipeline.
+2026-03-12 16:02:13 [INFO] Install started. Platform=Windows, CandidateCount=1, Silent=True.
+2026-03-12 16:02:13 [INFO] Installing app: Logitech G HUB
+2026-03-12 16:02:13 [INFO] Executing install command: winget install --id Logitech.GHUB -e --silent --accept-source-agreements --accept-package-agreements --disable-interactivity
+2026-03-12 16:02:31 [INFO] Command completed. ExitCode=-1978335226
+2026-03-12 16:02:31 [INFO] Command output: -                                                                                                                            -    \    |    /                                                                                                                         Found Logitech G HUB [Logitech...
+2026-03-12 16:02:31 [ERROR] Install failed for Logitech G HUB. ExitCode=-1978335226. Install command failed with exit code -1978335226.
+2026-03-12 16:02:31 [INFO] Deleted temp installer directory: C:\Users\naime\AppData\Local\Temp\NovaSetup\install-20260312-230213-94e7a5928f23445fb95dd8df31c7892d
+2026-03-12 16:02:31 [INFO] Install finished. ResultCount=1.
+2026-03-12 16:02:31 [INFO] Install started. Platform=Windows, CandidateCount=1, Silent=True.
+2026-03-12 16:02:31 [WARN] Skipping htop: unsupported on Windows.
+2026-03-12 16:02:31 [INFO] No install actions generated.
+2026-03-12 16:02:31 [INFO] Installation finished with no restart required.
+2026-03-12 16:02:31 [INFO] Navigation changed to 'History'.
+2026-03-12 16:05:53 [INFO] Logging initialized.
+2026-03-12 16:05:53 [INFO] Loaded settings from C:\Users\naime\OneDrive\Desktop\Nova setup v.001\NovaSetup\bin\Debug\net8.0\Configs\settings.json
+2026-03-12 16:05:53 [INFO] Loaded 9 apps from apps.json.
+2026-03-12 16:05:53 [INFO] Loaded selection profile 'Website Starter'.
+2026-03-12 16:05:53 [INFO] Loaded 9 apps for Windows. Recommended: 0. 1 selected app(s) are unsupported and will be skipped. Scanning system in background...
+2026-03-12 16:05:54 [INFO] Detected installed app 'Mozilla Firefox' via Windows registry.
+2026-03-12 16:05:54 [INFO] Detected installed app 'Google Chrome' via Windows registry.
+2026-03-12 16:05:54 [INFO] Detected installed app 'Discord' via Windows registry.
+2026-03-12 16:05:54 [INFO] Detected installed app 'Steam' via Windows registry.
+2026-03-12 16:05:54 [INFO] Detected installed app 'Visual Studio Code' via Windows registry.
+2026-03-12 16:05:54 [INFO] Detected installed app 'Git' via Windows registry.
+2026-03-12 16:05:54 [INFO] Detected installed app 'NVIDIA App' via Windows registry.
+2026-03-12 16:05:54 [INFO] Windows install index prepared. RegistryEntries=428, AppPathMatches=3
+2026-03-12 16:05:54 [INFO] Installed app detection completed. Platform=Windows, DetectedInstalledApps=7
+2026-03-12 16:05:54 [INFO] Detected GPU vendor: NVIDIA
+2026-03-12 16:05:54 [INFO] Detected motherboard vendor: ASUS
+2026-03-12 16:05:57 [INFO] Recommended app 'NVIDIA App' for NVIDIA GPU. Supported=True, AutoSelected=False
+2026-03-12 16:05:57 [INFO] No catalog app found for recommendation rule: ASUS motherboard
+2026-03-12 16:05:57 [INFO] Recommendation summary: Total=1, Supported=1, Unsupported=0
+2026-03-12 16:05:57 [INFO] Recommendations applied in background. Total=1, Supported=1, Unsupported=0, AutoSelectedLater=1
+2026-03-12 16:05:57 [INFO] Saved selection profile to C:\Users\naime\OneDrive\Desktop\Nova setup v.001\NovaSetup\bin\Debug\net8.0\Configs\selection.json
+2026-03-12 16:05:57 [INFO] Auto-saved list 'Website Starter' with 3 app(s).
+2026-03-12 16:05:57 [INFO] Loaded 9 apps for Windows. Recommended: 1. 1 selected app(s) are unsupported and will be skipped.
+2026-03-12 16:05:58 [INFO] Account menu opened.
+2026-03-12 16:06:00 [INFO] Settings opened from account menu.
+2026-03-12 16:06:30 [INFO] Setting changed: DownloadLocationMode=CustomFolder
+2026-03-12 16:06:30 [INFO] Saved selection profile to C:\Users\naime\OneDrive\Desktop\Nova setup v.001\NovaSetup\bin\Debug\net8.0\Configs\selection.json
+2026-03-12 16:06:30 [INFO] Auto-saved list 'Website Starter' with 3 app(s).
+2026-03-12 16:06:30 [INFO] Saved settings to C:\Users\naime\OneDrive\Desktop\Nova setup v.001\NovaSetup\bin\Debug\net8.0\Configs\settings.json
+2026-03-12 16:06:32 [INFO] Setting changed: DownloadLocationMode=SystemDefault
+2026-03-12 16:06:32 [INFO] Saved selection profile to C:\Users\naime\OneDrive\Desktop\Nova setup v.001\NovaSetup\bin\Debug\net8.0\Configs\selection.json
+2026-03-12 16:06:32 [INFO] Auto-saved list 'Website Starter' with 3 app(s).
+2026-03-12 16:06:32 [INFO] Saved settings to C:\Users\naime\OneDrive\Desktop\Nova setup v.001\NovaSetup\bin\Debug\net8.0\Configs\settings.json
+2026-03-12 16:06:35 [INFO] Setting changed: KeepInstallersAfterInstall=True
+2026-03-12 16:06:35 [INFO] Saved selection profile to C:\Users\naime\OneDrive\Desktop\Nova setup v.001\NovaSetup\bin\Debug\net8.0\Configs\selection.json
+2026-03-12 16:06:35 [INFO] Auto-saved list 'Website Starter' with 3 app(s).
+2026-03-12 16:06:35 [INFO] Saved settings to C:\Users\naime\OneDrive\Desktop\Nova setup v.001\NovaSetup\bin\Debug\net8.0\Configs\settings.json
+2026-03-12 16:06:36 [INFO] Setting changed: KeepInstallersAfterInstall=False
+2026-03-12 16:06:36 [INFO] Saved selection profile to C:\Users\naime\OneDrive\Desktop\Nova setup v.001\NovaSetup\bin\Debug\net8.0\Configs\selection.json
+2026-03-12 16:06:36 [INFO] Auto-saved list 'Website Starter' with 3 app(s).
+2026-03-12 16:06:36 [INFO] Saved settings to C:\Users\naime\OneDrive\Desktop\Nova setup v.001\NovaSetup\bin\Debug\net8.0\Configs\settings.json
+2026-03-12 16:06:47 [INFO] Setting changed: SaveProfilesAutomatically=False
+2026-03-12 16:06:47 [INFO] Saved settings to C:\Users\naime\OneDrive\Desktop\Nova setup v.001\NovaSetup\bin\Debug\net8.0\Configs\settings.json
+2026-03-12 16:06:49 [INFO] Setting changed: SaveProfilesAutomatically=True
+2026-03-12 16:06:49 [INFO] Saved selection profile to C:\Users\naime\OneDrive\Desktop\Nova setup v.001\NovaSetup\bin\Debug\net8.0\Configs\selection.json
+2026-03-12 16:06:49 [INFO] Auto-saved list 'Website Starter' with 3 app(s).
+2026-03-12 16:06:49 [INFO] Saved settings to C:\Users\naime\OneDrive\Desktop\Nova setup v.001\NovaSetup\bin\Debug\net8.0\Configs\settings.json
+2026-03-12 16:06:58 [INFO] Setting changed: DeveloperMode=True
+2026-03-12 16:06:58 [INFO] Saved selection profile to C:\Users\naime\OneDrive\Desktop\Nova setup v.001\NovaSetup\bin\Debug\net8.0\Configs\selection.json
+2026-03-12 16:06:58 [INFO] Auto-saved list 'Website Starter' with 3 app(s).
+2026-03-12 16:06:58 [INFO] Saved settings to C:\Users\naime\OneDrive\Desktop\Nova setup v.001\NovaSetup\bin\Debug\net8.0\Configs\settings.json
+2026-03-12 16:07:00 [INFO] Setting changed: DeveloperMode=False
+2026-03-12 16:07:00 [INFO] Saved selection profile to C:\Users\naime\OneDrive\Desktop\Nova setup v.001\NovaSetup\bin\Debug\net8.0\Configs\selection.json
+2026-03-12 16:07:00 [INFO] Auto-saved list 'Website Starter' with 3 app(s).
+2026-03-12 16:07:00 [INFO] Saved settings to C:\Users\naime\OneDrive\Desktop\Nova setup v.001\NovaSetup\bin\Debug\net8.0\Configs\settings.json
+2026-03-12 16:07:02 [INFO] Settings panel closed.
+2026-03-12 16:20:14 [INFO] Logging initialized.
+2026-03-12 16:20:27 [INFO] Logging initialized.
+2026-03-12 16:21:42 [INFO] Logging initialized.
+2026-03-12 16:24:25 [INFO] Logging initialized.
+2026-03-12 16:24:26 [INFO] Loaded settings from C:\Users\naime\OneDrive\Desktop\Nova setup v.001\NovaSetup\bin\Debug\net8.0\Configs\settings.json
+2026-03-12 16:24:26 [INFO] Loaded 9 apps from apps.json.
+2026-03-12 16:24:26 [INFO] Loaded selection profile 'Website Starter'.
+2026-03-12 16:24:26 [INFO] Loaded 9 apps for Windows. Recommended: 0. 1 selected app(s) are unsupported and will be skipped. Scanning system in background...
+2026-03-12 16:24:26 [INFO] Detected installed app 'Mozilla Firefox' via Windows registry.
+2026-03-12 16:24:26 [INFO] Detected installed app 'Google Chrome' via Windows registry.
+2026-03-12 16:24:27 [INFO] Detected installed app 'Steam' via Windows registry.
+2026-03-12 16:24:27 [INFO] Detected installed app 'Visual Studio Code' via Windows registry.
+2026-03-12 16:24:27 [INFO] Detected installed app 'Git' via Windows registry.
+2026-03-12 16:24:27 [INFO] Detected installed app 'NVIDIA App' via Windows registry.
+2026-03-12 16:24:27 [INFO] Windows install index prepared. RegistryEntries=391, AppPathMatches=2
+2026-03-12 16:24:27 [INFO] Installed app detection completed. Platform=Windows, DetectedInstalledApps=6
+2026-03-12 16:24:28 [INFO] Recommendation summary: Total=0, Supported=0, Unsupported=0
+2026-03-12 16:24:28 [INFO] No recommendation matches found in catalog for detected hardware/accessories.
+2026-03-12 16:24:28 [INFO] Saved selection profile to C:\Users\naime\OneDrive\Desktop\Nova setup v.001\NovaSetup\bin\Debug\net8.0\Configs\selection.json
+2026-03-12 16:24:28 [INFO] Auto-saved list 'Website Starter' with 3 app(s).
+2026-03-12 16:24:28 [INFO] Loaded 9 apps for Windows. Recommended: 0. 1 selected app(s) are unsupported and will be skipped.
+2026-03-12 16:24:34 [INFO] Navigation changed to 'Dashboard'.
+2026-03-12 16:24:35 [INFO] Navigation changed to 'My Lists'.
+2026-03-12 16:24:35 [INFO] Navigation changed to 'Apps'.
+2026-03-12 16:25:49 [INFO] Logging initialized.
+2026-03-12 16:25:49 [INFO] Loaded settings from C:\Users\naime\OneDrive\Desktop\Nova setup v.001\NovaSetup\bin\Debug\net8.0\Configs\settings.json
+2026-03-12 16:25:50 [INFO] Loaded 9 apps from apps.json.
+2026-03-12 16:25:50 [INFO] Loaded selection profile 'Website Starter'.
+2026-03-12 16:25:50 [INFO] Loaded 9 apps for Windows. Recommended: 0. 1 selected app(s) are unsupported and will be skipped. Scanning system in background...
+2026-03-12 16:25:50 [INFO] Detected installed app 'Mozilla Firefox' via Windows registry.
+2026-03-12 16:25:50 [INFO] Detected installed app 'Google Chrome' via Windows registry.
+2026-03-12 16:25:50 [INFO] Detected installed app 'Discord' via Windows registry.
+2026-03-12 16:25:50 [INFO] Detected installed app 'Steam' via Windows registry.
+2026-03-12 16:25:50 [INFO] Detected installed app 'Visual Studio Code' via Windows registry.
+2026-03-12 16:25:50 [INFO] Detected installed app 'Git' via Windows registry.
+2026-03-12 16:25:50 [INFO] Detected installed app 'NVIDIA App' via Windows registry.
+2026-03-12 16:25:50 [INFO] Windows install index prepared. RegistryEntries=428, AppPathMatches=3
+2026-03-12 16:25:50 [INFO] Installed app detection completed. Platform=Windows, DetectedInstalledApps=7
+2026-03-12 16:25:51 [INFO] Detected GPU vendor: NVIDIA
+2026-03-12 16:25:51 [INFO] Detected motherboard vendor: ASUS
+2026-03-12 16:25:54 [INFO] Recommended app 'NVIDIA App' for NVIDIA GPU. Supported=True, AutoSelected=False
+2026-03-12 16:25:54 [INFO] No catalog app found for recommendation rule: ASUS motherboard
+2026-03-12 16:25:54 [INFO] Recommendation summary: Total=1, Supported=1, Unsupported=0
+2026-03-12 16:25:54 [INFO] Recommendations applied in background. Total=1, Supported=1, Unsupported=0, AutoSelectedLater=0
+2026-03-12 16:25:54 [INFO] Saved selection profile to C:\Users\naime\OneDrive\Desktop\Nova setup v.001\NovaSetup\bin\Debug\net8.0\Configs\selection.json
+2026-03-12 16:25:54 [INFO] Auto-saved list 'Website Starter' with 3 app(s).
+2026-03-12 16:25:54 [INFO] Loaded 9 apps for Windows. Recommended: 1. 1 selected app(s) are unsupported and will be skipped.
+2026-03-12 16:25:56 [INFO] Saved selection profile to C:\Users\naime\OneDrive\Desktop\Nova setup v.001\NovaSetup\bin\Debug\net8.0\Configs\selection.json
+2026-03-12 16:25:56 [INFO] Auto-saved list 'Website Starter' with 2 app(s).
+2026-03-12 16:25:57 [INFO] Saved selection profile to C:\Users\naime\OneDrive\Desktop\Nova setup v.001\NovaSetup\bin\Debug\net8.0\Configs\selection.json
+2026-03-12 16:25:57 [INFO] Auto-saved list 'Website Starter' with 1 app(s).
+2026-03-12 16:25:59 [INFO] Saved selection profile to C:\Users\naime\OneDrive\Desktop\Nova setup v.001\NovaSetup\bin\Debug\net8.0\Configs\selection.json
+2026-03-12 16:25:59 [INFO] Auto-saved list 'Website Starter' with 2 app(s).
+2026-03-12 16:26:02 [INFO] Navigation changed to 'Logs'.
+2026-03-12 16:26:03 [INFO] Navigation changed to 'History'.
+2026-03-12 16:26:04 [INFO] Navigation changed to 'My Lists'.
+2026-03-12 16:26:04 [INFO] Navigation changed to 'Apps'.
+2026-03-12 16:26:05 [INFO] Navigation changed to 'Dashboard'.
+2026-03-12 16:26:08 [INFO] Help and documentation are not available yet.
+2026-03-12 16:26:11 [INFO] Help and documentation are not available yet.
+2026-03-12 16:26:11 [INFO] Help and documentation are not available yet.
+2026-03-12 16:26:13 [INFO] Account menu opened.
+2026-03-12 16:26:14 [INFO] Navigation changed to 'Apps'.
+2026-03-12 16:26:15 [INFO] Navigation changed to 'Dashboard'.
+2026-03-12 16:26:16 [INFO] Navigation changed to 'Apps'.
+2026-03-12 16:26:20 [INFO] Starting installation for 2 app(s)...
+2026-03-12 16:26:20 [INFO] Install settings: Silent=True, SelfDelete=False, Parallel=True, OsSupportedApps=True, DownloadLocationMode=SystemDefault, CustomDownloadFolder='', KeepInstallers=False, RestartBehavior=AskBeforeRestart
+2026-03-12 16:26:20 [INFO] Parallel install is enabled in settings, but the installer currently uses the stable sequential pipeline.
+2026-03-12 16:26:20 [INFO] Install started. Platform=Windows, CandidateCount=1, Silent=True.
+2026-03-12 16:26:20 [INFO] Installing app: Logitech G HUB
+2026-03-12 16:26:20 [INFO] Executing install command: winget install --id Logitech.GHUB -e --silent --accept-source-agreements --accept-package-agreements --disable-interactivity
+2026-03-12 16:26:47 [INFO] Command completed. ExitCode=-1978335226
+2026-03-12 16:26:47 [INFO] Command output: -    \    |    /    -    \    |                                                                                                                           â–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–’â–’â–’â–’â–’â–’â–’â–’â–’â–’â–’â–’â–’â–’â–’â–’â–’â–’â–’  1024 KB / 2.69 MB  â–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ...
+2026-03-12 16:27:23 [ERROR] Install failed for Logitech G HUB. ExitCode=-1978335226. winget reported an install failure for Logitech G HUB (0x8A150006). Silent install hides installer windows when possible, but it does not bypass Windows UAC permission prompts. If a Windows permission dialog appears, approve it or run NovaSetup as administrator.
+2026-03-12 16:27:23 [INFO] Deleted temp installer directory: C:\Users\naime\AppData\Local\Temp\NovaSetup\install-20260312-232620-89e4adc19f754598b1172f48ad9f8bab
+2026-03-12 16:27:23 [INFO] Install finished. ResultCount=1.
+2026-03-12 16:27:23 [INFO] Install started. Platform=Windows, CandidateCount=1, Silent=True.
+2026-03-12 16:27:23 [WARN] Skipping htop: unsupported on Windows.
+2026-03-12 16:27:23 [INFO] No install actions generated.
+2026-03-12 16:27:23 [INFO] Detected installed app 'Mozilla Firefox' via Windows registry.
+2026-03-12 16:27:23 [INFO] Detected installed app 'Google Chrome' via Windows registry.
+2026-03-12 16:27:23 [INFO] Detected installed app 'Discord' via Windows registry.
+2026-03-12 16:27:23 [INFO] Detected installed app 'Steam' via Windows registry.
+2026-03-12 16:27:23 [INFO] Detected installed app 'Visual Studio Code' via Windows registry.
+2026-03-12 16:27:23 [INFO] Detected installed app 'Git' via Windows registry.
+2026-03-12 16:27:23 [INFO] Detected installed app 'NVIDIA App' via Windows registry.
+2026-03-12 16:27:23 [INFO] Windows install index prepared. RegistryEntries=428, AppPathMatches=3
+2026-03-12 16:27:23 [INFO] Installed app detection completed. Platform=Windows, DetectedInstalledApps=7
+2026-03-12 16:27:23 [INFO] Installation finished with no restart required.
+2026-03-12 16:27:23 [INFO] Navigation changed to 'History'.
+2026-03-12 16:27:28 [INFO] Account menu opened.
+2026-03-12 16:27:38 [INFO] Opened log file: C:\Users\naime\OneDrive\Desktop\Nova setup v.001\NovaSetup\bin\Debug\net8.0\Logs\NovaSetup-20260312.log
+2026-03-12 16:42:41 [INFO] Logging initialized.
+2026-03-12 16:42:42 [INFO] Loaded settings from C:\Users\naime\OneDrive\Desktop\Nova setup v.001\NovaSetup\bin\Debug\net8.0\Configs\settings.json
+2026-03-12 16:42:42 [INFO] Loaded 9 apps from apps.json.
+2026-03-12 16:42:42 [INFO] Loaded selection profile 'Website Starter'.
+2026-03-12 16:42:42 [INFO] Loaded 9 apps for Windows. Recommended: 0. 1 selected app(s) are unsupported and will be skipped. Scanning system in background...
+2026-03-12 16:42:42 [INFO] Detected installed app 'Mozilla Firefox' via Windows registry.
+2026-03-12 16:42:42 [INFO] Detected installed app 'Google Chrome' via Windows registry.
+2026-03-12 16:42:42 [INFO] Detected installed app 'Discord' via Windows registry.
+2026-03-12 16:42:42 [INFO] Detected installed app 'Steam' via Windows registry.
+2026-03-12 16:42:42 [INFO] Detected installed app 'Visual Studio Code' via Windows registry.
+2026-03-12 16:42:42 [INFO] Detected installed app 'Git' via Windows registry.
+2026-03-12 16:42:42 [INFO] Detected installed app 'NVIDIA App' via Windows registry.
+2026-03-12 16:42:42 [INFO] Windows install index prepared. RegistryEntries=428, AppPathMatches=3
+2026-03-12 16:42:42 [INFO] Installed app detection completed. Platform=Windows, DetectedInstalledApps=7
+2026-03-12 16:42:43 [INFO] Detected GPU vendor: NVIDIA
+2026-03-12 16:42:43 [INFO] Detected motherboard vendor: ASUS
+2026-03-12 16:42:46 [INFO] Recommended app 'NVIDIA App' for NVIDIA GPU. Supported=True, AutoSelected=False
+2026-03-12 16:42:46 [INFO] No catalog app found for recommendation rule: ASUS motherboard
+2026-03-12 16:42:46 [INFO] Recommendation summary: Total=1, Supported=1, Unsupported=0
+2026-03-12 16:42:46 [INFO] Recommendations applied in background. Total=1, Supported=1, Unsupported=0, AutoSelectedLater=1
+2026-03-12 16:42:47 [INFO] Saved selection profile to C:\Users\naime\OneDrive\Desktop\Nova setup v.001\NovaSetup\bin\Debug\net8.0\Configs\selection.json
+2026-03-12 16:42:47 [INFO] Auto-saved list 'Website Starter' with 3 app(s).
+2026-03-12 16:42:47 [INFO] Loaded 9 apps for Windows. Recommended: 1. 1 selected app(s) are unsupported and will be skipped.
+2026-03-12 16:42:48 [INFO] Saved selection profile to C:\Users\naime\OneDrive\Desktop\Nova setup v.001\NovaSetup\bin\Debug\net8.0\Configs\selection.json
+2026-03-12 16:42:48 [INFO] Auto-saved list 'Website Starter' with 2 app(s).
+2026-03-12 16:42:54 [INFO] Starting installation for 2 app(s)...
+2026-03-12 16:42:54 [INFO] Install settings: Silent=True, SelfDelete=False, Parallel=True, OsSupportedApps=True, DownloadLocationMode=SystemDefault, CustomDownloadFolder='', KeepInstallers=False, RestartBehavior=AskBeforeRestart
+2026-03-12 16:42:54 [INFO] Parallel install is enabled in settings, but the installer currently uses the stable sequential pipeline.
+2026-03-12 16:42:54 [INFO] Install started. Platform=Windows, CandidateCount=1, Silent=True.
+2026-03-12 16:42:54 [INFO] Installing app: Logitech G HUB
+2026-03-12 16:42:54 [INFO] Install for Logitech G HUB is configured to request administrator approval before running.
+2026-03-12 16:42:54 [INFO] Executing install command with administrator approval: winget install --id Logitech.GHUB -e --silent --accept-source-agreements --accept-package-agreements --disable-interactivity
+2026-03-12 16:43:11 [INFO] Elevated command completed. ExitCode=-1978335226
+2026-03-12 16:43:47 [ERROR] Install failed for Logitech G HUB. ExitCode=-1978335226. winget reported an install failure for Logitech G HUB (0x8A150006) even after administrator approval. Install command failed with exit code -1978335226.
+2026-03-12 16:43:47 [INFO] Deleted temp installer directory: C:\Users\naime\AppData\Local\Temp\NovaSetup\install-20260312-234254-2ac9340588f040be9c8f2aac8d681edf
+2026-03-12 16:43:47 [INFO] Install finished. ResultCount=1.
+2026-03-12 16:43:47 [INFO] Install started. Platform=Windows, CandidateCount=1, Silent=True.
+2026-03-12 16:43:47 [WARN] Skipping htop: unsupported on Windows.
+2026-03-12 16:43:47 [INFO] No install actions generated.
+2026-03-12 16:43:47 [INFO] Detected installed app 'Mozilla Firefox' via Windows registry.
+2026-03-12 16:43:47 [INFO] Detected installed app 'Google Chrome' via Windows registry.
+2026-03-12 16:43:47 [INFO] Detected installed app 'Discord' via Windows registry.
+2026-03-12 16:43:47 [INFO] Detected installed app 'Steam' via Windows registry.
+2026-03-12 16:43:47 [INFO] Detected installed app 'Visual Studio Code' via Windows registry.
+2026-03-12 16:43:47 [INFO] Detected installed app 'Git' via Windows registry.
+2026-03-12 16:43:47 [INFO] Detected installed app 'NVIDIA App' via Windows registry.
+2026-03-12 16:43:47 [INFO] Windows install index prepared. RegistryEntries=428, AppPathMatches=3
+2026-03-12 16:43:47 [INFO] Installed app detection completed. Platform=Windows, DetectedInstalledApps=7
+2026-03-12 16:43:47 [INFO] Installation finished with no restart required.
+2026-03-12 16:43:47 [INFO] Navigation changed to 'History'.
+2026-03-12 16:43:56 [INFO] Navigation changed to 'Apps'.
+2026-03-12 16:43:56 [INFO] Navigation changed to 'History'.
+2026-03-12 16:43:59 [INFO] Navigation changed to 'My Lists'.
+2026-03-12 16:44:00 [INFO] Navigation changed to 'Apps'.
+2026-03-12 16:44:00 [INFO] Navigation changed to 'Dashboard'.
+2026-03-12 16:44:01 [INFO] Navigation changed to 'Apps'.
+2026-03-12 16:44:03 [INFO] Starting installation for 2 app(s)...
+2026-03-12 16:44:03 [INFO] Install settings: Silent=True, SelfDelete=False, Parallel=True, OsSupportedApps=True, DownloadLocationMode=SystemDefault, CustomDownloadFolder='', KeepInstallers=False, RestartBehavior=AskBeforeRestart
+2026-03-12 16:44:03 [INFO] Parallel install is enabled in settings, but the installer currently uses the stable sequential pipeline.
+2026-03-12 16:44:03 [INFO] Install started. Platform=Windows, CandidateCount=1, Silent=True.
+2026-03-12 16:44:03 [INFO] Installing app: Logitech G HUB
+2026-03-12 16:44:03 [INFO] Install for Logitech G HUB is configured to request administrator approval before running.
+2026-03-12 16:44:03 [INFO] Executing install command with administrator approval: winget install --id Logitech.GHUB -e --silent --accept-source-agreements --accept-package-agreements --disable-interactivity
+2026-03-12 16:46:24 [INFO] Elevated command completed. ExitCode=0
+2026-03-12 16:46:24 [INFO] Verified installed app 'Logitech G HUB' after command completion.
+2026-03-12 16:46:24 [INFO] Install succeeded for Logitech G HUB. ExitCode=0.
+2026-03-12 16:46:24 [INFO] Deleted temp installer directory: C:\Users\naime\AppData\Local\Temp\NovaSetup\install-20260312-234403-d43eb3b861f0444bafc6759fea18a0aa
+2026-03-12 16:46:24 [INFO] Install finished. ResultCount=1.
+2026-03-12 16:46:24 [INFO] Install started. Platform=Windows, CandidateCount=1, Silent=True.
+2026-03-12 16:46:24 [WARN] Skipping htop: unsupported on Windows.
+2026-03-12 16:46:24 [INFO] No install actions generated.
+2026-03-12 16:46:24 [INFO] Detected installed app 'Mozilla Firefox' via Windows registry.
+2026-03-12 16:46:24 [INFO] Detected installed app 'Google Chrome' via Windows registry.
+2026-03-12 16:46:24 [INFO] Detected installed app 'Discord' via Windows registry.
+2026-03-12 16:46:24 [INFO] Detected installed app 'Steam' via Windows registry.
+2026-03-12 16:46:24 [INFO] Detected installed app 'Visual Studio Code' via Windows registry.
+2026-03-12 16:46:24 [INFO] Detected installed app 'Git' via Windows registry.
+2026-03-12 16:46:24 [INFO] Detected installed app 'NVIDIA App' via Windows registry.
+2026-03-12 16:46:24 [INFO] Detected installed app 'Logitech G HUB' via Windows registry.
+2026-03-12 16:46:24 [INFO] Windows install index prepared. RegistryEntries=429, AppPathMatches=3
+2026-03-12 16:46:24 [INFO] Installed app detection completed. Platform=Windows, DetectedInstalledApps=8
+2026-03-12 16:46:24 [INFO] Installation finished with no restart required.
+2026-03-12 16:46:24 [INFO] Navigation changed to 'History'.
+2026-03-12 16:52:11 [INFO] Logging initialized.
+2026-03-12 16:52:13 [INFO] Loaded settings from C:\Users\naime\OneDrive\Desktop\Nova setup v.001\NovaSetup\bin\Debug\net8.0\Configs\settings.json
+2026-03-12 16:52:13 [INFO] Loaded 9 apps from apps.json.
+2026-03-12 16:52:13 [INFO] Loaded selection profile 'Website Starter'.
+2026-03-12 16:52:13 [INFO] Loaded 9 apps for Windows. Recommended: 0. 1 selected app(s) are unsupported and will be skipped. Scanning system in background...
+2026-03-12 16:52:13 [INFO] Detected installed app 'Mozilla Firefox' via Windows registry.
+2026-03-12 16:52:13 [INFO] Detected installed app 'Google Chrome' via Windows registry.
+2026-03-12 16:52:13 [INFO] Detected installed app 'Discord' via Windows registry.
+2026-03-12 16:52:13 [INFO] Detected installed app 'Steam' via Windows registry.
+2026-03-12 16:52:13 [INFO] Detected installed app 'Visual Studio Code' via Windows registry.
+2026-03-12 16:52:13 [INFO] Detected installed app 'Git' via Windows registry.
+2026-03-12 16:52:13 [INFO] Detected installed app 'NVIDIA App' via Windows registry.
+2026-03-12 16:52:13 [INFO] Windows install index prepared. RegistryEntries=428, AppPathMatches=3
+2026-03-12 16:52:13 [INFO] Installed app detection completed. Platform=Windows, DetectedInstalledApps=7
+2026-03-12 16:52:14 [INFO] Detected GPU vendor: NVIDIA
+2026-03-12 16:52:15 [INFO] Detected motherboard vendor: ASUS
+2026-03-12 16:52:18 [INFO] Recommended app 'NVIDIA App' for NVIDIA GPU. Supported=True, AutoSelected=False
+2026-03-12 16:52:18 [INFO] No catalog app found for recommendation rule: ASUS motherboard
+2026-03-12 16:52:18 [INFO] Recommendation summary: Total=1, Supported=1, Unsupported=0
+2026-03-12 16:52:18 [INFO] Recommendations applied in background. Total=1, Supported=1, Unsupported=0, AutoSelectedLater=1
+2026-03-12 16:52:18 [INFO] Saved selection profile to C:\Users\naime\OneDrive\Desktop\Nova setup v.001\NovaSetup\bin\Debug\net8.0\Configs\selection.json
+2026-03-12 16:52:18 [INFO] Auto-saved list 'Website Starter' with 3 app(s).
+2026-03-12 16:52:18 [INFO] Loaded 9 apps for Windows. Recommended: 1. 1 selected app(s) are unsupported and will be skipped.
+2026-03-12 16:52:24 [INFO] Saved selection profile to C:\Users\naime\OneDrive\Desktop\Nova setup v.001\NovaSetup\bin\Debug\net8.0\Configs\selection.json
+2026-03-12 16:52:24 [INFO] Auto-saved list 'Website Starter' with 2 app(s).
+2026-03-12 16:52:26 [INFO] Saved selection profile to C:\Users\naime\OneDrive\Desktop\Nova setup v.001\NovaSetup\bin\Debug\net8.0\Configs\selection.json
+2026-03-12 16:52:26 [INFO] Auto-saved list 'Website Starter' with 1 app(s).
+2026-03-12 16:52:27 [INFO] Saved selection profile to C:\Users\naime\OneDrive\Desktop\Nova setup v.001\NovaSetup\bin\Debug\net8.0\Configs\selection.json
+2026-03-12 16:52:27 [INFO] Auto-saved list 'Website Starter' with 2 app(s).
+2026-03-12 16:53:45 [INFO] Starting installation for 2 app(s)...
+2026-03-12 16:53:45 [INFO] Install settings: Silent=True, SelfDelete=False, Parallel=True, OsSupportedApps=True, DownloadLocationMode=SystemDefault, CustomDownloadFolder='', KeepInstallers=False, RestartBehavior=AskBeforeRestart
+2026-03-12 16:53:45 [INFO] Parallel install is enabled in settings, but the installer currently uses the stable sequential pipeline.
+2026-03-12 16:53:45 [INFO] Install started. Platform=Windows, CandidateCount=1, Silent=True.
+2026-03-12 16:53:45 [INFO] Installing app: Logitech G HUB
+2026-03-12 16:53:45 [INFO] Install for Logitech G HUB is configured to request administrator approval before running.
+2026-03-12 16:53:45 [INFO] Executing install command with administrator approval: winget install --id Logitech.GHUB -e --silent --accept-source-agreements --accept-package-agreements --disable-interactivity
+2026-03-12 16:54:12 [INFO] Elevated command completed. ExitCode=-1978335226
+2026-03-12 16:54:49 [ERROR] Install failed for Logitech G HUB. ExitCode=-1978335226. winget reported an install failure for Logitech G HUB (0x8A150006) even after administrator approval. Install command failed with exit code -1978335226.
+2026-03-12 16:54:49 [INFO] Deleted temp installer directory: C:\Users\naime\AppData\Local\Temp\NovaSetup\install-20260312-235345-31b9b16e835242cfb54efa9c0570f312
+2026-03-12 16:54:49 [INFO] Install finished. ResultCount=1.
+2026-03-12 16:54:49 [INFO] Install started. Platform=Windows, CandidateCount=1, Silent=True.
+2026-03-12 16:54:49 [WARN] Skipping htop: unsupported on Windows.
+2026-03-12 16:54:49 [INFO] No install actions generated.
+2026-03-12 16:54:49 [INFO] Detected installed app 'Mozilla Firefox' via Windows registry.
+2026-03-12 16:54:49 [INFO] Detected installed app 'Google Chrome' via Windows registry.
+2026-03-12 16:54:49 [INFO] Detected installed app 'Discord' via Windows registry.
+2026-03-12 16:54:49 [INFO] Detected installed app 'Steam' via Windows registry.
+2026-03-12 16:54:49 [INFO] Detected installed app 'Visual Studio Code' via Windows registry.
+2026-03-12 16:54:49 [INFO] Detected installed app 'Git' via Windows registry.
+2026-03-12 16:54:49 [INFO] Detected installed app 'NVIDIA App' via Windows registry.
+2026-03-12 16:54:49 [INFO] Windows install index prepared. RegistryEntries=428, AppPathMatches=3
+2026-03-12 16:54:49 [INFO] Installed app detection completed. Platform=Windows, DetectedInstalledApps=7
+2026-03-12 16:54:49 [INFO] Installation finished with no restart required.
+2026-03-12 16:54:49 [INFO] Navigation changed to 'History'.
+2026-03-12 16:55:11 [INFO] Navigation changed to 'Apps'.
+2026-03-12 16:55:13 [INFO] Saved selection profile to C:\Users\naime\OneDrive\Desktop\Nova setup v.001\NovaSetup\bin\Debug\net8.0\Configs\selection.json
+2026-03-12 16:55:13 [INFO] Auto-saved list 'Website Starter' with 3 app(s).
+2026-03-12 16:55:15 [INFO] Starting installation for 3 app(s)...
+2026-03-12 16:55:15 [INFO] Install settings: Silent=True, SelfDelete=False, Parallel=True, OsSupportedApps=True, DownloadLocationMode=SystemDefault, CustomDownloadFolder='', KeepInstallers=False, RestartBehavior=AskBeforeRestart
+2026-03-12 16:55:15 [INFO] Parallel install is enabled in settings, but the installer currently uses the stable sequential pipeline.
+2026-03-12 16:55:15 [INFO] Install started. Platform=Windows, CandidateCount=1, Silent=True.
+2026-03-12 16:55:15 [INFO] Installing app: Mozilla Firefox
+2026-03-12 16:55:15 [INFO] Executing install command: winget install --id Mozilla.Firefox -e --silent --accept-source-agreements --accept-package-agreements --disable-interactivity
+2026-03-12 16:56:10 [INFO] Command completed. ExitCode=0
+2026-03-12 16:56:10 [INFO] Command output: -                                                                                                                            -    \    |    /                                                                                                                         Found Mozilla Firefox (en-US) ...
+2026-03-12 16:56:10 [INFO] Verified installed app 'Mozilla Firefox' after command completion.
+2026-03-12 16:56:10 [INFO] Install succeeded for Mozilla Firefox. ExitCode=0.
+2026-03-12 16:56:10 [INFO] Deleted temp installer directory: C:\Users\naime\AppData\Local\Temp\NovaSetup\install-20260312-235515-a7c2ecef415447778f010ccdb4a1078f
+2026-03-12 16:56:10 [INFO] Install finished. ResultCount=1.
+2026-03-12 16:56:10 [INFO] Install started. Platform=Windows, CandidateCount=1, Silent=True.
+2026-03-12 16:56:10 [INFO] Installing app: Logitech G HUB
+2026-03-12 16:56:10 [INFO] Install for Logitech G HUB is configured to request administrator approval before running.
+2026-03-12 16:56:10 [INFO] Executing install command with administrator approval: winget install --id Logitech.GHUB -e --silent --accept-source-agreements --accept-package-agreements --disable-interactivity
+2026-03-12 16:56:27 [INFO] Elevated command completed. ExitCode=-1978335226
+2026-03-12 16:57:03 [ERROR] Install failed for Logitech G HUB. ExitCode=-1978335226. winget reported an install failure for Logitech G HUB (0x8A150006) even after administrator approval. Install command failed with exit code -1978335226.
+2026-03-12 16:57:03 [INFO] Deleted temp installer directory: C:\Users\naime\AppData\Local\Temp\NovaSetup\install-20260312-235610-7aa4f9e7b3014a24b874c0ee07c704b9
+2026-03-12 16:57:03 [INFO] Install finished. ResultCount=1.
+2026-03-12 16:57:03 [INFO] Install started. Platform=Windows, CandidateCount=1, Silent=True.
+2026-03-12 16:57:03 [WARN] Skipping htop: unsupported on Windows.
+2026-03-12 16:57:03 [INFO] No install actions generated.
+2026-03-12 16:57:03 [INFO] Detected installed app 'Mozilla Firefox' via Windows registry.
+2026-03-12 16:57:03 [INFO] Detected installed app 'Google Chrome' via Windows registry.
+2026-03-12 16:57:03 [INFO] Detected installed app 'Discord' via Windows registry.
+2026-03-12 16:57:03 [INFO] Detected installed app 'Steam' via Windows registry.
+2026-03-12 16:57:03 [INFO] Detected installed app 'Visual Studio Code' via Windows registry.
+2026-03-12 16:57:03 [INFO] Detected installed app 'Git' via Windows registry.
+2026-03-12 16:57:03 [INFO] Detected installed app 'NVIDIA App' via Windows registry.
+2026-03-12 16:57:03 [INFO] Windows install index prepared. RegistryEntries=428, AppPathMatches=3
+2026-03-12 16:57:03 [INFO] Installed app detection completed. Platform=Windows, DetectedInstalledApps=7
+2026-03-12 16:57:03 [INFO] Installation finished with no restart required.
+2026-03-12 16:57:03 [INFO] Navigation changed to 'History'.
+2026-03-12 17:14:42 [INFO] Logging initialized.
+2026-03-12 17:14:43 [INFO] Loaded settings from C:\Users\naime\OneDrive\Desktop\Nova setup v.001\NovaSetup\bin\Debug\net8.0\Configs\settings.json
+2026-03-12 17:14:43 [INFO] Loaded 9 apps from apps.json.
+2026-03-12 17:14:43 [INFO] Loaded selection profile 'Website Starter'.
+2026-03-12 17:14:43 [INFO] Loaded 9 apps for Windows. Recommended: 0. 1 selected app(s) are unsupported and will be skipped. Scanning system in background...
+2026-03-12 17:14:43 [INFO] Detected installed app 'Google Chrome' via Windows registry.
+2026-03-12 17:14:43 [INFO] Detected installed app 'Discord' via Windows registry.
+2026-03-12 17:14:43 [INFO] Detected installed app 'Steam' via Windows registry.
+2026-03-12 17:14:43 [INFO] Detected installed app 'Visual Studio Code' via Windows registry.
+2026-03-12 17:14:43 [INFO] Detected installed app 'Git' via Windows registry.
+2026-03-12 17:14:43 [INFO] Detected installed app 'NVIDIA App' via Windows registry.
+2026-03-12 17:14:44 [INFO] Windows install index prepared. RegistryEntries=426, AppPathMatches=2
+2026-03-12 17:14:44 [INFO] Installed app detection completed. Platform=Windows, DetectedInstalledApps=6
+2026-03-12 17:14:44 [INFO] Detected GPU vendor: NVIDIA
+2026-03-12 17:14:44 [INFO] Detected motherboard vendor: ASUS
+2026-03-12 17:14:47 [INFO] Recommended app 'NVIDIA App' for NVIDIA GPU. Supported=True, AutoSelected=False
+2026-03-12 17:14:47 [INFO] No catalog app found for recommendation rule: ASUS motherboard
+2026-03-12 17:14:47 [INFO] Recommendation summary: Total=1, Supported=1, Unsupported=0
+2026-03-12 17:14:47 [INFO] Recommendations applied in background. Total=1, Supported=1, Unsupported=0, AutoSelectedLater=1
+2026-03-12 17:14:47 [INFO] Saved selection profile to C:\Users\naime\OneDrive\Desktop\Nova setup v.001\NovaSetup\bin\Debug\net8.0\Configs\selection.json
+2026-03-12 17:14:47 [INFO] Auto-saved list 'Website Starter' with 4 app(s).
+2026-03-12 17:14:47 [INFO] Loaded 9 apps for Windows. Recommended: 1. 1 selected app(s) are unsupported and will be skipped.
+2026-03-12 17:14:49 [INFO] Saved selection profile to C:\Users\naime\OneDrive\Desktop\Nova setup v.001\NovaSetup\bin\Debug\net8.0\Configs\selection.json
+2026-03-12 17:14:49 [INFO] Auto-saved list 'Website Starter' with 3 app(s).
+2026-03-12 17:14:51 [INFO] Starting installation for 3 app(s)...
+2026-03-12 17:14:51 [INFO] Install settings: Silent=True, SelfDelete=False, Parallel=True, OsSupportedApps=True, DownloadLocationMode=SystemDefault, CustomDownloadFolder='', KeepInstallers=False, RestartBehavior=AskBeforeRestart
+2026-03-12 17:14:51 [INFO] Parallel install is enabled in settings, but the installer currently uses the stable sequential pipeline.
+2026-03-12 17:14:51 [INFO] Install started. Platform=Windows, CandidateCount=1, Silent=True.
+2026-03-12 17:14:51 [INFO] Installing app: Mozilla Firefox
+2026-03-12 17:14:52 [INFO] Downloading installer for Mozilla Firefox from https://download.mozilla.org/?product=firefox-latest&os=win64&lang=en-US
+2026-03-12 17:14:56 [INFO] Downloaded installer for Mozilla Firefox to C:\Users\naime\AppData\Local\Temp\NovaSetup\install-20260313-001451-d44adccf350b49f79c00103e1b5159b1\FirefoxInstaller.exe
+2026-03-12 17:14:56 [INFO] Executing install command: "C:\Users\naime\AppData\Local\Temp\NovaSetup\install-20260313-001451-d44adccf350b49f79c00103e1b5159b1\FirefoxInstaller.exe" -ms
+2026-03-12 17:15:24 [INFO] Command completed. ExitCode=0
+2026-03-12 17:15:24 [INFO] Verified installed app 'Mozilla Firefox' after command completion.
+2026-03-12 17:15:24 [INFO] Install succeeded for Mozilla Firefox. ExitCode=0.
+2026-03-12 17:15:24 [INFO] Deleted temp installer file: C:\Users\naime\AppData\Local\Temp\NovaSetup\install-20260313-001451-d44adccf350b49f79c00103e1b5159b1\FirefoxInstaller.exe
+2026-03-12 17:15:24 [INFO] Deleted temp installer directory: C:\Users\naime\AppData\Local\Temp\NovaSetup\install-20260313-001451-d44adccf350b49f79c00103e1b5159b1
+2026-03-12 17:15:24 [INFO] Install finished. ResultCount=1.
+2026-03-12 17:15:24 [INFO] Install started. Platform=Windows, CandidateCount=1, Silent=True.
+2026-03-12 17:15:24 [INFO] Installing app: Logitech G HUB
+2026-03-12 17:15:24 [INFO] Install for Logitech G HUB is configured to request administrator approval before running.
+2026-03-12 17:15:24 [INFO] Executing install command with administrator approval: winget install --id Logitech.GHUB -e --accept-source-agreements --accept-package-agreements --disable-interactivity
+2026-03-12 17:15:26 [WARN] Windows permission prompt was cancelled. The install did not continue.
+2026-03-12 17:16:02 [ERROR] Install failed for Logitech G HUB. ExitCode=1223. Logitech G HUB requires Windows administrator approval to install. The permission prompt was cancelled, so the install did not continue.
+2026-03-12 17:16:02 [INFO] Deleted temp installer directory: C:\Users\naime\AppData\Local\Temp\NovaSetup\install-20260313-001524-81073bb5a6384c45898ea678ead94e85
+2026-03-12 17:16:02 [INFO] Install finished. ResultCount=1.
+2026-03-12 17:16:02 [INFO] Install started. Platform=Windows, CandidateCount=1, Silent=True.
+2026-03-12 17:16:02 [WARN] Skipping htop: unsupported on Windows.
+2026-03-12 17:16:02 [INFO] No install actions generated.
+2026-03-12 17:16:02 [INFO] Detected installed app 'Mozilla Firefox' via Windows registry.
+2026-03-12 17:16:02 [INFO] Detected installed app 'Google Chrome' via Windows registry.
+2026-03-12 17:16:02 [INFO] Detected installed app 'Discord' via Windows registry.
+2026-03-12 17:16:02 [INFO] Detected installed app 'Steam' via Windows registry.
+2026-03-12 17:16:02 [INFO] Detected installed app 'Visual Studio Code' via Windows registry.
+2026-03-12 17:16:02 [INFO] Detected installed app 'Git' via Windows registry.
+2026-03-12 17:16:02 [INFO] Detected installed app 'NVIDIA App' via Windows registry.
+2026-03-12 17:16:02 [INFO] Windows install index prepared. RegistryEntries=427, AppPathMatches=3
+2026-03-12 17:16:02 [INFO] Installed app detection completed. Platform=Windows, DetectedInstalledApps=7
+2026-03-12 17:16:02 [INFO] Installation finished with no restart required.
+2026-03-12 17:16:02 [INFO] Navigation changed to 'History'.
+2026-03-12 17:28:05 [INFO] Logging initialized.
+2026-03-12 17:28:06 [INFO] Loaded settings from C:\Users\naime\OneDrive\Desktop\Nova setup v.001\NovaSetup\bin\Debug\net8.0\Configs\settings.json
+2026-03-12 17:28:06 [INFO] Loaded 9 apps from apps.json.
+2026-03-12 17:28:06 [INFO] Loaded selection profile 'Website Starter'.
+2026-03-12 17:28:06 [INFO] Loaded 9 apps for Windows. Recommended: 0. 1 selected app(s) are unsupported and will be skipped. Scanning system in background...
+2026-03-12 17:28:07 [INFO] Detected installed app 'Mozilla Firefox' via Windows registry.
+2026-03-12 17:28:07 [INFO] Detected installed app 'Google Chrome' via Windows registry.
+2026-03-12 17:28:07 [INFO] Detected installed app 'Discord' via Windows registry.
+2026-03-12 17:28:07 [INFO] Detected installed app 'Steam' via Windows registry.
+2026-03-12 17:28:07 [INFO] Detected installed app 'Visual Studio Code' via Windows registry.
+2026-03-12 17:28:07 [INFO] Detected installed app 'Git' via Windows registry.
+2026-03-12 17:28:07 [INFO] Detected installed app 'NVIDIA App' via Windows registry.
+2026-03-12 17:28:07 [INFO] Windows install index prepared. RegistryEntries=427, AppPathMatches=3
+2026-03-12 17:28:07 [INFO] Installed app detection completed. Platform=Windows, DetectedInstalledApps=7
+2026-03-12 17:28:08 [INFO] Detected GPU vendor: NVIDIA
+2026-03-12 17:28:09 [INFO] Detected motherboard vendor: ASUS
+2026-03-12 17:28:12 [INFO] Recommended app 'NVIDIA App' for NVIDIA GPU. Supported=True, AutoSelected=False
+2026-03-12 17:28:12 [INFO] No catalog app found for recommendation rule: ASUS motherboard
+2026-03-12 17:28:12 [INFO] Recommendation summary: Total=1, Supported=1, Unsupported=0
+2026-03-12 17:28:12 [INFO] Recommendations applied in background. Total=1, Supported=1, Unsupported=0, AutoSelectedLater=1
+2026-03-12 17:28:12 [INFO] Saved selection profile to C:\Users\naime\OneDrive\Desktop\Nova setup v.001\NovaSetup\bin\Debug\net8.0\Configs\selection.json
+2026-03-12 17:28:12 [INFO] Auto-saved list 'Website Starter' with 4 app(s).
+2026-03-12 17:28:12 [INFO] Loaded 9 apps for Windows. Recommended: 1. 1 selected app(s) are unsupported and will be skipped.
+2026-03-12 17:28:13 [INFO] Saved selection profile to C:\Users\naime\OneDrive\Desktop\Nova setup v.001\NovaSetup\bin\Debug\net8.0\Configs\selection.json
+2026-03-12 17:28:13 [INFO] Auto-saved list 'Website Starter' with 3 app(s).
+2026-03-12 17:28:16 [INFO] Starting installation for 3 app(s)...
+2026-03-12 17:28:16 [INFO] Install settings: Silent=True, SelfDelete=False, Parallel=True, OsSupportedApps=True, DownloadLocationMode=SystemDefault, CustomDownloadFolder='', KeepInstallers=False, RestartBehavior=AskBeforeRestart
+2026-03-12 17:28:16 [INFO] Parallel install is enabled in settings, but the installer currently uses the stable sequential pipeline.
+2026-03-12 17:28:16 [INFO] Install started. Platform=Windows, CandidateCount=1, Silent=True.
+2026-03-12 17:28:16 [INFO] Installing app: Mozilla Firefox
+2026-03-12 17:28:16 [INFO] Downloading installer for Mozilla Firefox from https://download.mozilla.org/?product=firefox-latest&os=win64&lang=en-US
+2026-03-12 17:28:20 [INFO] Downloaded installer for Mozilla Firefox to C:\Users\naime\AppData\Local\Temp\NovaSetup\install-20260313-002816-3153044d72ca4bacac6c13a2dbeba7eb\FirefoxInstaller.exe
+2026-03-12 17:28:20 [INFO] Executing install command: "C:\Users\naime\AppData\Local\Temp\NovaSetup\install-20260313-002816-3153044d72ca4bacac6c13a2dbeba7eb\FirefoxInstaller.exe" -ms
+2026-03-12 17:29:55 [INFO] Command completed. ExitCode=0
+2026-03-12 17:29:55 [INFO] Install succeeded for Mozilla Firefox. ExitCode=0.
+2026-03-12 17:29:55 [INFO] Deleted temp installer file: C:\Users\naime\AppData\Local\Temp\NovaSetup\install-20260313-002816-3153044d72ca4bacac6c13a2dbeba7eb\FirefoxInstaller.exe
+2026-03-12 17:29:55 [INFO] Deleted temp installer directory: C:\Users\naime\AppData\Local\Temp\NovaSetup\install-20260313-002816-3153044d72ca4bacac6c13a2dbeba7eb
+2026-03-12 17:29:55 [INFO] Install finished. ResultCount=1.
+2026-03-12 17:29:55 [INFO] Install started. Platform=Windows, CandidateCount=1, Silent=True.
+2026-03-12 17:29:55 [INFO] Installing app: Logitech G HUB
+2026-03-12 17:29:55 [INFO] Downloading installer for Logitech G HUB from https://download01.logi.com/web/ftp/pub/techsupport/gaming/lghub_installer.exe
+2026-03-12 17:29:59 [INFO] Downloaded installer for Logitech G HUB to C:\Users\naime\AppData\Local\Temp\NovaSetup\install-20260313-002955-fcd94ca2abeb4f1eb902561eaec78180\lghub_installer.exe
+2026-03-12 17:29:59 [INFO] Install for Logitech G HUB is configured to request administrator approval before running.
+2026-03-12 17:29:59 [INFO] Executing install command with administrator approval: "C:\Users\naime\AppData\Local\Temp\NovaSetup\install-20260313-002955-fcd94ca2abeb4f1eb902561eaec78180\lghub_installer.exe"
+2026-03-12 17:30:07 [INFO] Elevated command completed. ExitCode=1
+2026-03-12 17:30:31 [INFO] Pause requested (placeholder).
+2026-03-12 17:30:32 [INFO] Opened log file: C:\Users\naime\OneDrive\Desktop\Nova setup v.001\NovaSetup\bin\Debug\net8.0\Logs\NovaSetup-20260312.log
+2026-03-12 17:30:43 [ERROR] Install failed for Logitech G HUB. ExitCode=1. Install command failed with exit code 1.
+2026-03-12 17:30:43 [INFO] Deleted temp installer file: C:\Users\naime\AppData\Local\Temp\NovaSetup\install-20260313-002955-fcd94ca2abeb4f1eb902561eaec78180\lghub_installer.exe
+2026-03-12 17:30:43 [INFO] Deleted temp installer directory: C:\Users\naime\AppData\Local\Temp\NovaSetup\install-20260313-002955-fcd94ca2abeb4f1eb902561eaec78180
+2026-03-12 17:30:43 [INFO] Install finished. ResultCount=1.
+2026-03-12 17:30:43 [INFO] Install started. Platform=Windows, CandidateCount=1, Silent=True.
+2026-03-12 17:30:43 [WARN] Skipping htop: unsupported on Windows.
+2026-03-12 17:30:43 [INFO] No install actions generated.
+2026-03-12 17:30:43 [INFO] Detected installed app 'Mozilla Firefox' via Windows registry.
+2026-03-12 17:30:43 [INFO] Detected installed app 'Google Chrome' via Windows registry.
+2026-03-12 17:30:43 [INFO] Detected installed app 'Discord' via Windows registry.
+2026-03-12 17:30:43 [INFO] Detected installed app 'Steam' via Windows registry.
+2026-03-12 17:30:43 [INFO] Detected installed app 'Visual Studio Code' via Windows registry.
+2026-03-12 17:30:43 [INFO] Detected installed app 'Git' via Windows registry.
+2026-03-12 17:30:43 [INFO] Detected installed app 'NVIDIA App' via Windows registry.
+2026-03-12 17:30:43 [INFO] Windows install index prepared. RegistryEntries=428, AppPathMatches=3
+2026-03-12 17:30:43 [INFO] Installed app detection completed. Platform=Windows, DetectedInstalledApps=7
+2026-03-12 17:30:43 [INFO] Installation finished with no restart required.
+2026-03-12 17:30:43 [INFO] Navigation changed to 'History'.
+2026-03-12 17:49:10 [INFO] Logging initialized.
+2026-03-12 17:49:11 [INFO] Loaded settings from C:\Users\naime\OneDrive\Desktop\Nova setup v.001\NovaSetup\bin\Debug\net8.0\Configs\settings.json
+2026-03-12 17:49:11 [INFO] Loaded 9 apps from apps.json.
+2026-03-12 17:49:11 [INFO] Loaded selection profile 'Website Starter'.
+2026-03-12 17:49:11 [INFO] Loaded 9 apps for Windows. Recommended: 0. 1 selected app(s) are unsupported and will be skipped. Scanning system in background...
+2026-03-12 17:49:11 [INFO] Detected installed app 'Mozilla Firefox' via Windows registry.
+2026-03-12 17:49:11 [INFO] Detected installed app 'Google Chrome' via Windows registry.
+2026-03-12 17:49:11 [INFO] Detected installed app 'Discord' via Windows registry.
+2026-03-12 17:49:11 [INFO] Detected installed app 'Steam' via Windows registry.
+2026-03-12 17:49:11 [INFO] Detected installed app 'Visual Studio Code' via Windows registry.
+2026-03-12 17:49:11 [INFO] Detected installed app 'Git' via Windows registry.
+2026-03-12 17:49:11 [INFO] Detected installed app 'NVIDIA App' via Windows registry.
+2026-03-12 17:49:11 [INFO] Windows install index prepared. RegistryEntries=428, AppPathMatches=3
+2026-03-12 17:49:11 [INFO] Installed app detection completed. Platform=Windows, DetectedInstalledApps=7
+2026-03-12 17:49:12 [INFO] Detected GPU vendor: NVIDIA
+2026-03-12 17:49:12 [INFO] Detected motherboard vendor: ASUS
+2026-03-12 17:49:15 [INFO] Recommended app 'NVIDIA App' for NVIDIA GPU. Supported=True, AutoSelected=False
+2026-03-12 17:49:15 [INFO] No catalog app found for recommendation rule: ASUS motherboard
+2026-03-12 17:49:15 [INFO] Recommendation summary: Total=1, Supported=1, Unsupported=0
+2026-03-12 17:49:15 [INFO] Recommendations applied in background. Total=1, Supported=1, Unsupported=0, AutoSelectedLater=1
+2026-03-12 17:49:15 [INFO] Saved selection profile to C:\Users\naime\OneDrive\Desktop\Nova setup v.001\NovaSetup\bin\Debug\net8.0\Configs\selection.json
+2026-03-12 17:49:15 [INFO] Auto-saved list 'Website Starter' with 4 app(s).
+2026-03-12 17:49:15 [INFO] Loaded 9 apps for Windows. Recommended: 1. 1 selected app(s) are unsupported and will be skipped.
+2026-03-12 17:49:16 [INFO] Saved selection profile to C:\Users\naime\OneDrive\Desktop\Nova setup v.001\NovaSetup\bin\Debug\net8.0\Configs\selection.json
+2026-03-12 17:49:16 [INFO] Auto-saved list 'Website Starter' with 3 app(s).
+2026-03-12 17:50:22 [INFO] Starting installation for 3 app(s)...
+2026-03-12 17:50:22 [INFO] Install settings: Silent=True, SelfDelete=False, Parallel=True, OsSupportedApps=True, DownloadLocationMode=SystemDefault, CustomDownloadFolder='', KeepInstallers=False, RestartBehavior=AskBeforeRestart
+2026-03-12 17:50:22 [INFO] Parallel install is enabled in settings, but the installer currently uses the stable sequential pipeline.
+2026-03-12 17:50:22 [INFO] Install started. Platform=Windows, CandidateCount=1, Silent=True.
+2026-03-12 17:50:22 [INFO] Installing app: Mozilla Firefox
+2026-03-12 17:50:23 [INFO] Downloading installer for Mozilla Firefox from https://download.mozilla.org/?product=firefox-msi-latest-ssl&os=win64&lang=en-US
+2026-03-12 17:50:34 [INFO] Downloaded installer for Mozilla Firefox to C:\Users\naime\AppData\Local\Temp\NovaSetup\install-20260313-005022-d71c99c5e30b4259a3e28840741cd276\FirefoxInstaller.msi
+2026-03-12 17:50:34 [INFO] Executing install command: msiexec /i "C:\Users\naime\AppData\Local\Temp\NovaSetup\install-20260313-005022-d71c99c5e30b4259a3e28840741cd276\FirefoxInstaller.msi" /qn /norestart
+2026-03-12 17:50:37 [INFO] Command completed. ExitCode=1603
+2026-03-12 17:51:12 [ERROR] Install failed for Mozilla Firefox. ExitCode=1603. Install command failed with exit code 1603.
+2026-03-12 17:51:12 [INFO] Deleted temp installer file: C:\Users\naime\AppData\Local\Temp\NovaSetup\install-20260313-005022-d71c99c5e30b4259a3e28840741cd276\FirefoxInstaller.msi
+2026-03-12 17:51:12 [INFO] Deleted temp installer directory: C:\Users\naime\AppData\Local\Temp\NovaSetup\install-20260313-005022-d71c99c5e30b4259a3e28840741cd276
+2026-03-12 17:51:12 [INFO] Install finished. ResultCount=1.
+2026-03-12 17:51:12 [INFO] Install started. Platform=Windows, CandidateCount=1, Silent=True.
+2026-03-12 17:51:12 [INFO] Installing app: Logitech G HUB
+2026-03-12 17:51:12 [INFO] Install for Logitech G HUB is configured to request administrator approval before running.
+2026-03-12 17:51:12 [INFO] Executing install command with administrator approval: winget install --id Logitech.GHUB -e --accept-source-agreements --accept-package-agreements --disable-interactivity
+2026-03-12 17:51:33 [INFO] Elevated command completed. ExitCode=-1978335226
+2026-03-12 17:54:17 [INFO] Account menu opened.
+2026-03-12 17:54:19 [INFO] Settings opened from account menu.
+2026-03-12 17:54:34 [ERROR] Install failed for Logitech G HUB. ExitCode=-1978335226. winget reported an install failure for Logitech G HUB (0x8A150006) even after administrator approval. Install command failed with exit code -1978335226.
+2026-03-12 17:54:34 [INFO] Deleted temp installer directory: C:\Users\naime\AppData\Local\Temp\NovaSetup\install-20260313-005112-6c9e01f66dac43b898f866d3f96b24ac
+2026-03-12 17:54:34 [INFO] Install finished. ResultCount=1.
+2026-03-12 17:54:34 [INFO] Install started. Platform=Windows, CandidateCount=1, Silent=True.
+2026-03-12 17:54:34 [WARN] Skipping htop: unsupported on Windows.
+2026-03-12 17:54:34 [INFO] No install actions generated.
+2026-03-12 17:54:34 [INFO] Detected installed app 'Google Chrome' via Windows registry.
+2026-03-12 17:54:34 [INFO] Detected installed app 'Discord' via Windows registry.
+2026-03-12 17:54:34 [INFO] Detected installed app 'Steam' via Windows registry.
+2026-03-12 17:54:34 [INFO] Detected installed app 'Visual Studio Code' via Windows registry.
+2026-03-12 17:54:34 [INFO] Detected installed app 'Git' via Windows registry.
+2026-03-12 17:54:34 [INFO] Detected installed app 'NVIDIA App' via Windows registry.
+2026-03-12 17:54:34 [INFO] Windows install index prepared. RegistryEntries=426, AppPathMatches=2
+2026-03-12 17:54:34 [INFO] Installed app detection completed. Platform=Windows, DetectedInstalledApps=6
+2026-03-12 17:54:34 [INFO] Installation finished with no restart required.
+2026-03-12 17:54:34 [INFO] Navigation changed to 'History'.
+2026-03-12 17:54:41 [INFO] Navigation changed to 'Dashboard'.
+2026-03-12 17:54:44 [INFO] Starting installation for 3 app(s)...
+2026-03-12 17:54:44 [INFO] Install settings: Silent=True, SelfDelete=False, Parallel=True, OsSupportedApps=True, DownloadLocationMode=SystemDefault, CustomDownloadFolder='', KeepInstallers=False, RestartBehavior=AskBeforeRestart
+2026-03-12 17:54:44 [INFO] Parallel install is enabled in settings, but the installer currently uses the stable sequential pipeline.
+2026-03-12 17:54:44 [INFO] Install started. Platform=Windows, CandidateCount=1, Silent=True.
+2026-03-12 17:54:44 [INFO] Installing app: Mozilla Firefox
+2026-03-12 17:54:45 [INFO] Downloading installer for Mozilla Firefox from https://download.mozilla.org/?product=firefox-msi-latest-ssl&os=win64&lang=en-US
+2026-03-12 17:54:49 [INFO] Downloaded installer for Mozilla Firefox to C:\Users\naime\AppData\Local\Temp\NovaSetup\install-20260313-005444-a29a72c797994538be522f1ef0de6ea2\FirefoxInstaller.msi
+2026-03-12 17:54:49 [INFO] Executing install command: msiexec /i "C:\Users\naime\AppData\Local\Temp\NovaSetup\install-20260313-005444-a29a72c797994538be522f1ef0de6ea2\FirefoxInstaller.msi" /qn /norestart
+2026-03-12 17:54:50 [INFO] Command completed. ExitCode=1603
+2026-03-12 17:55:26 [ERROR] Install failed for Mozilla Firefox. ExitCode=1603. Install command failed with exit code 1603.
+2026-03-12 17:55:26 [INFO] Deleted temp installer file: C:\Users\naime\AppData\Local\Temp\NovaSetup\install-20260313-005444-a29a72c797994538be522f1ef0de6ea2\FirefoxInstaller.msi
+2026-03-12 17:55:26 [INFO] Deleted temp installer directory: C:\Users\naime\AppData\Local\Temp\NovaSetup\install-20260313-005444-a29a72c797994538be522f1ef0de6ea2
+2026-03-12 17:55:26 [INFO] Install finished. ResultCount=1.
+2026-03-12 17:55:26 [INFO] Install started. Platform=Windows, CandidateCount=1, Silent=True.
+2026-03-12 17:55:26 [INFO] Installing app: Logitech G HUB
+2026-03-12 17:55:26 [INFO] Install for Logitech G HUB is configured to request administrator approval before running.
+2026-03-12 17:55:26 [INFO] Executing install command with administrator approval: winget install --id Logitech.GHUB -e --accept-source-agreements --accept-package-agreements --disable-interactivity
+2026-03-12 17:55:36 [INFO] Pause requested (placeholder).
+2026-03-12 17:55:38 [INFO] Pause requested (placeholder).
+2026-03-12 17:55:38 [INFO] Pause requested (placeholder).
+2026-03-12 17:55:39 [INFO] Pause requested (placeholder).
+2026-03-12 17:55:39 [INFO] Pause requested (placeholder).
+2026-03-12 17:55:39 [INFO] Pause requested (placeholder).
+2026-03-12 17:55:39 [INFO] Pause requested (placeholder).
+2026-03-12 17:55:39 [INFO] Pause requested (placeholder).
+2026-03-12 17:55:39 [INFO] Pause requested (placeholder).
+2026-03-12 17:55:40 [INFO] Elevated command completed. ExitCode=-1978335226
+2026-03-12 18:09:36 [INFO] Logging initialized.
+2026-03-12 18:09:37 [INFO] Loaded settings from C:\Users\naime\OneDrive\Desktop\Nova setup v.001\NovaSetup\bin\Debug\net8.0\Configs\settings.json
+2026-03-12 18:09:37 [INFO] Loaded 9 apps from apps.json.
+2026-03-12 18:09:37 [INFO] Loaded selection profile 'Website Starter'.
+2026-03-12 18:09:37 [INFO] Loaded 9 apps for Windows. Recommended: 0. 1 selected app(s) are unsupported and will be skipped. Scanning system in background...
+2026-03-12 18:09:38 [INFO] Detected installed app 'Google Chrome' via Windows registry.
+2026-03-12 18:09:38 [INFO] Detected installed app 'Discord' via Windows registry.
+2026-03-12 18:09:38 [INFO] Detected installed app 'Steam' via Windows registry.
+2026-03-12 18:09:38 [INFO] Detected installed app 'Visual Studio Code' via Windows registry.
+2026-03-12 18:09:38 [INFO] Detected installed app 'Git' via Windows registry.
+2026-03-12 18:09:38 [INFO] Detected installed app 'NVIDIA App' via Windows registry.
+2026-03-12 18:09:38 [INFO] Windows install index prepared. RegistryEntries=425, AppPathMatches=2
+2026-03-12 18:09:38 [INFO] Installed app detection completed. Platform=Windows, DetectedInstalledApps=6
+2026-03-12 18:09:38 [INFO] Detected GPU vendor: NVIDIA
+2026-03-12 18:09:39 [INFO] Detected motherboard vendor: ASUS
+2026-03-12 18:09:42 [INFO] Recommended app 'NVIDIA App' for NVIDIA GPU. Supported=True, AutoSelected=False
+2026-03-12 18:09:42 [INFO] No catalog app found for recommendation rule: ASUS motherboard
+2026-03-12 18:09:42 [INFO] Recommendation summary: Total=1, Supported=1, Unsupported=0
+2026-03-12 18:09:42 [INFO] Recommendations applied in background. Total=1, Supported=1, Unsupported=0, AutoSelectedLater=1
+2026-03-12 18:09:42 [INFO] Saved selection profile to C:\Users\naime\OneDrive\Desktop\Nova setup v.001\NovaSetup\bin\Debug\net8.0\Configs\selection.json
+2026-03-12 18:09:42 [INFO] Auto-saved list 'Website Starter' with 4 app(s).
+2026-03-12 18:09:42 [INFO] Loaded 9 apps for Windows. Recommended: 1. 1 selected app(s) are unsupported and will be skipped.
+2026-03-12 18:09:43 [INFO] Saved selection profile to C:\Users\naime\OneDrive\Desktop\Nova setup v.001\NovaSetup\bin\Debug\net8.0\Configs\selection.json
+2026-03-12 18:09:43 [INFO] Auto-saved list 'Website Starter' with 3 app(s).
+2026-03-12 18:09:46 [INFO] Saved selection profile to C:\Users\naime\OneDrive\Desktop\Nova setup v.001\NovaSetup\bin\Debug\net8.0\Configs\selection.json
+2026-03-12 18:09:46 [INFO] Auto-saved list 'Website Starter' with 2 app(s).
+2026-03-12 18:09:47 [INFO] Saved selection profile to C:\Users\naime\OneDrive\Desktop\Nova setup v.001\NovaSetup\bin\Debug\net8.0\Configs\selection.json
+2026-03-12 18:09:47 [INFO] Auto-saved list 'Website Starter' with 3 app(s).
+2026-03-12 18:09:49 [INFO] Starting installation for 3 app(s)...
+2026-03-12 18:09:49 [INFO] Install settings: Silent=True, SelfDelete=False, Parallel=True, OsSupportedApps=True, DownloadLocationMode=SystemDefault, CustomDownloadFolder='', KeepInstallers=False, RestartBehavior=AskBeforeRestart
+2026-03-12 18:09:49 [INFO] Parallel install is enabled in settings, but the installer currently uses the stable sequential pipeline.
+2026-03-12 18:09:49 [INFO] Install started. Platform=Windows, CandidateCount=1, Silent=True.
+2026-03-12 18:09:49 [INFO] Installing app: Mozilla Firefox
+2026-03-12 18:09:49 [INFO] Downloading installer for Mozilla Firefox from https://download.mozilla.org/?product=firefox-latest&os=win64&lang=en-US
+2026-03-12 18:09:53 [INFO] Downloaded installer for Mozilla Firefox to C:\Users\naime\AppData\Local\Temp\NovaSetup\install-20260313-010949-977c5a763cd446ff8c615c80ffbe6890\FirefoxInstaller.exe
+2026-03-12 18:09:53 [INFO] Executing install command: "C:\Users\naime\AppData\Local\Temp\NovaSetup\install-20260313-010949-977c5a763cd446ff8c615c80ffbe6890\FirefoxInstaller.exe" -ms
+2026-03-12 18:10:11 [INFO] Command completed. ExitCode=0
+2026-03-12 18:10:12 [INFO] Verified installed app 'Mozilla Firefox' after command completion.
+2026-03-12 18:10:12 [INFO] Install succeeded for Mozilla Firefox. ExitCode=0.
+2026-03-12 18:10:12 [INFO] Deleted temp installer file: C:\Users\naime\AppData\Local\Temp\NovaSetup\install-20260313-010949-977c5a763cd446ff8c615c80ffbe6890\FirefoxInstaller.exe
+2026-03-12 18:10:12 [INFO] Deleted temp installer directory: C:\Users\naime\AppData\Local\Temp\NovaSetup\install-20260313-010949-977c5a763cd446ff8c615c80ffbe6890
+2026-03-12 18:10:12 [INFO] Install finished. ResultCount=1.
+2026-03-12 18:10:12 [INFO] Install started. Platform=Windows, CandidateCount=1, Silent=True.
+2026-03-12 18:10:12 [INFO] Installing app: Logitech G HUB
+2026-03-12 18:10:12 [INFO] Downloading installer for Logitech G HUB from https://download01.logi.com/web/ftp/pub/techsupport/gaming/lghub_installer.exe
+2026-03-12 18:10:16 [INFO] Downloaded installer for Logitech G HUB to C:\Users\naime\AppData\Local\Temp\NovaSetup\install-20260313-011012-648c356fffd6459a80ef57288d24383a\lghub_installer.exe
+2026-03-12 18:10:16 [INFO] Install for Logitech G HUB is configured to request administrator approval before running.
+2026-03-12 18:10:16 [INFO] Executing install command with administrator approval: "C:\Users\naime\AppData\Local\Temp\NovaSetup\install-20260313-011012-648c356fffd6459a80ef57288d24383a\lghub_installer.exe"
+2026-03-12 18:10:50 [INFO] Elevated command completed. ExitCode=0
+2026-03-12 18:12:29 [INFO] Pause requested (placeholder).
+2026-03-12 18:24:09 [INFO] Logging initialized.
+2026-03-12 18:24:10 [INFO] Loaded settings from C:\Users\naime\OneDrive\Desktop\Nova setup v.001\NovaSetup\bin\Debug\net8.0\Configs\settings.json
+2026-03-12 18:24:10 [INFO] Loaded 9 apps from apps.json.
+2026-03-12 18:24:10 [INFO] Loaded selection profile 'Website Starter'.
+2026-03-12 18:24:10 [INFO] Loaded 9 apps for Windows. Recommended: 0. 1 selected app(s) are unsupported and will be skipped. Scanning system in background...
+2026-03-12 18:24:10 [INFO] Detected installed app 'Mozilla Firefox' via Windows registry.
+2026-03-12 18:24:10 [INFO] Detected installed app 'Google Chrome' via Windows registry.
+2026-03-12 18:24:10 [INFO] Detected installed app 'Discord' via Windows registry.
+2026-03-12 18:24:10 [INFO] Detected installed app 'Steam' via Windows registry.
+2026-03-12 18:24:10 [INFO] Detected installed app 'Visual Studio Code' via Windows registry.
+2026-03-12 18:24:10 [INFO] Detected installed app 'Git' via Windows registry.
+2026-03-12 18:24:10 [INFO] Detected installed app 'NVIDIA App' via Windows registry.
+2026-03-12 18:24:10 [INFO] Windows install index prepared. RegistryEntries=427, AppPathMatches=3
+2026-03-12 18:24:10 [INFO] Installed app detection completed. Platform=Windows, DetectedInstalledApps=7
+2026-03-12 18:24:11 [INFO] Detected GPU vendor: NVIDIA
+2026-03-12 18:24:11 [INFO] Detected motherboard vendor: ASUS
+2026-03-12 18:24:14 [INFO] Recommended app 'NVIDIA App' for NVIDIA GPU. Supported=True, AutoSelected=False
+2026-03-12 18:24:14 [INFO] No catalog app found for recommendation rule: ASUS motherboard
+2026-03-12 18:24:14 [INFO] Recommendation summary: Total=1, Supported=1, Unsupported=0
+2026-03-12 18:24:14 [INFO] Recommendations applied in background. Total=1, Supported=1, Unsupported=0, AutoSelectedLater=1
+2026-03-12 18:24:14 [INFO] Saved selection profile to C:\Users\naime\OneDrive\Desktop\Nova setup v.001\NovaSetup\bin\Debug\net8.0\Configs\selection.json
+2026-03-12 18:24:14 [INFO] Auto-saved list 'Website Starter' with 4 app(s).
+2026-03-12 18:24:14 [INFO] Loaded 9 apps for Windows. Recommended: 1. 1 selected app(s) are unsupported and will be skipped.
+2026-03-12 18:24:26 [INFO] Saved selection profile to C:\Users\naime\OneDrive\Desktop\Nova setup v.001\NovaSetup\bin\Debug\net8.0\Configs\selection.json
+2026-03-12 18:24:26 [INFO] Auto-saved list 'Website Starter' with 3 app(s).
+2026-03-12 18:24:32 [INFO] Saved selection profile to C:\Users\naime\OneDrive\Desktop\Nova setup v.001\NovaSetup\bin\Debug\net8.0\Configs\selection.json
+2026-03-12 18:24:32 [INFO] Auto-saved list 'Website Starter' with 2 app(s).
+2026-03-12 18:24:33 [INFO] Saved selection profile to C:\Users\naime\OneDrive\Desktop\Nova setup v.001\NovaSetup\bin\Debug\net8.0\Configs\selection.json
+2026-03-12 18:24:33 [INFO] Auto-saved list 'Website Starter' with 3 app(s).
+2026-03-12 18:24:37 [INFO] Saved selection profile to C:\Users\naime\OneDrive\Desktop\Nova setup v.001\NovaSetup\bin\Debug\net8.0\Configs\selection.json
+2026-03-12 18:24:37 [INFO] Auto-saved list 'Website Starter' with 2 app(s).
+2026-03-12 18:25:32 [INFO] Saved selection profile to C:\Users\naime\OneDrive\Desktop\Nova setup v.001\NovaSetup\bin\Debug\net8.0\Configs\selection.json
+2026-03-12 18:25:32 [INFO] Auto-saved list 'Website Starter' with 3 app(s).
+2026-03-12 18:25:34 [INFO] Saved selection profile to C:\Users\naime\OneDrive\Desktop\Nova setup v.001\NovaSetup\bin\Debug\net8.0\Configs\selection.json
+2026-03-12 18:25:34 [INFO] Auto-saved list 'Website Starter' with 2 app(s).
+2026-03-12 18:25:35 [INFO] Starting installation for 2 app(s)...
+2026-03-12 18:25:35 [INFO] Install settings: Silent=True, SelfDelete=False, Parallel=True, OsSupportedApps=True, DownloadLocationMode=SystemDefault, CustomDownloadFolder='', KeepInstallers=False, RestartBehavior=AskBeforeRestart
+2026-03-12 18:25:35 [INFO] Parallel install is enabled in settings, but the installer currently uses the stable sequential pipeline.
+2026-03-12 18:25:35 [INFO] Install started. Platform=Windows, CandidateCount=1, Silent=True.
+2026-03-12 18:25:35 [INFO] Installing app: Mozilla Firefox
+2026-03-12 18:25:35 [INFO] Downloading installer for Mozilla Firefox from https://download.mozilla.org/?product=firefox-latest&os=win64&lang=en-US
+2026-03-12 18:25:39 [INFO] Downloaded installer for Mozilla Firefox to C:\Users\naime\AppData\Local\Temp\NovaSetup\install-20260313-012535-f633853b62844d1ebfec25ea970a7c0f\FirefoxInstaller.exe
+2026-03-12 18:25:39 [INFO] Executing install command: "C:\Users\naime\AppData\Local\Temp\NovaSetup\install-20260313-012535-f633853b62844d1ebfec25ea970a7c0f\FirefoxInstaller.exe" -ms
+2026-03-12 18:26:46 [INFO] Command completed. ExitCode=0
+2026-03-12 18:26:46 [INFO] Verified installed app 'Mozilla Firefox' after command completion.
+2026-03-12 18:26:46 [INFO] Install succeeded for Mozilla Firefox. ExitCode=0.
+2026-03-12 18:26:46 [INFO] Deleted temp installer file: C:\Users\naime\AppData\Local\Temp\NovaSetup\install-20260313-012535-f633853b62844d1ebfec25ea970a7c0f\FirefoxInstaller.exe
+2026-03-12 18:26:46 [INFO] Deleted temp installer directory: C:\Users\naime\AppData\Local\Temp\NovaSetup\install-20260313-012535-f633853b62844d1ebfec25ea970a7c0f
+2026-03-12 18:26:46 [INFO] Install finished. ResultCount=1.
+2026-03-12 18:26:46 [INFO] Install started. Platform=Windows, CandidateCount=1, Silent=True.
+2026-03-12 18:26:46 [WARN] Skipping htop: unsupported on Windows.
+2026-03-12 18:26:46 [INFO] No install actions generated.
+2026-03-12 18:26:46 [INFO] Detected installed app 'Mozilla Firefox' via Windows registry.
+2026-03-12 18:26:46 [INFO] Detected installed app 'Google Chrome' via Windows registry.
+2026-03-12 18:26:46 [INFO] Detected installed app 'Discord' via Windows registry.
+2026-03-12 18:26:46 [INFO] Detected installed app 'Steam' via Windows registry.
+2026-03-12 18:26:46 [INFO] Detected installed app 'Visual Studio Code' via Windows registry.
+2026-03-12 18:26:46 [INFO] Detected installed app 'Git' via Windows registry.
+2026-03-12 18:26:46 [INFO] Detected installed app 'NVIDIA App' via Windows registry.
+2026-03-12 18:26:46 [INFO] Windows install index prepared. RegistryEntries=426, AppPathMatches=3
+2026-03-12 18:26:46 [INFO] Installed app detection completed. Platform=Windows, DetectedInstalledApps=7
+2026-03-12 18:26:46 [INFO] Installation finished with no restart required.
+2026-03-12 18:26:46 [INFO] Navigation changed to 'History'.

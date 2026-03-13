@@ -1,0 +1,40 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="NovaSetup.Views.Controls.FilterBarControl"
+             x:CompileBindings="False"
+             x:Name="Root">
+  <Grid ColumnDefinitions="*,300"
+        ColumnSpacing="16"
+        VerticalAlignment="Center">
+    <ScrollViewer HorizontalScrollBarVisibility="Auto"
+                  VerticalScrollBarVisibility="Disabled">
+      <StackPanel Orientation="Horizontal" Spacing="6">
+        <RadioButton GroupName="filter"
+                     Classes="pill"
+                     IsChecked="{Binding #Root.IsAllFilter, Mode=TwoWay}"
+                     Content="All" />
+        <RadioButton GroupName="filter"
+                     Classes="pill"
+                     IsChecked="{Binding #Root.IsGamesFilter, Mode=TwoWay}"
+                     Content="Games" />
+        <RadioButton GroupName="filter"
+                     Classes="pill"
+                     IsChecked="{Binding #Root.IsDriversFilter, Mode=TwoWay}"
+                     Content="Drivers" />
+        <RadioButton GroupName="filter"
+                     Classes="pill"
+                     IsChecked="{Binding #Root.IsDevToolsFilter, Mode=TwoWay}"
+                     Content="Dev Tools" />
+        <RadioButton GroupName="filter"
+                     Classes="pill"
+                     IsChecked="{Binding #Root.IsUtilitiesFilter, Mode=TwoWay}"
+                     Content="Utilities" />
+      </StackPanel>
+    </ScrollViewer>
+
+    <TextBox Grid.Column="1"
+             Watermark="Search apps..."
+             Text="{Binding #Root.SearchText, Mode=TwoWay}"
+             HorizontalAlignment="Stretch" />
+  </Grid>
+</UserControl>

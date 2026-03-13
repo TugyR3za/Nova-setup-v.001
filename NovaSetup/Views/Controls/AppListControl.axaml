@@ -1,0 +1,46 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="clr-namespace:NovaSetup.Views.Controls"
+             x:Class="NovaSetup.Views.Controls.AppListControl"
+             x:CompileBindings="False"
+             x:Name="Root">
+  <Grid RowDefinitions="Auto,*">
+    <Grid ColumnDefinitions="36,*,84,116,52"
+          Margin="2,0,8,0">
+      <TextBlock Text="Sel"
+                 FontWeight="SemiBold"
+                 Foreground="{DynamicResource TextMutedBrush}" />
+      <TextBlock Grid.Column="1"
+                 Text="App"
+                 FontWeight="SemiBold"
+                 Foreground="{DynamicResource TextMutedBrush}" />
+      <TextBlock Grid.Column="2"
+                 Text="Size"
+                 FontWeight="SemiBold"
+                 Foreground="{DynamicResource TextMutedBrush}" />
+      <TextBlock Grid.Column="3"
+                 Text="Status"
+                 FontWeight="SemiBold"
+                 Foreground="{DynamicResource TextMutedBrush}" />
+      <TextBlock Grid.Column="4"
+                 Text="Details"
+                 FontWeight="SemiBold"
+                 Foreground="{DynamicResource TextMutedBrush}" />
+    </Grid>
+
+    <ScrollViewer Grid.Row="1"
+                  VerticalScrollBarVisibility="Auto"
+                  HorizontalScrollBarVisibility="Disabled"
+                  Margin="0,8,0,0">
+      <ItemsControl ItemsSource="{Binding #Root.Items}">
+        <ItemsControl.ItemTemplate>
+          <DataTemplate>
+            <controls:AppRowControl Item="{Binding .}"
+                                    OpenPublisherCommand="{Binding #Root.OpenPublisherCommand}"
+                                    ShowAppDetailsCommand="{Binding #Root.ShowAppDetailsCommand}" />
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ItemsControl>
+    </ScrollViewer>
+  </Grid>
+</UserControl>

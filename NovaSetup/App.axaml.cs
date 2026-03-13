@@ -24,7 +24,7 @@ public partial class App : Application
             var selectionService = new SelectionService(loggingService);
             var settingsService = new SettingsService(loggingService);
             var detectionService = new DetectionService(loggingService);
-            var installerService = new InstallerService(loggingService);
+            var installerService = new InstallerService(loggingService, detectionService);
             var browserService = new BrowserService(loggingService);
 
             var mainWindowViewModel = new MainWindowViewModel(
