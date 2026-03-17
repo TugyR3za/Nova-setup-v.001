@@ -165,7 +165,7 @@ public sealed class InstallerService
                 else
                 {
                     action.App.HasInstallFailed = true;
-                    return CreateFailureResult(action.App, download.Message);
+                    return CreateFailureResult(action.App, AppendElevationDeniedMessage(download.Message));
                 }
             }
 
@@ -184,7 +184,9 @@ public sealed class InstallerService
         {
             _loggingService?.LogError($"Install command is empty for {action.App.Name}.");
             action.App.HasInstallFailed = true;
-            return CreateFailureResult(action.App, "No valid install command could be built.");
+            return CreateFailureResult(
+                action.App,
+                AppendElevationDeniedMessage("No valid install command could be built."));
         }
 
         var execution = await ExecuteInstallCommandAsync(action, command, currentPlatform, cancellationToken);
@@ -219,7 +221,8 @@ public sealed class InstallerService
             }
 
             action.App.HasInstallFailed = true;
-            var failureMessage = BuildFailureMessage(action.App, currentPlatform, command, execution);
+            var failureMessage = AppendElevationDeniedMessage(
+                BuildFailureMessage(action.App, currentPlatform, command, execution));
             _loggingService?.LogError(
                 $"Install failed for {action.App.Name}. ExitCode={execution.ExitCode}. {failureMessage}");
 
@@ -237,7 +240,8 @@ public sealed class InstallerService
         if (!wasInstalledBefore && !wasVerifiedAfterInstall)
         {
             action.App.HasInstallFailed = true;
-            var verificationFailureMessage = BuildVerificationFailureMessage(action.App, currentPlatform, command);
+            var verificationFailureMessage = AppendElevationDeniedMessage(
+                BuildVerificationFailureMessage(action.App, currentPlatform, command));
             _loggingService?.LogError(
                 $"Install could not be verified for {action.App.Name} after a successful exit code. {verificationFailureMessage}");
 
@@ -859,6 +863,25 @@ public sealed class InstallerService
         }
 
         return $"{app.Name} exited successfully, but NovaSetup could not verify that it was installed.";
+    }
+
+    private string AppendElevationDeniedMessage(string message)
+    {
+        if (!ElevationService.ElevationWasDenied)
+        {
+            return message;
+        }
+
+        const string elevationDeniedMessage =
+            "Install failed — Nova is not running as administrator. Please restart Nova and click Yes on the UAC prompt.";
+        _loggingService?.LogError(elevationDeniedMessage);
+
+        if (string.IsNullOrWhiteSpace(message))
+        {
+            return elevationDeniedMessage;
+        }
+
+        return $"{message} {elevationDeniedMessage}";
     }
 
     private static bool IsWingetCommand(string command)
