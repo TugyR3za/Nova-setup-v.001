@@ -64,6 +64,7 @@
                                                 RecommendedCount="{Binding RecommendedCount}"
                                                 HasRecommendedApps="{Binding HasRecommendedApps}"
                                                 CurrentPlatform="{Binding CurrentPlatform}"
+                                                RefreshCatalogCommand="{Binding RefreshCatalogCommand}"
                                                 HelpCommand="{Binding ShowHelpCommand}" />
 
                         <ScrollViewer Grid.Row="1"

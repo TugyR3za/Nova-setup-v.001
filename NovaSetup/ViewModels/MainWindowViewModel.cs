@@ -43,6 +43,7 @@ public sealed class MainWindowViewModel : ObservableObject
     private readonly RelayCommand _saveListCommand;
     private readonly RelayCommand _openLogFileCommand;
     private readonly RelayCommand _showHelpCommand;
+    private readonly AsyncRelayCommand _refreshCatalogCommand;
     private readonly RelayCommand _openPublisherCommand;
     private readonly RelayCommand _showAppDetailsCommand;
     private readonly RelayCommand _closeAppDetailsCommand;
@@ -150,6 +151,7 @@ public sealed class MainWindowViewModel : ObservableObject
         _saveListCommand = new RelayCommand(_ => SaveCurrentList());
         _openLogFileCommand = new RelayCommand(_ => OpenLogFile());
         _showHelpCommand = new RelayCommand(_ => ShowHelpPlaceholder());
+        _refreshCatalogCommand = new AsyncRelayCommand(RefreshCatalogAsync, () => !IsInstalling && _isInitialized);
         _openPublisherCommand = new RelayCommand(OpenPublisherHomepage);
         _showAppDetailsCommand = new RelayCommand(ShowAppDetails);
         _closeAppDetailsCommand = new RelayCommand(_ => CloseAppDetails());
@@ -610,6 +612,8 @@ public sealed class MainWindowViewModel : ObservableObject
 
     public ICommand ShowHelpCommand => _showHelpCommand;
 
+    public ICommand RefreshCatalogCommand => _refreshCatalogCommand;
+
     public ICommand OpenPublisherCommand => _openPublisherCommand;
 
     public ICommand ShowAppDetailsCommand => _showAppDetailsCommand;
@@ -665,7 +669,7 @@ public sealed class MainWindowViewModel : ObservableObject
         _currentPlatformId = platform.Id;
         CurrentPlatform = platform.Label;
 
-        var apps = _catalogService.LoadApps(_currentPlatformId);
+        var apps = await _catalogService.LoadAppsAsync(_currentPlatformId);
         var selection = _selectionService.LoadSelection();
         ApplySelectionProfile(selection);
 
@@ -1468,6 +1472,80 @@ public sealed class MainWindowViewModel : ObservableObject
         _loggingService.LogInfo(StatusText);
     }
 
+    private async Task RefreshCatalogAsync()
+    {
+        if (IsInstalling || string.Equals(_currentPlatformId, PlatformService.Unknown, StringComparison.Ordinal))
+        {
+            return;
+        }
+
+        var selectedIds = new HashSet<string>(
+            _apps.Where(app => app.IsSelected).Select(app => app.Id),
+            StringComparer.OrdinalIgnoreCase);
+        var detailAppId = SelectedDetailApp?.Id;
+        var wasDetailsOpen = IsAppDetailsOpen;
+
+        StatusText = "Refreshing catalog and app state...";
+        _loggingService.LogInfo("Manual refresh started.");
+
+        var refreshedApps = await _catalogService.LoadAppsAsync(_currentPlatformId);
+        if (refreshedApps.Count > 0)
+        {
+            ReplaceCatalogApps(refreshedApps, selectedIds, detailAppId, wasDetailsOpen);
+        }
+        else if (_apps.Count > 0)
+        {
+            _loggingService.LogWarning("Catalog refresh returned no apps. Keeping the current in-memory catalog.");
+        }
+
+        var appSnapshot = _apps.ToList();
+        IReadOnlyList<string> installedIds = Array.Empty<string>();
+        HardwareDetectionResult? hardwareDetection = null;
+
+        try
+        {
+            installedIds = await Task.Run(() => _detectionService.DetectInstalledAppIds(appSnapshot, _currentPlatformId));
+            hardwareDetection = await Task.Run(() => _detectionService.DetectHardware(_currentPlatformId));
+        }
+        catch (Exception ex)
+        {
+            _loggingService.LogError($"Manual refresh background scan failed: {ex.Message}");
+        }
+
+        ApplyInstalledAppResults(installedIds);
+
+        if (hardwareDetection is not null)
+        {
+            _suppressAppSelectionHandling = true;
+            try
+            {
+                _detectionService.ApplyRecommendations(
+                    _apps,
+                    _currentPlatformId,
+                    hardwareDetection,
+                    autoSelectSupportedApps: false);
+
+                foreach (var app in _apps)
+                {
+                    ApplyPlatformFlags(app);
+                }
+            }
+            finally
+            {
+                _suppressAppSelectionHandling = false;
+            }
+        }
+
+        ApplyVisibilityFilter();
+        NotifyAppSummaryStateChanged();
+        NotifyAppDetailsStateChanged();
+        UpdateCommandStates();
+
+        StatusText = $"{BuildLoadedStatusText(detectionPending: false)} Refreshed current catalog and app state.";
+        _loggingService.LogInfo("Manual refresh completed.");
+        _loggingService.LogInfo(StatusText);
+    }
+
     private void HandleAppPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
         if (_suppressAppSelectionHandling || sender is not AppItem app || e.PropertyName != nameof(AppItem.IsSelected))
@@ -1734,6 +1812,52 @@ public sealed class MainWindowViewModel : ObservableObject
         NotifyAppSummaryStateChanged();
     }
 
+    private void ReplaceCatalogApps(
+        IReadOnlyList<AppItem> refreshedApps,
+        IReadOnlySet<string> selectedIds,
+        string? detailAppId,
+        bool wasDetailsOpen)
+    {
+        _suppressAppSelectionHandling = true;
+        try
+        {
+            foreach (var existingApp in _apps)
+            {
+                existingApp.PropertyChanged -= HandleAppPropertyChanged;
+            }
+
+            _apps.Clear();
+            foreach (var app in refreshedApps)
+            {
+                app.IsSelected = selectedIds.Contains(app.Id);
+                ApplyPlatformFlags(app);
+                app.PropertyChanged += HandleAppPropertyChanged;
+                _apps.Add(app);
+            }
+        }
+        finally
+        {
+            _suppressAppSelectionHandling = false;
+        }
+
+        if (!wasDetailsOpen)
+        {
+            return;
+        }
+
+        var refreshedDetailApp = _apps.FirstOrDefault(app =>
+            app.Id.Equals(detailAppId, StringComparison.OrdinalIgnoreCase));
+
+        if (refreshedDetailApp is null)
+        {
+            CloseAppDetails(logAction: false);
+            return;
+        }
+
+        SelectedDetailApp = refreshedDetailApp;
+        IsAppDetailsOpen = true;
+    }
+
     private void ApplyPlatformFlags(AppItem app)
     {
         app.IsSupportedOnCurrentPlatform = _platformService.IsSupportedOnPlatform(app.SupportedPlatforms, _currentPlatformId);
@@ -1928,6 +2052,7 @@ public sealed class MainWindowViewModel : ObservableObject
     private void UpdateCommandStates()
     {
         _installCommand.RaiseCanExecuteChanged();
+        _refreshCatalogCommand.RaiseCanExecuteChanged();
         _pauseInstallCommand.RaiseCanExecuteChanged();
         _navigateDashboardCommand.RaiseCanExecuteChanged();
         _navigateAppsCommand.RaiseCanExecuteChanged();

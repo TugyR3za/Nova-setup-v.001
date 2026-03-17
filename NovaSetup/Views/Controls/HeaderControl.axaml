@@ -48,14 +48,26 @@
         </StackPanel>
       </ScrollViewer>
 
-      <Button Grid.Column="1"
-              Classes="icon ghost"
-              Command="{Binding #Root.HelpCommand}">
-        <Viewbox Width="18" Height="18">
-          <Path Data="{DynamicResource IconHelpGeometry}"
-                Fill="{DynamicResource TextSecondaryBrush}" />
-        </Viewbox>
-      </Button>
+      <StackPanel Grid.Column="1"
+                  Orientation="Horizontal"
+                  Spacing="8">
+        <Button Classes="icon ghost"
+                Command="{Binding #Root.RefreshCatalogCommand}"
+                ToolTip.Tip="Refresh catalog and app state">
+          <Viewbox Width="18" Height="18">
+            <Path Data="{DynamicResource IconRefreshGeometry}"
+                  Fill="{DynamicResource TextSecondaryBrush}" />
+          </Viewbox>
+        </Button>
+
+        <Button Classes="icon ghost"
+                Command="{Binding #Root.HelpCommand}">
+          <Viewbox Width="18" Height="18">
+            <Path Data="{DynamicResource IconHelpGeometry}"
+                  Fill="{DynamicResource TextSecondaryBrush}" />
+          </Viewbox>
+        </Button>
+      </StackPanel>
     </Grid>
   </Grid>
 </UserControl>

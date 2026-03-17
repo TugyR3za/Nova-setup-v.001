@@ -5,6 +5,9 @@ namespace NovaSetup.Services;
 
 public sealed class CatalogService
 {
+    private const string RemoteCatalogUrl = "https://raw.githubusercontent.com/TugyR3za/Nova-setup-v.001/main/NovaSetup/Configs/apps.json";
+    private static readonly HttpClient _httpClient = new() { Timeout = TimeSpan.FromSeconds(8) };
+
     private readonly PlatformService _platformService;
     private readonly LoggingService? _loggingService;
     private readonly JsonSerializerOptions _jsonOptions = new()
@@ -13,15 +16,55 @@ public sealed class CatalogService
         ReadCommentHandling = JsonCommentHandling.Skip
     };
 
+    private static string CacheFilePath =>
+        Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            "NovaSetup",
+            "catalog_cache.json");
+
     public CatalogService(PlatformService platformService, LoggingService? loggingService = null)
     {
         _platformService = platformService;
         _loggingService = loggingService;
     }
 
-    // Loads Configs/apps.json and safely returns an empty list for missing/invalid input.
-    public List<AppItem> LoadApps(string currentPlatform)
+    public async Task<List<AppItem>> LoadAppsAsync(string currentPlatform)
     {
+        try
+        {
+            var remoteJson = await _httpClient.GetStringAsync(RemoteCatalogUrl);
+            var remoteApps = ParseAndNormalize(remoteJson, currentPlatform);
+
+            var cacheDirectory = Path.GetDirectoryName(CacheFilePath);
+            if (!string.IsNullOrWhiteSpace(cacheDirectory))
+            {
+                Directory.CreateDirectory(cacheDirectory);
+            }
+
+            await File.WriteAllTextAsync(CacheFilePath, remoteJson);
+            _loggingService?.Info($"Loaded catalog from remote server ({remoteApps.Count} apps).");
+            return remoteApps;
+        }
+        catch (Exception ex)
+        {
+            _loggingService?.Warn($"Remote catalog unavailable: {ex.Message} — falling back to local cache.");
+        }
+
+        if (File.Exists(CacheFilePath))
+        {
+            try
+            {
+                var cacheJson = await File.ReadAllTextAsync(CacheFilePath);
+                var cachedApps = ParseAndNormalize(cacheJson, currentPlatform);
+                _loggingService?.Info("Loaded catalog from local cache.");
+                return cachedApps;
+            }
+            catch (Exception ex)
+            {
+                _loggingService?.Warn($"Local cache could not be parsed: {ex.Message}");
+            }
+        }
+
         var configPath = ResolveConfigPath("apps.json");
         if (!File.Exists(configPath))
         {
@@ -31,39 +74,23 @@ public sealed class CatalogService
 
         try
         {
-            var rawJson = File.ReadAllText(configPath);
-            if (string.IsNullOrWhiteSpace(rawJson))
+            var bundledJson = await File.ReadAllTextAsync(configPath);
+            var bundledApps = ParseAndNormalize(bundledJson, currentPlatform);
+
+            if (File.Exists(CacheFilePath))
             {
-                _loggingService?.Warn("apps.json is empty.");
-                return new List<AppItem>();
+                _loggingService?.Info("Loaded catalog from bundled fallback.");
+            }
+            else
+            {
+                _loggingService?.Info("No cache found — loaded catalog from bundled fallback.");
             }
 
-            var apps = JsonSerializer.Deserialize<List<AppItem>>(rawJson, _jsonOptions) ?? new List<AppItem>();
-            foreach (var app in apps)
-            {
-                Normalize(app);
-                app.IsSupportedOnCurrentPlatform = _platformService.IsSupportedOnPlatform(app.SupportedPlatforms, currentPlatform);
-                app.WillBeSkipped = app.IsSelected && !app.IsSupportedOnCurrentPlatform;
-                app.RowOpacity = app.IsSupportedOnCurrentPlatform ? 1.0 : 0.56;
-                app.StatusBadge = app.IsSupportedOnCurrentPlatform ? "Not Installed" : "Unsupported on this OS";
-            }
-
-            _loggingService?.Info($"Loaded {apps.Count} apps from apps.json.");
-            return apps;
+            return bundledApps;
         }
-        catch (JsonException ex)
+        catch (Exception ex)
         {
-            _loggingService?.Warn($"Invalid apps.json format: {ex.Message}");
-            return new List<AppItem>();
-        }
-        catch (IOException ex)
-        {
-            _loggingService?.Warn($"Could not read apps.json: {ex.Message}");
-            return new List<AppItem>();
-        }
-        catch (UnauthorizedAccessException ex)
-        {
-            _loggingService?.Warn($"Access denied reading apps.json: {ex.Message}");
+            _loggingService?.Warn($"Bundled apps.json could not be parsed: {ex.Message}");
             return new List<AppItem>();
         }
     }
@@ -84,6 +111,26 @@ public sealed class CatalogService
         app.IconPath ??= string.Empty;
         app.RecommendationTags ??= new List<string>();
         app.SupportedPlatforms ??= new PlatformSupport();
+    }
+
+    private List<AppItem> ParseAndNormalize(string json, string currentPlatform)
+    {
+        if (string.IsNullOrWhiteSpace(json))
+        {
+            throw new JsonException("Catalog JSON is empty.");
+        }
+
+        var apps = JsonSerializer.Deserialize<List<AppItem>>(json, _jsonOptions) ?? new List<AppItem>();
+        foreach (var app in apps)
+        {
+            Normalize(app);
+            app.IsSupportedOnCurrentPlatform = _platformService.IsSupportedOnPlatform(app.SupportedPlatforms, currentPlatform);
+            app.WillBeSkipped = app.IsSelected && !app.IsSupportedOnCurrentPlatform;
+            app.RowOpacity = app.IsSupportedOnCurrentPlatform ? 1.0 : 0.56;
+            app.StatusBadge = app.IsSupportedOnCurrentPlatform ? "Not Installed" : "Unsupported on this OS";
+        }
+
+        return apps;
     }
 
     private static string ResolveConfigPath(string fileName)

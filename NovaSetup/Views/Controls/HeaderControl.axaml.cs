@@ -30,6 +30,9 @@ public partial class HeaderControl : UserControl
     public static readonly StyledProperty<ICommand?> HelpCommandProperty =
         AvaloniaProperty.Register<HeaderControl, ICommand?>(nameof(HelpCommand));
 
+    public static readonly StyledProperty<ICommand?> RefreshCatalogCommandProperty =
+        AvaloniaProperty.Register<HeaderControl, ICommand?>(nameof(RefreshCatalogCommand));
+
     public HeaderControl()
     {
         InitializeComponent();
@@ -81,5 +84,11 @@ public partial class HeaderControl : UserControl
     {
         get => GetValue(HelpCommandProperty);
         set => SetValue(HelpCommandProperty, value);
+    }
+
+    public ICommand? RefreshCatalogCommand
+    {
+        get => GetValue(RefreshCatalogCommandProperty);
+        set => SetValue(RefreshCatalogCommandProperty, value);
     }
 }
