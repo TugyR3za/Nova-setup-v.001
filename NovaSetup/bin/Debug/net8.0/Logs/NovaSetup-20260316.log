@@ -336,3 +336,90 @@
 2026-03-16 21:00:45 [INFO] Installed app detection completed. Platform=Windows, DetectedInstalledApps=7
 2026-03-16 21:00:45 [INFO] Installation finished with no restart required.
 2026-03-16 21:00:45 [INFO] Navigation changed to 'History'.
+2026-03-16 21:13:07 [INFO] Logging initialized.
+2026-03-16 21:13:08 [INFO] Loaded settings from C:\Users\naime\OneDrive\Desktop\Nova setup v.001\NovaSetup\bin\Debug\net8.0\Configs\settings.json
+2026-03-16 21:13:09 [INFO] Loaded catalog from remote server (9 apps).
+2026-03-16 21:13:09 [INFO] Loaded selection profile 'Website Starter'.
+2026-03-16 21:13:09 [INFO] Loaded 9 apps for Windows. Recommended: 0. 1 selected app(s) are unsupported and will be skipped. Scanning system in background...
+2026-03-16 21:13:09 [INFO] Detected installed app 'Mozilla Firefox' via Windows registry.
+2026-03-16 21:13:09 [INFO] Detected installed app 'Google Chrome' via Windows registry.
+2026-03-16 21:13:09 [INFO] Detected installed app 'Discord' via Windows registry.
+2026-03-16 21:13:09 [INFO] Detected installed app 'Steam' via Windows registry.
+2026-03-16 21:13:09 [INFO] Detected installed app 'Visual Studio Code' via Windows registry.
+2026-03-16 21:13:09 [INFO] Detected installed app 'Git' via Windows registry.
+2026-03-16 21:13:09 [INFO] Detected installed app 'NVIDIA App' via Windows registry.
+2026-03-16 21:13:09 [INFO] Windows install index prepared. RegistryEntries=439, AppPathMatches=3
+2026-03-16 21:13:09 [INFO] Installed app detection completed. Platform=Windows, DetectedInstalledApps=7
+2026-03-16 21:13:09 [INFO] Detected GPU vendor: NVIDIA
+2026-03-16 21:13:09 [INFO] Detected motherboard vendor: ASUS
+2026-03-16 21:13:12 [INFO] Recommended app 'NVIDIA App' for NVIDIA GPU. Supported=True, AutoSelected=False
+2026-03-16 21:13:12 [INFO] No catalog app found for recommendation rule: ASUS motherboard
+2026-03-16 21:13:12 [INFO] Recommendation summary: Total=1, Supported=1, Unsupported=0
+2026-03-16 21:13:12 [INFO] Recommendations applied in background. Total=1, Supported=1, Unsupported=0, AutoSelectedLater=1
+2026-03-16 21:13:13 [INFO] Saved selection profile to C:\Users\naime\OneDrive\Desktop\Nova setup v.001\NovaSetup\bin\Debug\net8.0\Configs\selection.json
+2026-03-16 21:13:13 [INFO] Auto-saved list 'Website Starter' with 3 app(s).
+2026-03-16 21:13:13 [INFO] Loaded 9 apps for Windows. Recommended: 1. 1 selected app(s) are unsupported and will be skipped.
+2026-03-16 21:13:30 [INFO] Saved selection profile to C:\Users\naime\OneDrive\Desktop\Nova setup v.001\NovaSetup\bin\Debug\net8.0\Configs\selection.json
+2026-03-16 21:13:30 [INFO] Auto-saved list 'Website Starter' with 2 app(s).
+2026-03-16 21:13:32 [INFO] Starting installation for 2 app(s)...
+2026-03-16 21:13:32 [INFO] Install settings: Silent=True, SelfDelete=False, Parallel=True, OsSupportedApps=True, DownloadLocationMode=SystemDefault, CustomDownloadFolder='', KeepInstallers=False, RestartBehavior=AskBeforeRestart
+2026-03-16 21:13:32 [INFO] Parallel install is enabled in settings, but the installer currently uses the stable sequential pipeline.
+2026-03-16 21:13:32 [INFO] Install started. Platform=Windows, CandidateCount=1, Silent=True.
+2026-03-16 21:13:32 [INFO] Skipping Mozilla Firefox: already installed on this PC.
+2026-03-16 21:13:32 [INFO] No install actions generated.
+2026-03-16 21:13:32 [INFO] Install started. Platform=Windows, CandidateCount=1, Silent=True.
+2026-03-16 21:13:32 [WARN] Skipping htop: unsupported on Windows.
+2026-03-16 21:13:32 [INFO] No install actions generated.
+2026-03-16 21:13:32 [INFO] Detected installed app 'Mozilla Firefox' via Windows registry.
+2026-03-16 21:13:32 [INFO] Detected installed app 'Google Chrome' via Windows registry.
+2026-03-16 21:13:32 [INFO] Detected installed app 'Discord' via Windows registry.
+2026-03-16 21:13:32 [INFO] Detected installed app 'Steam' via Windows registry.
+2026-03-16 21:13:32 [INFO] Detected installed app 'Visual Studio Code' via Windows registry.
+2026-03-16 21:13:32 [INFO] Detected installed app 'Git' via Windows registry.
+2026-03-16 21:13:32 [INFO] Detected installed app 'NVIDIA App' via Windows registry.
+2026-03-16 21:13:32 [INFO] Windows install index prepared. RegistryEntries=439, AppPathMatches=3
+2026-03-16 21:13:32 [INFO] Installed app detection completed. Platform=Windows, DetectedInstalledApps=7
+2026-03-16 21:13:32 [INFO] Installation finished with no restart required.
+2026-03-16 21:13:32 [INFO] Navigation changed to 'History'.
+2026-03-16 21:13:35 [INFO] Navigation changed to 'My Lists'.
+2026-03-16 21:13:37 [INFO] Starting installation for 2 app(s)...
+2026-03-16 21:13:37 [INFO] Install settings: Silent=True, SelfDelete=False, Parallel=True, OsSupportedApps=True, DownloadLocationMode=SystemDefault, CustomDownloadFolder='', KeepInstallers=False, RestartBehavior=AskBeforeRestart
+2026-03-16 21:13:37 [INFO] Parallel install is enabled in settings, but the installer currently uses the stable sequential pipeline.
+2026-03-16 21:13:37 [INFO] Install started. Platform=Windows, CandidateCount=1, Silent=True.
+2026-03-16 21:13:37 [INFO] Skipping Mozilla Firefox: already installed on this PC.
+2026-03-16 21:13:37 [INFO] No install actions generated.
+2026-03-16 21:13:37 [INFO] Install started. Platform=Windows, CandidateCount=1, Silent=True.
+2026-03-16 21:13:37 [WARN] Skipping htop: unsupported on Windows.
+2026-03-16 21:13:37 [INFO] No install actions generated.
+2026-03-16 21:13:37 [INFO] Detected installed app 'Mozilla Firefox' via Windows registry.
+2026-03-16 21:13:37 [INFO] Detected installed app 'Google Chrome' via Windows registry.
+2026-03-16 21:13:37 [INFO] Detected installed app 'Discord' via Windows registry.
+2026-03-16 21:13:37 [INFO] Detected installed app 'Steam' via Windows registry.
+2026-03-16 21:13:37 [INFO] Detected installed app 'Visual Studio Code' via Windows registry.
+2026-03-16 21:13:37 [INFO] Detected installed app 'Git' via Windows registry.
+2026-03-16 21:13:37 [INFO] Detected installed app 'NVIDIA App' via Windows registry.
+2026-03-16 21:13:37 [INFO] Windows install index prepared. RegistryEntries=439, AppPathMatches=3
+2026-03-16 21:13:37 [INFO] Installed app detection completed. Platform=Windows, DetectedInstalledApps=7
+2026-03-16 21:13:37 [INFO] Installation finished with no restart required.
+2026-03-16 21:13:37 [INFO] Navigation changed to 'History'.
+2026-03-16 21:13:40 [INFO] Navigation changed to 'My Lists'.
+2026-03-16 21:13:41 [INFO] Starting installation for 2 app(s)...
+2026-03-16 21:13:41 [INFO] Install settings: Silent=True, SelfDelete=False, Parallel=True, OsSupportedApps=True, DownloadLocationMode=SystemDefault, CustomDownloadFolder='', KeepInstallers=False, RestartBehavior=AskBeforeRestart
+2026-03-16 21:13:41 [INFO] Parallel install is enabled in settings, but the installer currently uses the stable sequential pipeline.
+2026-03-16 21:13:41 [INFO] Install started. Platform=Windows, CandidateCount=1, Silent=True.
+2026-03-16 21:13:41 [INFO] Skipping Mozilla Firefox: already installed on this PC.
+2026-03-16 21:13:41 [INFO] No install actions generated.
+2026-03-16 21:13:41 [INFO] Install started. Platform=Windows, CandidateCount=1, Silent=True.
+2026-03-16 21:13:41 [WARN] Skipping htop: unsupported on Windows.
+2026-03-16 21:13:41 [INFO] No install actions generated.
+2026-03-16 21:13:41 [INFO] Detected installed app 'Mozilla Firefox' via Windows registry.
+2026-03-16 21:13:41 [INFO] Detected installed app 'Google Chrome' via Windows registry.
+2026-03-16 21:13:41 [INFO] Detected installed app 'Discord' via Windows registry.
+2026-03-16 21:13:41 [INFO] Detected installed app 'Steam' via Windows registry.
+2026-03-16 21:13:41 [INFO] Detected installed app 'Visual Studio Code' via Windows registry.
+2026-03-16 21:13:41 [INFO] Detected installed app 'Git' via Windows registry.
+2026-03-16 21:13:41 [INFO] Detected installed app 'NVIDIA App' via Windows registry.
+2026-03-16 21:13:42 [INFO] Windows install index prepared. RegistryEntries=439, AppPathMatches=3
+2026-03-16 21:13:42 [INFO] Installed app detection completed. Platform=Windows, DetectedInstalledApps=7
+2026-03-16 21:13:42 [INFO] Installation finished with no restart required.
+2026-03-16 21:13:42 [INFO] Navigation changed to 'History'.

@@ -148,130 +148,144 @@ public sealed class InstallerService
         List<string> downloadedFiles,
         CancellationToken cancellationToken)
     {
-        _loggingService?.LogInfo($"Installing app: {action.App.Name}");
-        var wasInstalledBefore = IsCurrentlyInstalled(action.App, currentPlatform);
-
-        string? installerPath = null;
-        if (!string.IsNullOrWhiteSpace(action.InstallDefinition.InstallerUrl))
+        if (!AllowedCommandsService.Instance.TryBeginInstall(action.App.Id))
         {
-            var download = await DownloadInstallerAsync(action, tempRoot, cancellationToken);
-            if (!download.Success)
+            _loggingService?.LogWarning(
+                $"[AllowedCommands] Skipped duplicate install request for: {action.App.Name} (already in progress)");
+            return CreateSkippedResult(action.App, "Install already in progress.");
+        }
+
+        try
+        {
+            _loggingService?.LogInfo($"Installing app: {action.App.Name}");
+            var wasInstalledBefore = IsCurrentlyInstalled(action.App, currentPlatform);
+
+            string? installerPath = null;
+            if (!string.IsNullOrWhiteSpace(action.InstallDefinition.InstallerUrl))
             {
-                if (HasCommandFallback(action.InstallDefinition))
+                var download = await DownloadInstallerAsync(action, tempRoot, cancellationToken);
+                if (!download.Success)
                 {
-                    _loggingService?.LogWarning(
-                        $"Download-first install failed for {action.App.Name}. Falling back to configured command. Reason: {download.Message}");
+                    if (HasCommandFallback(action.InstallDefinition))
+                    {
+                        _loggingService?.LogWarning(
+                            $"Download-first install failed for {action.App.Name}. Falling back to configured command. Reason: {download.Message}");
+                    }
+                    else
+                    {
+                        action.App.HasInstallFailed = true;
+                        return CreateFailureResult(action.App, AppendElevationDeniedMessage(download.Message));
+                    }
                 }
-                else
+
+                installerPath = download.FilePath;
+                if (!string.IsNullOrWhiteSpace(installerPath))
                 {
-                    action.App.HasInstallFailed = true;
-                    return CreateFailureResult(action.App, AppendElevationDeniedMessage(download.Message));
+                    downloadedFiles.Add(installerPath);
                 }
             }
 
-            installerPath = download.FilePath;
-            if (!string.IsNullOrWhiteSpace(installerPath))
+            var command = currentPlatform == PlatformService.Windows
+                ? BuildWindowsInstallCommand(action, installerPath)
+                : BuildLinuxInstallCommand(action, installerPath);
+
+            if (string.IsNullOrWhiteSpace(command))
             {
-                downloadedFiles.Add(installerPath);
+                _loggingService?.LogError($"Install command is empty for {action.App.Name}.");
+                action.App.HasInstallFailed = true;
+                return CreateFailureResult(
+                    action.App,
+                    AppendElevationDeniedMessage("No valid install command could be built."));
             }
-        }
 
-        var command = currentPlatform == PlatformService.Windows
-            ? BuildWindowsInstallCommand(action, installerPath)
-            : BuildLinuxInstallCommand(action, installerPath);
-
-        if (string.IsNullOrWhiteSpace(command))
-        {
-            _loggingService?.LogError($"Install command is empty for {action.App.Name}.");
-            action.App.HasInstallFailed = true;
-            return CreateFailureResult(
-                action.App,
-                AppendElevationDeniedMessage("No valid install command could be built."));
-        }
-
-        var execution = await ExecuteInstallCommandAsync(action, command, currentPlatform, cancellationToken);
-        var restartRequired = DetermineIfRestartNeeded(action, execution.ExitCode);
-        var wasVerifiedAfterInstall = false;
-        if (!wasInstalledBefore)
-        {
-            wasVerifiedAfterInstall = await WaitForInstallVerificationAsync(action, currentPlatform, cancellationToken);
-        }
-
-        if (!execution.Success)
-        {
-            if (!wasInstalledBefore && wasVerifiedAfterInstall)
+            var execution = await ExecuteInstallCommandAsync(action, command, currentPlatform, cancellationToken);
+            var restartRequired = DetermineIfRestartNeeded(action, execution.ExitCode);
+            var wasVerifiedAfterInstall = false;
+            if (!wasInstalledBefore)
             {
-                action.App.IsInstalled = true;
-                action.App.RequiresRestartHint = restartRequired;
-                action.App.StatusBadge = "Installed";
+                wasVerifiedAfterInstall = await WaitForInstallVerificationAsync(action, currentPlatform, cancellationToken);
+            }
 
-                var recoveredMessage =
-                    $"Installer reported exit code {execution.ExitCode}, but {action.App.Name} was verified as installed afterwards.";
-                _loggingService?.LogWarning(recoveredMessage);
+            if (!execution.Success)
+            {
+                if (!wasInstalledBefore && wasVerifiedAfterInstall)
+                {
+                    action.App.IsInstalled = true;
+                    action.App.RequiresRestartHint = restartRequired;
+                    action.App.StatusBadge = "Installed";
+
+                    var recoveredMessage =
+                        $"Installer reported exit code {execution.ExitCode}, but {action.App.Name} was verified as installed afterwards.";
+                    _loggingService?.LogWarning(recoveredMessage);
+
+                    return new InstallResult
+                    {
+                        AppId = action.App.Id,
+                        AppName = action.App.Name,
+                        Success = true,
+                        Skipped = false,
+                        RequiresRestart = restartRequired,
+                        Message = recoveredMessage
+                    };
+                }
+
+                action.App.HasInstallFailed = true;
+                var failureMessage = AppendElevationDeniedMessage(
+                    BuildFailureMessage(action.App, currentPlatform, command, execution));
+                _loggingService?.LogError(
+                    $"Install failed for {action.App.Name}. ExitCode={execution.ExitCode}. {failureMessage}");
 
                 return new InstallResult
                 {
                     AppId = action.App.Id,
                     AppName = action.App.Name,
-                    Success = true,
+                    Success = false,
                     Skipped = false,
                     RequiresRestart = restartRequired,
-                    Message = recoveredMessage
+                    Message = failureMessage
                 };
             }
 
-            action.App.HasInstallFailed = true;
-            var failureMessage = AppendElevationDeniedMessage(
-                BuildFailureMessage(action.App, currentPlatform, command, execution));
-            _loggingService?.LogError(
-                $"Install failed for {action.App.Name}. ExitCode={execution.ExitCode}. {failureMessage}");
+            if (!wasInstalledBefore && !wasVerifiedAfterInstall)
+            {
+                action.App.HasInstallFailed = true;
+                var verificationFailureMessage = AppendElevationDeniedMessage(
+                    BuildVerificationFailureMessage(action.App, currentPlatform, command));
+                _loggingService?.LogError(
+                    $"Install could not be verified for {action.App.Name} after a successful exit code. {verificationFailureMessage}");
 
+                return new InstallResult
+                {
+                    AppId = action.App.Id,
+                    AppName = action.App.Name,
+                    Success = false,
+                    Skipped = false,
+                    RequiresRestart = restartRequired,
+                    Message = verificationFailureMessage
+                };
+            }
+
+            action.App.IsInstalled = true;
+            action.App.RequiresRestartHint = restartRequired;
+            action.App.StatusBadge = "Installed";
+
+            _loggingService?.LogInfo($"Install succeeded for {action.App.Name}. ExitCode={execution.ExitCode}.");
             return new InstallResult
             {
                 AppId = action.App.Id,
                 AppName = action.App.Name,
-                Success = false,
+                Success = true,
                 Skipped = false,
                 RequiresRestart = restartRequired,
-                Message = failureMessage
+                Message = execution.RanElevated
+                    ? "Install completed after administrator approval."
+                    : execution.Message
             };
         }
-
-        if (!wasInstalledBefore && !wasVerifiedAfterInstall)
+        finally
         {
-            action.App.HasInstallFailed = true;
-            var verificationFailureMessage = AppendElevationDeniedMessage(
-                BuildVerificationFailureMessage(action.App, currentPlatform, command));
-            _loggingService?.LogError(
-                $"Install could not be verified for {action.App.Name} after a successful exit code. {verificationFailureMessage}");
-
-            return new InstallResult
-            {
-                AppId = action.App.Id,
-                AppName = action.App.Name,
-                Success = false,
-                Skipped = false,
-                RequiresRestart = restartRequired,
-                Message = verificationFailureMessage
-            };
+            AllowedCommandsService.Instance.EndInstall(action.App.Id);
         }
-
-        action.App.IsInstalled = true;
-        action.App.RequiresRestartHint = restartRequired;
-        action.App.StatusBadge = "Installed";
-
-        _loggingService?.LogInfo($"Install succeeded for {action.App.Name}. ExitCode={execution.ExitCode}.");
-        return new InstallResult
-        {
-            AppId = action.App.Id,
-            AppName = action.App.Name,
-            Success = true,
-            Skipped = false,
-            RequiresRestart = restartRequired,
-            Message = execution.RanElevated
-                ? "Install completed after administrator approval."
-                : execution.Message
-        };
     }
 
     private async Task<DownloadOutcome> DownloadInstallerAsync(

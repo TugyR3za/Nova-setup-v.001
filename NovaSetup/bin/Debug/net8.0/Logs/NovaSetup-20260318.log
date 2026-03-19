@@ -1,0 +1,26 @@
+2026-03-18 11:28:12 [INFO] Logging initialized.
+2026-03-18 11:28:23 [INFO] Loaded settings from C:\Users\naime\OneDrive\Desktop\Nova setup v.001\NovaSetup\bin\Debug\net8.0\Configs\settings.json
+2026-03-18 11:28:27 [INFO] Loaded catalog from remote server (9 apps).
+2026-03-18 11:28:27 [INFO] Loaded selection profile 'Website Starter'.
+2026-03-18 11:28:27 [INFO] Loaded 9 apps for Windows. Recommended: 0. 1 selected app(s) are unsupported and will be skipped. Scanning system in background...
+2026-03-18 11:28:27 [INFO] Detected installed app 'Google Chrome' via Windows registry.
+2026-03-18 11:28:27 [INFO] Detected installed app 'Discord' via Windows registry.
+2026-03-18 11:28:27 [INFO] Detected installed app 'Steam' via Windows registry.
+2026-03-18 11:28:27 [INFO] Detected installed app 'Visual Studio Code' via Windows registry.
+2026-03-18 11:28:27 [INFO] Detected installed app 'Git' via Windows registry.
+2026-03-18 11:28:27 [INFO] Detected installed app 'NVIDIA App' via Windows registry.
+2026-03-18 11:28:28 [INFO] Windows install index prepared. RegistryEntries=437, AppPathMatches=2
+2026-03-18 11:28:28 [INFO] Installed app detection completed. Platform=Windows, DetectedInstalledApps=6
+2026-03-18 11:28:28 [INFO] Detected GPU vendor: NVIDIA
+2026-03-18 11:28:29 [INFO] Detected motherboard vendor: ASUS
+2026-03-18 11:28:32 [INFO] Recommended app 'NVIDIA App' for NVIDIA GPU. Supported=True, AutoSelected=False
+2026-03-18 11:28:32 [INFO] No catalog app found for recommendation rule: ASUS motherboard
+2026-03-18 11:28:32 [INFO] Recommendation summary: Total=1, Supported=1, Unsupported=0
+2026-03-18 11:28:32 [INFO] Recommendations applied in background. Total=1, Supported=1, Unsupported=0, AutoSelectedLater=1
+2026-03-18 11:28:32 [INFO] Saved selection profile to C:\Users\naime\OneDrive\Desktop\Nova setup v.001\NovaSetup\bin\Debug\net8.0\Configs\selection.json
+2026-03-18 11:28:32 [INFO] Auto-saved list 'Website Starter' with 3 app(s).
+2026-03-18 11:28:32 [INFO] Loaded 9 apps for Windows. Recommended: 1. 1 selected app(s) are unsupported and will be skipped.
+2026-03-18 11:29:29 [INFO] Saved selection profile to C:\Users\naime\OneDrive\Desktop\Nova setup v.001\NovaSetup\bin\Debug\net8.0\Configs\selection.json
+2026-03-18 11:29:29 [INFO] Auto-saved list 'Website Starter' with 2 app(s).
+2026-03-18 11:29:31 [INFO] Saved selection profile to C:\Users\naime\OneDrive\Desktop\Nova setup v.001\NovaSetup\bin\Debug\net8.0\Configs\selection.json
+2026-03-18 11:29:31 [INFO] Auto-saved list 'Website Starter' with 1 app(s).
