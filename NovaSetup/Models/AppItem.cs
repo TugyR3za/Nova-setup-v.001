@@ -191,6 +191,8 @@ public class InstallDefinition
     // Optional explicit output file name for downloaded installers.
     public string InstallerFileName { get; set; } = string.Empty;
 
+    public string Sha256 { get; set; } = string.Empty;
+
     public string Command { get; set; } = string.Empty;
 
     public string SilentCommand { get; set; } = string.Empty;

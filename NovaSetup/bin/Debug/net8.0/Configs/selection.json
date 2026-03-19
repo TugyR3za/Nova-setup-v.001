@@ -2,7 +2,7 @@
   "ProfileName": "Website Starter",
   "TargetPlatform": "Windows",
   "SelectedApps": [
-    "nvidia-app",
+    "firefox",
     "htop"
   ],
   "Settings": {

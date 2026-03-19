@@ -12,11 +12,13 @@ public sealed class InstallerService
 
     private readonly LoggingService? _loggingService;
     private readonly DetectionService? _detectionService;
+    private readonly HashVerificationService _hashVerificationService;
 
     public InstallerService(LoggingService? loggingService = null, DetectionService? detectionService = null)
     {
         _loggingService = loggingService;
         _detectionService = detectionService;
+        _hashVerificationService = new HashVerificationService(loggingService);
     }
 
     public async Task<IReadOnlyList<InstallResult>> InstallSelectedAppsAsync(
@@ -182,6 +184,24 @@ public sealed class InstallerService
                 if (!string.IsNullOrWhiteSpace(installerPath))
                 {
                     downloadedFiles.Add(installerPath);
+
+                    if (!_hashVerificationService.VerifyFile(installerPath, action.InstallDefinition.Sha256))
+                    {
+                        _loggingService?.LogError(
+                            $"[Installer] Aborting install for {action.App.Name} — SHA256 verification failed. The file may be corrupted or tampered with.");
+
+                        try
+                        {
+                            File.Delete(installerPath);
+                        }
+                        catch
+                        {
+                            // Deletion failure is non-fatal; aborting execution is the important part.
+                        }
+
+                        action.App.HasInstallFailed = true;
+                        return CreateFailureResult(action.App, "SHA256 verification failed.");
+                    }
                 }
             }
 
