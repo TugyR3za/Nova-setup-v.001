@@ -29,6 +29,7 @@ public sealed class AppSettings : ObservableObject
     private string _customDownloadFolder = string.Empty;
     private bool _keepInstallersAfterInstall;
     private bool _launchNovaAtStartup;
+    private bool _checkForUpdatesAutomatically = true;
     private string _theme = ThemeDark;
     private string _language = LanguageEnglish;
     private bool _saveProfilesAutomatically = true;
@@ -100,6 +101,12 @@ public sealed class AppSettings : ObservableObject
         set => SetProperty(ref _launchNovaAtStartup, value);
     }
 
+    public bool CheckForUpdatesAutomatically
+    {
+        get => _checkForUpdatesAutomatically;
+        set => SetProperty(ref _checkForUpdatesAutomatically, value);
+    }
+
     public string Theme
     {
         get => _theme;
@@ -144,6 +151,7 @@ public sealed class AppSettings : ObservableObject
             CustomDownloadFolder = CustomDownloadFolder,
             KeepInstallersAfterInstall = KeepInstallersAfterInstall,
             LaunchNovaAtStartup = LaunchNovaAtStartup,
+            CheckForUpdatesAutomatically = CheckForUpdatesAutomatically,
             Theme = Theme,
             Language = Language,
             SaveProfilesAutomatically = SaveProfilesAutomatically,
@@ -166,6 +174,7 @@ public sealed class AppSettings : ObservableObject
         CustomDownloadFolder = source.CustomDownloadFolder;
         KeepInstallersAfterInstall = source.KeepInstallersAfterInstall;
         LaunchNovaAtStartup = source.LaunchNovaAtStartup;
+        CheckForUpdatesAutomatically = source.CheckForUpdatesAutomatically;
         Theme = source.Theme;
         Language = source.Language;
         SaveProfilesAutomatically = source.SaveProfilesAutomatically;

@@ -33,6 +33,18 @@
                   Command="{Binding #Root.OpenGitHubCommand}"
                   Content="{Binding #Root.GitHubUrl}" />
 
+          <Button Classes="ghost compact"
+                  Command="{Binding #Root.CheckForUpdatesCommand}"
+                  Content="Check for Updates"
+                  HorizontalAlignment="Left" />
+
+          <Border Classes="metaChip"
+                  IsVisible="{Binding #Root.IsUpdateStatusVisible}">
+            <TextBlock Text="{Binding #Root.UpdateStatusText}"
+                       Foreground="{DynamicResource TextMutedBrush}"
+                       TextWrapping="Wrap" />
+          </Border>
+
           <TextBlock Text="© 2026 Nova. All rights reserved."
                      Foreground="{DynamicResource TextMutedBrush}"
                      TextWrapping="Wrap" />

@@ -1,0 +1,55 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="NovaSetup.Views.SplashScreen"
+        x:CompileBindings="False"
+        Width="480"
+        Height="280"
+        CanResize="False"
+        WindowStartupLocation="CenterScreen"
+        SystemDecorations="None"
+        Topmost="True"
+        Background="{DynamicResource ShellBackgroundBrush}"
+        Foreground="{DynamicResource TextPrimaryBrush}"
+        ShowInTaskbar="False">
+  <Border Margin="10"
+          Classes="shellPanel"
+          Background="{DynamicResource PanelBrush}"
+          Padding="28">
+    <Grid RowDefinitions="*,Auto,Auto"
+          RowSpacing="20">
+      <StackPanel Spacing="12"
+                  HorizontalAlignment="Center"
+                  VerticalAlignment="Center">
+        <Image Source="avares://NovaSetup/Assets/nova_logo_512.png"
+               Width="78"
+               Height="78"
+               Stretch="Uniform"
+               HorizontalAlignment="Center" />
+
+        <TextBlock Text="Nova"
+                   FontSize="30"
+                   FontWeight="Bold"
+                   HorizontalAlignment="Center" />
+
+        <TextBlock x:Name="StatusTextBlock"
+                   Text="Preparing your setup..."
+                   FontSize="14"
+                   Foreground="{DynamicResource TextMutedBrush}"
+                   HorizontalAlignment="Center" />
+      </StackPanel>
+
+      <ProgressBar Grid.Row="1"
+                   Height="12"
+                   IsIndeterminate="True"
+                   Background="{DynamicResource InputBrush}"
+                   Foreground="{DynamicResource AccentBrush}" />
+
+      <TextBlock x:Name="VersionTextBlock"
+                 Grid.Row="2"
+                 Text="Nova vUnknown"
+                 FontSize="12"
+                 Foreground="{DynamicResource TextMutedBrush}"
+                 HorizontalAlignment="Right" />
+    </Grid>
+  </Border>
+</Window>

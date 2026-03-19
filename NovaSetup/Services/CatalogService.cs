@@ -22,6 +22,8 @@ public sealed class CatalogService
             "NovaSetup",
             "catalog_cache.json");
 
+    internal static HttpClient SharedHttpClient => _httpClient;
+
     public CatalogService(PlatformService platformService, LoggingService? loggingService = null)
     {
         _platformService = platformService;

@@ -22,10 +22,40 @@
         <design:MainWindowSampleData />
     </Design.DataContext>
 
-    <Border Margin="10"
-            Classes="shellPanel"
-            Padding="8"
-            Background="{DynamicResource ShellBackgroundBrush}">
+    <Grid RowDefinitions="Auto,*"
+          RowSpacing="8">
+        <Border Grid.Row="0"
+                IsVisible="{Binding IsUpdateAvailable}"
+                Background="{DynamicResource AccentSoftBrush}"
+                BorderBrush="{DynamicResource AccentBrush}"
+                BorderThickness="1"
+                CornerRadius="16"
+                Padding="14,8"
+                Margin="10,10,10,0">
+            <Grid ColumnDefinitions="*,Auto"
+                  ColumnSpacing="12">
+                <TextBlock Text="{Binding UpdateVersionText}"
+                           VerticalAlignment="Center"
+                           FontWeight="SemiBold" />
+
+                <StackPanel Grid.Column="1"
+                            Orientation="Horizontal"
+                            Spacing="8">
+                    <Button Classes="ghost compact"
+                            Content="Download"
+                            Command="{Binding DownloadUpdateCommand}" />
+                    <Button Classes="compact"
+                            Content="Dismiss"
+                            Command="{Binding DismissUpdateCommand}" />
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <Border Grid.Row="1"
+                Margin="10"
+                Classes="shellPanel"
+                Padding="8"
+                Background="{DynamicResource ShellBackgroundBrush}">
         <Grid ColumnDefinitions="220,*" ColumnSpacing="10">
             <controls:SidebarControl Grid.Column="0"
                                      CurrentProfileName="{Binding CurrentProfileName}"
@@ -528,7 +558,10 @@
                     <views:AboutView IsVisible="{Binding IsAboutScreenVisible}"
                                      VersionText="{Binding AboutVersionText}"
                                      GitHubUrl="{Binding AboutGitHubUrl}"
-                                     OpenGitHubCommand="{Binding OpenAboutGitHubCommand}" />
+                                     OpenGitHubCommand="{Binding OpenAboutGitHubCommand}"
+                                     CheckForUpdatesCommand="{Binding ManualCheckForUpdatesCommand}"
+                                     UpdateStatusText="{Binding AboutUpdateStatusText}"
+                                     IsUpdateStatusVisible="{Binding IsAboutUpdateStatusVisible}" />
                     <Border IsVisible="{Binding IsSettingsPanelOpen}"
                             Classes="card"
                             Width="370"
@@ -697,6 +730,15 @@
                                             <CheckBox IsChecked="{Binding Settings.LaunchNovaAtStartup}"
                                                       Content="Launch Nova at startup" />
                                             <TextBlock Text="Open NovaSetup automatically when the system starts."
+                                                       FontSize="12"
+                                                       Foreground="{DynamicResource TextMutedBrush}"
+                                                       TextWrapping="Wrap" />
+                                        </StackPanel>
+
+                                        <StackPanel Spacing="2">
+                                            <CheckBox IsChecked="{Binding Settings.CheckForUpdatesAutomatically}"
+                                                      Content="Automatically check for updates" />
+                                            <TextBlock Text="Check for a newer Nova release on startup and show a banner when one is available."
                                                        FontSize="12"
                                                        Foreground="{DynamicResource TextMutedBrush}"
                                                        TextWrapping="Wrap" />
@@ -927,6 +969,7 @@
                 </Grid>
             </Border>
         </Grid>
-    </Border>
+        </Border>
+    </Grid>
 </Window>
 

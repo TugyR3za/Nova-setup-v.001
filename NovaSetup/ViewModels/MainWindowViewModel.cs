@@ -48,6 +48,9 @@ public sealed class MainWindowViewModel : ObservableObject
     private readonly AsyncRelayCommand _refreshCatalogCommand;
     private readonly RelayCommand _showUpdatesFilterCommand;
     private readonly RelayCommand _showRecommendedFilterCommand;
+    private readonly RelayCommand _dismissUpdateCommand;
+    private readonly RelayCommand _downloadUpdateCommand;
+    private readonly AsyncRelayCommand _manualCheckForUpdatesCommand;
     private readonly RelayCommand _openPublisherCommand;
     private readonly RelayCommand _openAboutGitHubCommand;
     private readonly RelayCommand _showAppDetailsCommand;
@@ -72,6 +75,7 @@ public sealed class MainWindowViewModel : ObservableObject
     private readonly AsyncRelayCommand _resetSettingsCommand;
 
     private bool _isInitialized;
+    private bool _isInitializing;
     private bool _isInstalling;
     private bool _restartRequired;
     private bool _isRestartConfirmationVisible;
@@ -93,6 +97,10 @@ public sealed class MainWindowViewModel : ObservableObject
     private string _currentSection = SectionApps;
     private string _searchText = string.Empty;
     private string _selectedFilter = "All";
+    private bool _isUpdateAvailable;
+    private string _updateVersionText = string.Empty;
+    private string _updateDownloadUrl = string.Empty;
+    private string _aboutUpdateStatusText = string.Empty;
     private AppItem? _selectedDetailApp;
     private bool _isAllFilter = true;
     private bool _isGamesFilter;
@@ -162,6 +170,9 @@ public sealed class MainWindowViewModel : ObservableObject
         _refreshCatalogCommand = new AsyncRelayCommand(RefreshCatalogAsync, () => !IsInstalling && _isInitialized);
         _showUpdatesFilterCommand = new RelayCommand(_ => ShowUpdatesFilter(), _ => !IsInstalling && HasUpdatesAvailable);
         _showRecommendedFilterCommand = new RelayCommand(_ => ShowRecommendedFilter(), _ => !IsInstalling && HasRecommendedApps);
+        _dismissUpdateCommand = new RelayCommand(_ => DismissUpdateBanner(), _ => IsUpdateAvailable);
+        _downloadUpdateCommand = new RelayCommand(_ => DownloadUpdate(), _ => IsUpdateAvailable && !string.IsNullOrWhiteSpace(UpdateDownloadUrl));
+        _manualCheckForUpdatesCommand = new AsyncRelayCommand(() => CheckForUpdatesAsync(forceManualCheck: true), () => !IsInstalling);
         _openPublisherCommand = new RelayCommand(OpenPublisherHomepage);
         _openAboutGitHubCommand = new RelayCommand(_ => OpenAboutGitHub(), _ => !IsInstalling);
         _showAppDetailsCommand = new RelayCommand(ShowAppDetails);
@@ -249,6 +260,50 @@ public sealed class MainWindowViewModel : ObservableObject
     public string AboutVersionText => VersionService.GetFullVersionString();
 
     public string AboutGitHubUrl => NovaGitHubUrl;
+
+    public bool IsUpdateAvailable
+    {
+        get => _isUpdateAvailable;
+        private set
+        {
+            if (SetProperty(ref _isUpdateAvailable, value))
+            {
+                UpdateCommandStates();
+            }
+        }
+    }
+
+    public string UpdateVersionText
+    {
+        get => _updateVersionText;
+        private set => SetProperty(ref _updateVersionText, value ?? string.Empty);
+    }
+
+    public string UpdateDownloadUrl
+    {
+        get => _updateDownloadUrl;
+        private set
+        {
+            if (SetProperty(ref _updateDownloadUrl, value ?? string.Empty))
+            {
+                UpdateCommandStates();
+            }
+        }
+    }
+
+    public string AboutUpdateStatusText
+    {
+        get => _aboutUpdateStatusText;
+        private set
+        {
+            if (SetProperty(ref _aboutUpdateStatusText, value ?? string.Empty))
+            {
+                OnPropertyChanged(nameof(IsAboutUpdateStatusVisible));
+            }
+        }
+    }
+
+    public bool IsAboutUpdateStatusVisible => !string.IsNullOrWhiteSpace(AboutUpdateStatusText);
 
     public bool IsDashboardSelected => string.Equals(_currentSection, SectionDashboard, StringComparison.Ordinal);
     public bool IsDashboardUnselected => !IsDashboardSelected;
@@ -690,6 +745,12 @@ public sealed class MainWindowViewModel : ObservableObject
 
     public ICommand ShowRecommendedFilterCommand => _showRecommendedFilterCommand;
 
+    public ICommand DismissUpdateCommand => _dismissUpdateCommand;
+
+    public ICommand DownloadUpdateCommand => _downloadUpdateCommand;
+
+    public ICommand ManualCheckForUpdatesCommand => _manualCheckForUpdatesCommand;
+
     public ICommand OpenPublisherCommand => _openPublisherCommand;
 
     public ICommand OpenAboutGitHubCommand => _openAboutGitHubCommand;
@@ -734,48 +795,89 @@ public sealed class MainWindowViewModel : ObservableObject
 
     public ICommand ResetSettingsCommand => _resetSettingsCommand;
 
-    public async Task InitializeAsync()
+    public Task InitializeAsync()
     {
-        if (_isInitialized)
+        return InitializeCoreAsync(updateStatusAsync: null, runDetectionInBackground: true);
+    }
+
+    public Task InitializeWithSplashAsync(Func<string, Task> updateStatusAsync)
+    {
+        ArgumentNullException.ThrowIfNull(updateStatusAsync);
+        return InitializeCoreAsync(updateStatusAsync, runDetectionInBackground: false);
+    }
+
+    private async Task InitializeCoreAsync(
+        Func<string, Task>? updateStatusAsync,
+        bool runDetectionInBackground)
+    {
+        if (_isInitialized || _isInitializing)
         {
             return;
         }
 
-        _isInitialized = true;
+        _isInitializing = true;
 
-        await LoadSettingsAsync();
-
-        var platform = _platformService.GetCurrentPlatformInfo();
-        _currentPlatformId = platform.Id;
-        CurrentPlatform = platform.Label;
-
-        var apps = await _catalogService.LoadAppsAsync(_currentPlatformId);
-        var selection = _selectionService.LoadSelection();
-        ApplySelectionProfile(selection);
-
-        if (_settingsService.LoadedDefaultsOnLastLoad)
+        try
         {
-            ApplySelectionSettingsFallback(selection);
+            await LoadSettingsAsync();
+
+            var platform = _platformService.GetCurrentPlatformInfo();
+            _currentPlatformId = platform.Id;
+            CurrentPlatform = platform.Label;
+
+            if (updateStatusAsync is not null)
+            {
+                await updateStatusAsync("Loading catalog...");
+            }
+
+            var apps = await Task.Run(() => _catalogService.LoadAppsAsync(_currentPlatformId));
+            var selection = _selectionService.LoadSelection();
+            ApplySelectionProfile(selection);
+
+            if (_settingsService.LoadedDefaultsOnLastLoad)
+            {
+                ApplySelectionSettingsFallback(selection);
+            }
+
+            _selectionService.ApplySelection(apps, selection);
+
+            _apps.Clear();
+            foreach (var app in apps)
+            {
+                ApplyPlatformFlags(app);
+                app.PropertyChanged += HandleAppPropertyChanged;
+                _apps.Add(app);
+            }
+
+            ApplyVisibilityFilter();
+            NotifyAppSummaryStateChanged();
+            NotifySettingsOptionBindingsChanged();
+            NotifyScreenStateChanged();
+            UpdateCommandStates();
+
+            if (runDetectionInBackground)
+            {
+                StatusText = BuildLoadedStatusText(detectionPending: true);
+                _loggingService.LogInfo(StatusText);
+                StartBackgroundStartupDetection();
+            }
+            else
+            {
+                await RunStartupDetectionInlineAsync(updateStatusAsync);
+            }
+
+            _isInitialized = true;
+            _ = CheckForUpdatesAsync(forceManualCheck: false);
         }
-
-        _selectionService.ApplySelection(apps, selection);
-
-        _apps.Clear();
-        foreach (var app in apps)
+        catch
         {
-            ApplyPlatformFlags(app);
-            app.PropertyChanged += HandleAppPropertyChanged;
-            _apps.Add(app);
+            _isInitialized = false;
+            throw;
         }
-
-        ApplyVisibilityFilter();
-        StatusText = BuildLoadedStatusText(detectionPending: true);
-        _loggingService.LogInfo(StatusText);
-        NotifyAppSummaryStateChanged();
-        NotifySettingsOptionBindingsChanged();
-        NotifyScreenStateChanged();
-        UpdateCommandStates();
-        StartBackgroundStartupDetection();
+        finally
+        {
+            _isInitializing = false;
+        }
     }
 
     private void HookCollectionNotifications()
@@ -1512,6 +1614,91 @@ public sealed class MainWindowViewModel : ObservableObject
         }
     }
 
+    private async Task CheckForUpdatesAsync(bool forceManualCheck)
+    {
+        if (!forceManualCheck && !Settings.CheckForUpdatesAutomatically)
+        {
+            return;
+        }
+
+        var result = await Task.Run(async () =>
+        {
+            var updateCheckerService = new UpdateCheckerService(_loggingService);
+            return await updateCheckerService.CheckForUpdateAsync();
+        });
+
+        await Dispatcher.UIThread.InvokeAsync(() =>
+        {
+            if (result.UpdateAvailable)
+            {
+                IsUpdateAvailable = true;
+                UpdateVersionText = $"Nova v{result.LatestVersion} is available";
+                UpdateDownloadUrl = string.IsNullOrWhiteSpace(result.DownloadUrl)
+                    ? result.ReleaseNotesUrl
+                    : result.DownloadUrl;
+                AboutUpdateStatusText = string.Empty;
+                return;
+            }
+
+            if (forceManualCheck)
+            {
+                AboutUpdateStatusText = "Nova is up to date";
+            }
+        });
+    }
+
+    private void DismissUpdateBanner()
+    {
+        IsUpdateAvailable = false;
+    }
+
+    private void DownloadUpdate()
+    {
+        if (!_browserService.OpenUrl(UpdateDownloadUrl))
+        {
+            StatusText = "Unable to open the Nova download page.";
+        }
+    }
+
+    private async Task RunStartupDetectionInlineAsync(Func<string, Task>? updateStatusAsync)
+    {
+        if (_apps.Count == 0 || string.Equals(_currentPlatformId, PlatformService.Unknown, StringComparison.Ordinal))
+        {
+            StatusText = BuildLoadedStatusText(detectionPending: false);
+            _loggingService.LogInfo(StatusText);
+
+            if (updateStatusAsync is not null)
+            {
+                await updateStatusAsync("Almost ready...");
+            }
+
+            return;
+        }
+
+        var selectionSnapshot = _apps.ToDictionary(app => app.Id, app => app.IsSelected, StringComparer.OrdinalIgnoreCase);
+        IReadOnlyDictionary<string, InstalledAppState> installedApps =
+            new Dictionary<string, InstalledAppState>(StringComparer.OrdinalIgnoreCase);
+
+        if (updateStatusAsync is not null)
+        {
+            await updateStatusAsync("Detecting installed apps...");
+        }
+
+        if (Settings.AutoDetectInstalledAppsOnStartup)
+        {
+            installedApps = await Task.Run(() =>
+                _detectionService.DetectInstalledAppStates(_apps.ToList(), _currentPlatformId));
+        }
+
+        var hardwareDetection = await Task.Run(() => _detectionService.DetectHardware(_currentPlatformId));
+        ApplyBackgroundDetectionResults(installedApps, hardwareDetection, selectionSnapshot);
+
+        if (updateStatusAsync is not null)
+        {
+            await updateStatusAsync("Almost ready...");
+        }
+    }
+
     public void CloseAccountMenuOverlay()
     {
         if (!IsAccountMenuOpen)
@@ -2182,6 +2369,9 @@ public sealed class MainWindowViewModel : ObservableObject
         _refreshCatalogCommand.RaiseCanExecuteChanged();
         _showRecommendedFilterCommand.RaiseCanExecuteChanged();
         _showUpdatesFilterCommand.RaiseCanExecuteChanged();
+        _dismissUpdateCommand.RaiseCanExecuteChanged();
+        _downloadUpdateCommand.RaiseCanExecuteChanged();
+        _manualCheckForUpdatesCommand.RaiseCanExecuteChanged();
         _pauseInstallCommand.RaiseCanExecuteChanged();
         _navigateDashboardCommand.RaiseCanExecuteChanged();
         _navigateAppsCommand.RaiseCanExecuteChanged();

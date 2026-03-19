@@ -15,6 +15,15 @@ public partial class AboutView : UserControl
     public static readonly StyledProperty<ICommand?> OpenGitHubCommandProperty =
         AvaloniaProperty.Register<AboutView, ICommand?>(nameof(OpenGitHubCommand));
 
+    public static readonly StyledProperty<ICommand?> CheckForUpdatesCommandProperty =
+        AvaloniaProperty.Register<AboutView, ICommand?>(nameof(CheckForUpdatesCommand));
+
+    public static readonly StyledProperty<string?> UpdateStatusTextProperty =
+        AvaloniaProperty.Register<AboutView, string?>(nameof(UpdateStatusText));
+
+    public static readonly StyledProperty<bool> IsUpdateStatusVisibleProperty =
+        AvaloniaProperty.Register<AboutView, bool>(nameof(IsUpdateStatusVisible));
+
     public AboutView()
     {
         InitializeComponent();
@@ -36,5 +45,23 @@ public partial class AboutView : UserControl
     {
         get => GetValue(OpenGitHubCommandProperty);
         set => SetValue(OpenGitHubCommandProperty, value);
+    }
+
+    public ICommand? CheckForUpdatesCommand
+    {
+        get => GetValue(CheckForUpdatesCommandProperty);
+        set => SetValue(CheckForUpdatesCommandProperty, value);
+    }
+
+    public string? UpdateStatusText
+    {
+        get => GetValue(UpdateStatusTextProperty);
+        set => SetValue(UpdateStatusTextProperty, value);
+    }
+
+    public bool IsUpdateStatusVisible
+    {
+        get => GetValue(IsUpdateStatusVisibleProperty);
+        set => SetValue(IsUpdateStatusVisibleProperty, value);
     }
 }
