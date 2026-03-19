@@ -1,0 +1,287 @@
+[
+  {
+    "Id": "firefox",
+    "Name": "Mozilla Firefox",
+    "Category": "Browsers",
+    "PublisherName": "Mozilla",
+    "HomepageUrl": "https://www.mozilla.org/firefox/",
+    "Description": "Privacy-focused web browser.",
+    "IconPath": "Assets/icons/firefox.png",
+    "SupportedPlatforms": {
+      "Windows": true,
+      "Linux": true
+    },
+    "WindowsInstall": {
+      "InstallerUrl": "https://download.mozilla.org/?product=firefox-latest&os=win64&lang=en-US",
+      "InstallerFileName": "FirefoxInstaller.exe",
+      "Command": "winget install --id Mozilla.Firefox -e --accept-source-agreements --accept-package-agreements",
+      "SilentCommand": "winget install --id Mozilla.Firefox -e --silent --accept-source-agreements --accept-package-agreements",
+      "SilentArguments": "-ms",
+      "RequiresRestart": false,
+      "NeedsManualInstall": false,
+      "DetectDisplayNameContains": "Mozilla Firefox",
+      "DetectExecutable": "firefox"
+    },
+    "LinuxInstall": {
+      "Command": "sudo apt-get install -y firefox",
+      "SilentCommand": "sudo apt-get install -y firefox",
+      "RequiresRestart": false,
+      "NeedsManualInstall": false,
+      "DetectExecutable": "firefox"
+    },
+    "SupportsSilentInstall": true
+  },
+  {
+    "Id": "chrome",
+    "Name": "Google Chrome",
+    "Category": "Browsers",
+    "PublisherName": "Google",
+    "HomepageUrl": "https://www.google.com/chrome/",
+    "Description": "Mainstream browser with sync support.",
+    "IconPath": "Assets/icons/chrome.png",
+    "SupportedPlatforms": {
+      "Windows": true,
+      "Linux": true
+    },
+    "WindowsInstall": {
+      "InstallerUrl": "https://dl.google.com/chrome/install/latest/chrome_installer.exe",
+      "InstallerFileName": "ChromeInstaller.exe",
+      "Command": "winget install --id Google.Chrome -e --accept-source-agreements --accept-package-agreements",
+      "SilentCommand": "winget install --id Google.Chrome -e --silent --accept-source-agreements --accept-package-agreements",
+      "SilentArguments": "/silent /install",
+      "RequiresRestart": false,
+      "NeedsManualInstall": false,
+      "DetectDisplayNameContains": "Google Chrome",
+      "DetectExecutable": "chrome"
+    },
+    "LinuxInstall": {
+      "Command": "sudo apt-get install -y google-chrome-stable",
+      "SilentCommand": "sudo apt-get install -y google-chrome-stable",
+      "RequiresRestart": false,
+      "NeedsManualInstall": false,
+      "DetectExecutable": "google-chrome"
+    },
+    "SupportsSilentInstall": true
+  },
+  {
+    "Id": "discord",
+    "Name": "Discord",
+    "Category": "Communication",
+    "PublisherName": "Discord Inc.",
+    "HomepageUrl": "https://discord.com/",
+    "Description": "Voice and text chat app.",
+    "IconPath": "Assets/icons/discord.png",
+    "SupportedPlatforms": {
+      "Windows": true,
+      "Linux": true
+    },
+    "WindowsInstall": {
+      "InstallerUrl": "https://discord.com/api/download?platform=win",
+      "InstallerFileName": "DiscordSetup.exe",
+      "Command": "winget install --id Discord.Discord -e --accept-source-agreements --accept-package-agreements",
+      "SilentCommand": "winget install --id Discord.Discord -e --silent --accept-source-agreements --accept-package-agreements",
+      "SilentArguments": "-s",
+      "RequiresRestart": false,
+      "NeedsManualInstall": false,
+      "DetectDisplayNameContains": "Discord",
+      "DetectExecutable": "Discord"
+    },
+    "LinuxInstall": {
+      "Command": "sudo apt-get install -y discord",
+      "SilentCommand": "sudo apt-get install -y discord",
+      "RequiresRestart": false,
+      "NeedsManualInstall": false,
+      "DetectExecutable": "discord"
+    },
+    "SupportsSilentInstall": true
+  },
+  {
+    "Id": "steam",
+    "Name": "Steam",
+    "Category": "Gaming",
+    "PublisherName": "Valve",
+    "HomepageUrl": "https://store.steampowered.com/",
+    "Description": "PC gaming platform and launcher.",
+    "IconPath": "Assets/icons/steam.png",
+    "SupportedPlatforms": {
+      "Windows": true,
+      "Linux": true
+    },
+    "WindowsInstall": {
+      "InstallerUrl": "https://cdn.cloudflare.steamstatic.com/client/installer/SteamSetup.exe",
+      "InstallerFileName": "SteamSetup.exe",
+      "Command": "winget install --id Valve.Steam -e --accept-source-agreements --accept-package-agreements",
+      "SilentCommand": "winget install --id Valve.Steam -e --silent --accept-source-agreements --accept-package-agreements",
+      "SilentArguments": "/S",
+      "RequiresRestart": false,
+      "NeedsManualInstall": false,
+      "DetectDisplayNameContains": "Steam",
+      "DetectExecutable": "steam"
+    },
+    "LinuxInstall": {
+      "Command": "sudo apt-get install -y steam",
+      "SilentCommand": "sudo apt-get install -y steam",
+      "RequiresRestart": false,
+      "NeedsManualInstall": false,
+      "DetectExecutable": "steam"
+    },
+    "SupportsSilentInstall": true
+  },
+  {
+    "Id": "vscode",
+    "Name": "Visual Studio Code",
+    "Category": "Coding",
+    "PublisherName": "Microsoft",
+    "HomepageUrl": "https://code.visualstudio.com/",
+    "Description": "Code editor for development workflows.",
+    "IconPath": "Assets/icons/vscode.png",
+    "SupportedPlatforms": {
+      "Windows": true,
+      "Linux": true
+    },
+    "WindowsInstall": {
+      "InstallerUrl": "https://update.code.visualstudio.com/latest/win32-x64-user/stable",
+      "InstallerFileName": "VSCodeUserSetup-x64.exe",
+      "Command": "winget install --id Microsoft.VisualStudioCode -e --accept-source-agreements --accept-package-agreements",
+      "SilentCommand": "winget install --id Microsoft.VisualStudioCode -e --silent --accept-source-agreements --accept-package-agreements",
+      "SilentArguments": "/VERYSILENT /NORESTART /MERGETASKS=!runcode",
+      "RequiresRestart": false,
+      "NeedsManualInstall": false,
+      "DetectDisplayNameContains": "Microsoft Visual Studio Code",
+      "DetectExecutable": "code"
+    },
+    "LinuxInstall": {
+      "Command": "sudo apt-get install -y code",
+      "SilentCommand": "sudo apt-get install -y code",
+      "RequiresRestart": false,
+      "NeedsManualInstall": false,
+      "DetectExecutable": "code"
+    },
+    "SupportsSilentInstall": true
+  },
+  {
+    "Id": "git",
+    "Name": "Git",
+    "Category": "Coding",
+    "PublisherName": "Git Project",
+    "HomepageUrl": "https://git-scm.com/",
+    "Description": "Version control system.",
+    "IconPath": "Assets/icons/git.png",
+    "SupportedPlatforms": {
+      "Windows": true,
+      "Linux": true
+    },
+    "WindowsInstall": {
+      "InstallerUrl": "https://github.com/git-for-windows/git/releases/latest/download/Git-64-bit.exe",
+      "InstallerFileName": "Git-64-bit.exe",
+      "Command": "winget install --id Git.Git -e --accept-source-agreements --accept-package-agreements",
+      "SilentCommand": "winget install --id Git.Git -e --silent --accept-source-agreements --accept-package-agreements",
+      "SilentArguments": "/VERYSILENT /NORESTART /NOCANCEL /SP-",
+      "RequiresRestart": false,
+      "NeedsManualInstall": false,
+      "DetectDisplayNameContains": "Git",
+      "DetectExecutable": "git"
+    },
+    "LinuxInstall": {
+      "Command": "sudo apt-get install -y git",
+      "SilentCommand": "sudo apt-get install -y git",
+      "RequiresRestart": false,
+      "NeedsManualInstall": false,
+      "DetectExecutable": "git"
+    },
+    "SupportsSilentInstall": true
+  },
+  {
+    "Id": "nvidia-app",
+    "Name": "NVIDIA App",
+    "Category": "Drivers",
+    "PublisherName": "NVIDIA",
+    "HomepageUrl": "https://www.nvidia.com/software/nvidia-app/",
+    "Description": "Driver and gaming tools for NVIDIA GPUs.",
+    "IconPath": "Assets/icons/nvidia.png",
+    "SupportedPlatforms": {
+      "Windows": true,
+      "Linux": false
+    },
+    "WindowsInstall": {
+      "InstallerUrl": "https://us.download.nvidia.com/nvapp/client/11.0.6.383/NVIDIA_app_v11.0.6.383.exe",
+      "InstallerFileName": "NVIDIA_app.exe",
+      "Command": "winget install --id NVIDIA.NVIDIAApp -e --accept-source-agreements --accept-package-agreements",
+      "SilentCommand": "winget install --id NVIDIA.NVIDIAApp -e --silent --accept-source-agreements --accept-package-agreements",
+      "RequiresRestart": true,
+      "RequiresElevation": true,
+      "NeedsManualInstall": false,
+      "DetectDisplayNameContains": "NVIDIA App",
+      "DetectExecutable": "nvidia-smi"
+    },
+    "LinuxInstall": {
+      "Command": "",
+      "SilentCommand": "",
+      "RequiresRestart": false,
+      "NeedsManualInstall": true,
+      "DetectExecutable": "nvidia-smi"
+    },
+    "SupportsSilentInstall": false
+  },
+  {
+    "Id": "logitech-ghub",
+    "Name": "Logitech G HUB",
+    "Category": "Accessories",
+    "PublisherName": "Logitech",
+    "HomepageUrl": "https://www.logitechg.com/ghub",
+    "Description": "Accessory suite for Logitech devices.",
+    "IconPath": "Assets/icons/logitech.png",
+    "SupportedPlatforms": {
+      "Windows": true,
+      "Linux": false
+    },
+    "WindowsInstall": {
+      "InstallerUrl": "https://download01.logi.com/web/ftp/pub/techsupport/gaming/lghub_installer.exe",
+      "InstallerFileName": "lghub_installer.exe",
+      "Command": "winget install --id Logitech.GHUB -e --accept-source-agreements --accept-package-agreements",
+      "SilentCommand": "winget install --id Logitech.GHUB -e --silent --accept-source-agreements --accept-package-agreements",
+      "RequiresRestart": false,
+      "RequiresElevation": true,
+      "NeedsManualInstall": false,
+      "VerificationTimeoutSeconds": 240,
+      "DetectDisplayNameContains": "Logitech G HUB",
+      "DetectExecutable": "lghub"
+    },
+    "LinuxInstall": {
+      "Command": "",
+      "SilentCommand": "",
+      "RequiresRestart": false,
+      "NeedsManualInstall": true,
+      "DetectExecutable": ""
+    },
+    "SupportsSilentInstall": false
+  },
+  {
+    "Id": "htop",
+    "Name": "htop",
+    "Category": "Utilities",
+    "PublisherName": "htop dev team",
+    "HomepageUrl": "https://htop.dev/",
+    "Description": "Interactive process viewer for Linux.",
+    "IconPath": "Assets/icons/htop.png",
+    "SupportedPlatforms": {
+      "Windows": false,
+      "Linux": true
+    },
+    "WindowsInstall": {
+      "Command": "",
+      "SilentCommand": "",
+      "RequiresRestart": false,
+      "NeedsManualInstall": true,
+      "DetectExecutable": ""
+    },
+    "LinuxInstall": {
+      "Command": "sudo apt-get install -y htop",
+      "SilentCommand": "sudo apt-get install -y htop",
+      "RequiresRestart": false,
+      "NeedsManualInstall": false,
+      "DetectExecutable": "htop"
+    },
+    "SupportsSilentInstall": true
+  }
+]

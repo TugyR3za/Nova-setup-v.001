@@ -98,3 +98,216 @@
 2026-03-19 13:14:15 [INFO] Account menu opened.
 2026-03-19 13:14:16 [INFO] Settings opened from account menu.
 2026-03-19 13:14:20 [INFO] Settings panel closed.
+2026-03-19 14:12:36 [INFO] Logging initialized.
+2026-03-19 14:12:37 [INFO] Loaded settings from C:\Users\naime\OneDrive\Desktop\Nova setup v.001\NovaSetup\bin\Debug\net8.0\Configs\settings.json
+2026-03-19 14:12:38 [INFO] Loaded catalog from remote server (9 apps).
+2026-03-19 14:12:38 [INFO] Loaded selection profile 'Website Starter'.
+2026-03-19 14:12:38 [INFO] Loaded 9 apps for Windows. Recommended: 0. 1 selected app(s) are unsupported and will be skipped. Scanning system in background...
+2026-03-19 14:12:39 [INFO] Detected installed app 'Mozilla Firefox' via Windows registry.
+2026-03-19 14:12:39 [INFO] Detected installed app 'Google Chrome' via Windows registry.
+2026-03-19 14:12:39 [INFO] Detected installed app 'Discord' via Windows registry.
+2026-03-19 14:12:39 [INFO] Detected installed app 'Steam' via Windows registry.
+2026-03-19 14:12:39 [INFO] Detected installed app 'Visual Studio Code' via Windows registry.
+2026-03-19 14:12:39 [INFO] Detected installed app 'Git' via Windows registry.
+2026-03-19 14:12:39 [INFO] Detected installed app 'NVIDIA App' via Windows registry.
+2026-03-19 14:12:39 [INFO] Windows install index prepared. RegistryEntries=440, AppPathMatches=3
+2026-03-19 14:12:39 [INFO] Installed app detection completed. Platform=Windows, DetectedInstalledApps=7
+2026-03-19 14:12:40 [INFO] Detected GPU vendor: NVIDIA
+2026-03-19 14:12:40 [INFO] Detected motherboard vendor: ASUS
+2026-03-19 14:12:43 [INFO] Recommended app 'NVIDIA App' for NVIDIA GPU. Supported=True, AutoSelected=False
+2026-03-19 14:12:43 [INFO] No catalog app found for recommendation rule: ASUS motherboard
+2026-03-19 14:12:43 [INFO] Recommendation summary: Total=1, Supported=1, Unsupported=0
+2026-03-19 14:12:43 [INFO] Recommendations applied in background. Total=1, Supported=1, Unsupported=0, AutoSelectedLater=1
+2026-03-19 14:12:43 [INFO] Saved selection profile to C:\Users\naime\OneDrive\Desktop\Nova setup v.001\NovaSetup\bin\Debug\net8.0\Configs\selection.json
+2026-03-19 14:12:43 [INFO] Auto-saved list 'Website Starter' with 3 app(s).
+2026-03-19 14:12:43 [INFO] Loaded 9 apps for Windows. Recommended: 1. 1 selected app(s) are unsupported and will be skipped.
+2026-03-19 14:13:15 [INFO] Saved selection profile to C:\Users\naime\OneDrive\Desktop\Nova setup v.001\NovaSetup\bin\Debug\net8.0\Configs\selection.json
+2026-03-19 14:13:15 [INFO] Auto-saved list 'Website Starter' with 2 app(s).
+2026-03-19 14:13:16 [INFO] Saved selection profile to C:\Users\naime\OneDrive\Desktop\Nova setup v.001\NovaSetup\bin\Debug\net8.0\Configs\selection.json
+2026-03-19 14:13:16 [INFO] Auto-saved list 'Website Starter' with 1 app(s).
+2026-03-19 14:16:38 [INFO] Logging initialized.
+2026-03-19 14:16:39 [INFO] Loaded settings from C:\Users\naime\OneDrive\Desktop\Nova setup v.001\NovaSetup\bin\Debug\net8.0\Configs\settings.json
+2026-03-19 14:16:40 [INFO] Loaded catalog from remote server (9 apps).
+2026-03-19 14:16:40 [INFO] Loaded selection profile 'Website Starter'.
+2026-03-19 14:16:40 [INFO] Loaded 9 apps for Windows. Recommended: 0. 1 selected app(s) are unsupported and will be skipped. Scanning system in background...
+2026-03-19 14:16:40 [INFO] Detected installed app 'Mozilla Firefox' via Windows registry.
+2026-03-19 14:16:40 [INFO] Detected installed app 'Google Chrome' via Windows registry.
+2026-03-19 14:16:40 [INFO] Detected installed app 'Discord' via Windows registry.
+2026-03-19 14:16:40 [INFO] Detected installed app 'Steam' via Windows registry.
+2026-03-19 14:16:40 [INFO] Detected installed app 'Visual Studio Code' via Windows registry.
+2026-03-19 14:16:40 [INFO] Detected installed app 'Git' via Windows registry.
+2026-03-19 14:16:40 [INFO] Detected installed app 'NVIDIA App' via Windows registry.
+2026-03-19 14:16:40 [INFO] Windows install index prepared. RegistryEntries=440, AppPathMatches=3
+2026-03-19 14:16:40 [INFO] Installed app detection completed. Platform=Windows, DetectedInstalledApps=7
+2026-03-19 14:16:40 [INFO] Detected GPU vendor: NVIDIA
+2026-03-19 14:16:40 [INFO] Detected motherboard vendor: ASUS
+2026-03-19 14:16:43 [INFO] Recommended app 'NVIDIA App' for NVIDIA GPU. Supported=True, AutoSelected=False
+2026-03-19 14:16:43 [INFO] No catalog app found for recommendation rule: ASUS motherboard
+2026-03-19 14:16:43 [INFO] Recommendation summary: Total=1, Supported=1, Unsupported=0
+2026-03-19 14:16:43 [INFO] Recommendations applied in background. Total=1, Supported=1, Unsupported=0, AutoSelectedLater=1
+2026-03-19 14:16:43 [INFO] Saved selection profile to C:\Users\naime\OneDrive\Desktop\Nova setup v.001\NovaSetup\bin\Debug\net8.0\Configs\selection.json
+2026-03-19 14:16:43 [INFO] Auto-saved list 'Website Starter' with 2 app(s).
+2026-03-19 14:16:43 [INFO] Loaded 9 apps for Windows. Recommended: 1. 1 selected app(s) are unsupported and will be skipped.
+2026-03-19 14:16:57 [INFO] Navigation changed to 'Logs'.
+2026-03-19 14:16:57 [INFO] Navigation changed to 'History'.
+2026-03-19 14:16:59 [INFO] Navigation changed to 'My Lists'.
+2026-03-19 14:17:00 [INFO] Navigation changed to 'Apps'.
+2026-03-19 14:17:00 [INFO] Navigation changed to 'Dashboard'.
+2026-03-19 14:17:03 [INFO] Navigation changed to 'Apps'.
+2026-03-19 14:17:04 [INFO] Navigation changed to 'History'.
+2026-03-19 14:17:05 [INFO] Navigation changed to 'Logs'.
+2026-03-19 14:17:07 [INFO] Navigation changed to 'History'.
+2026-03-19 14:17:12 [INFO] Navigation changed to 'My Lists'.
+2026-03-19 14:17:12 [INFO] Navigation changed to 'Apps'.
+2026-03-19 14:18:07 [INFO] Logging initialized.
+2026-03-19 14:18:08 [INFO] Loaded settings from C:\Users\naime\OneDrive\Desktop\Nova setup v.001\NovaSetup\bin\Debug\net8.0\Configs\settings.json
+2026-03-19 14:18:08 [INFO] Loaded catalog from remote server (9 apps).
+2026-03-19 14:18:08 [INFO] Loaded selection profile 'Website Starter'.
+2026-03-19 14:18:08 [INFO] Loaded 9 apps for Windows. Recommended: 0. 1 selected app(s) are unsupported and will be skipped. Scanning system in background...
+2026-03-19 14:18:08 [INFO] Detected installed app 'Mozilla Firefox' via Windows registry.
+2026-03-19 14:18:08 [INFO] Detected installed app 'Google Chrome' via Windows registry.
+2026-03-19 14:18:08 [INFO] Detected installed app 'Discord' via Windows registry.
+2026-03-19 14:18:08 [INFO] Detected installed app 'Steam' via Windows registry.
+2026-03-19 14:18:08 [INFO] Detected installed app 'Visual Studio Code' via Windows registry.
+2026-03-19 14:18:08 [INFO] Detected installed app 'Git' via Windows registry.
+2026-03-19 14:18:08 [INFO] Detected installed app 'NVIDIA App' via Windows registry.
+2026-03-19 14:18:09 [INFO] Windows install index prepared. RegistryEntries=440, AppPathMatches=3
+2026-03-19 14:18:09 [INFO] Installed app detection completed. Platform=Windows, DetectedInstalledApps=7
+2026-03-19 14:18:09 [INFO] Detected GPU vendor: NVIDIA
+2026-03-19 14:18:09 [INFO] Detected motherboard vendor: ASUS
+2026-03-19 14:18:12 [INFO] Recommended app 'NVIDIA App' for NVIDIA GPU. Supported=True, AutoSelected=False
+2026-03-19 14:18:12 [INFO] No catalog app found for recommendation rule: ASUS motherboard
+2026-03-19 14:18:12 [INFO] Recommendation summary: Total=1, Supported=1, Unsupported=0
+2026-03-19 14:18:12 [INFO] Recommendations applied in background. Total=1, Supported=1, Unsupported=0, AutoSelectedLater=0
+2026-03-19 14:18:12 [INFO] Saved selection profile to C:\Users\naime\OneDrive\Desktop\Nova setup v.001\NovaSetup\bin\Debug\net8.0\Configs\selection.json
+2026-03-19 14:18:12 [INFO] Auto-saved list 'Website Starter' with 2 app(s).
+2026-03-19 14:18:12 [INFO] Loaded 9 apps for Windows. Recommended: 1. 1 selected app(s) are unsupported and will be skipped.
+2026-03-19 14:18:27 [INFO] Opened details panel for 'Mozilla Firefox'.
+2026-03-19 14:18:34 [INFO] Closed app details panel.
+2026-03-19 14:18:37 [INFO] Saved selection profile to C:\Users\naime\OneDrive\Desktop\Nova setup v.001\NovaSetup\bin\Debug\net8.0\Configs\selection.json
+2026-03-19 14:18:37 [INFO] Auto-saved list 'Website Starter' with 3 app(s).
+2026-03-19 14:18:37 [INFO] Saved selection profile to C:\Users\naime\OneDrive\Desktop\Nova setup v.001\NovaSetup\bin\Debug\net8.0\Configs\selection.json
+2026-03-19 14:18:37 [INFO] Auto-saved list 'Website Starter' with 2 app(s).
+2026-03-19 14:18:39 [INFO] Help and documentation are not available yet.
+2026-03-19 14:18:40 [INFO] Help and documentation are not available yet.
+2026-03-19 14:18:40 [INFO] Help and documentation are not available yet.
+2026-03-19 14:18:40 [INFO] Help and documentation are not available yet.
+2026-03-19 14:18:41 [INFO] Account menu opened.
+2026-03-19 14:18:42 [INFO] Settings opened from account menu.
+2026-03-19 14:45:28 [INFO] Logging initialized.
+2026-03-19 14:45:29 [INFO] Loaded settings from C:\Users\naime\OneDrive\Desktop\Nova setup v.001\NovaSetup\bin\Debug\net8.0\Configs\settings.json
+2026-03-19 14:45:30 [INFO] Loaded catalog from remote server (9 apps).
+2026-03-19 14:45:30 [INFO] Loaded selection profile 'Website Starter'.
+2026-03-19 14:45:30 [INFO] Loaded 9 apps for Windows. Recommended: 0. 1 selected app(s) are unsupported and will be skipped. Scanning system in background...
+2026-03-19 14:45:30 [INFO] Detected installed app 'Mozilla Firefox' via Windows registry. Version=148.0.2
+2026-03-19 14:45:30 [INFO] Detected installed app 'Google Chrome' via Windows registry. Version=146.0.7680.153
+2026-03-19 14:45:30 [INFO] Detected installed app 'Discord' via Windows registry. Version=1.0.9229
+2026-03-19 14:45:30 [INFO] Detected installed app 'Steam' via Windows registry. Version=1.0.0.0
+2026-03-19 14:45:30 [INFO] Detected installed app 'Visual Studio Code' via Windows registry. Version=1.112.0
+2026-03-19 14:45:30 [INFO] Detected installed app 'Git' via Windows registry. Version=2.53.0.2
+2026-03-19 14:45:30 [INFO] Detected installed app 'NVIDIA App' via Windows registry. Version=11.0.6.383
+2026-03-19 14:45:30 [INFO] Windows install index prepared. RegistryEntries=440, AppPathMatches=3
+2026-03-19 14:45:30 [INFO] Installed app detection completed. Platform=Windows, DetectedInstalledApps=7
+2026-03-19 14:45:31 [INFO] Detected GPU vendor: NVIDIA
+2026-03-19 14:45:31 [INFO] Detected motherboard vendor: ASUS
+2026-03-19 14:45:33 [INFO] Opened details panel for 'Mozilla Firefox'.
+2026-03-19 14:45:34 [INFO] Recommended app 'NVIDIA App' for NVIDIA GPU. Supported=True, AutoSelected=False
+2026-03-19 14:45:34 [INFO] No catalog app found for recommendation rule: ASUS motherboard
+2026-03-19 14:45:34 [INFO] Recommendation summary: Total=1, Supported=1, Unsupported=0
+2026-03-19 14:45:34 [INFO] Recommendations applied in background. Total=1, Supported=1, Unsupported=0, AutoSelectedLater=0
+2026-03-19 14:45:34 [INFO] Saved selection profile to C:\Users\naime\OneDrive\Desktop\Nova setup v.001\NovaSetup\bin\Debug\net8.0\Configs\selection.json
+2026-03-19 14:45:34 [INFO] Auto-saved list 'Website Starter' with 2 app(s).
+2026-03-19 14:45:34 [INFO] Loaded 9 apps for Windows. Recommended: 1. 1 selected app(s) are unsupported and will be skipped.
+2026-03-19 14:45:36 [INFO] Closed app details panel.
+2026-03-19 14:45:38 [INFO] Category filter set to 'Updates'.
+2026-03-19 14:45:41 [INFO] Category filter set to 'All'.
+2026-03-19 14:45:47 [INFO] Saved selection profile to C:\Users\naime\OneDrive\Desktop\Nova setup v.001\NovaSetup\bin\Debug\net8.0\Configs\selection.json
+2026-03-19 14:45:47 [INFO] Auto-saved list 'Website Starter' with 3 app(s).
+2026-03-19 14:45:49 [INFO] Navigation changed to 'Dashboard'.
+2026-03-19 14:45:53 [INFO] Navigation changed to 'Apps'.
+2026-03-19 14:45:53 [INFO] Navigation changed to 'My Lists'.
+2026-03-19 14:45:57 [INFO] Navigation changed to 'History'.
+2026-03-19 14:45:58 [INFO] Navigation changed to 'Logs'.
+2026-03-19 14:46:00 [INFO] Account menu opened.
+2026-03-19 14:46:01 [INFO] Settings opened from account menu.
+2026-03-19 14:46:04 [INFO] Settings panel closed.
+2026-03-19 14:46:06 [INFO] Navigation changed to 'Dashboard'.
+2026-03-19 15:02:02 [INFO] Logging initialized.
+2026-03-19 15:02:04 [INFO] Loaded settings from C:\Users\naime\OneDrive\Desktop\Nova setup v.001\NovaSetup\bin\Debug\net8.0\Configs\settings.json
+2026-03-19 15:02:04 [INFO] Loaded catalog from remote server (9 apps).
+2026-03-19 15:02:04 [INFO] Loaded selection profile 'Website Starter'.
+2026-03-19 15:02:05 [INFO] Loaded 9 apps for Windows. Recommended: 0. 1 selected app(s) are unsupported and will be skipped. Scanning system in background...
+2026-03-19 15:02:05 [INFO] Detected installed app 'Mozilla Firefox' via Windows registry. Version=148.0.2
+2026-03-19 15:02:05 [INFO] Detected installed app 'Google Chrome' via Windows registry. Version=146.0.7680.153
+2026-03-19 15:02:05 [INFO] Detected installed app 'Discord' via Windows registry. Version=1.0.9229
+2026-03-19 15:02:05 [INFO] Detected installed app 'Steam' via Windows registry. Version=1.0.0.0
+2026-03-19 15:02:05 [INFO] Detected installed app 'Visual Studio Code' via Windows registry. Version=1.112.0
+2026-03-19 15:02:05 [INFO] Detected installed app 'Git' via Windows registry. Version=2.53.0.2
+2026-03-19 15:02:05 [INFO] Detected installed app 'NVIDIA App' via Windows registry. Version=11.0.6.383
+2026-03-19 15:02:05 [INFO] Windows install index prepared. RegistryEntries=440, AppPathMatches=3
+2026-03-19 15:02:05 [INFO] Installed app detection completed. Platform=Windows, DetectedInstalledApps=7
+2026-03-19 15:02:05 [INFO] Detected GPU vendor: NVIDIA
+2026-03-19 15:02:05 [INFO] Detected motherboard vendor: ASUS
+2026-03-19 15:02:08 [INFO] Recommended app 'NVIDIA App' for NVIDIA GPU. Supported=True, AutoSelected=False
+2026-03-19 15:02:08 [INFO] No catalog app found for recommendation rule: ASUS motherboard
+2026-03-19 15:02:08 [INFO] Recommendation summary: Total=1, Supported=1, Unsupported=0
+2026-03-19 15:02:08 [INFO] Recommendations applied in background. Total=1, Supported=1, Unsupported=0, AutoSelectedLater=0
+2026-03-19 15:02:08 [INFO] Saved selection profile to C:\Users\naime\OneDrive\Desktop\Nova setup v.001\NovaSetup\bin\Debug\net8.0\Configs\selection.json
+2026-03-19 15:02:08 [INFO] Auto-saved list 'Website Starter' with 3 app(s).
+2026-03-19 15:02:08 [INFO] Loaded 9 apps for Windows. Recommended: 1. 1 selected app(s) are unsupported and will be skipped.
+2026-03-19 15:02:26 [INFO] Opened details panel for 'Mozilla Firefox'.
+2026-03-19 15:02:29 [INFO] Closed app details panel.
+2026-03-19 15:02:34 [INFO] Category filter set to 'Updates'.
+2026-03-19 15:02:35 [INFO] Category filter set to 'Games'.
+2026-03-19 15:02:36 [INFO] Category filter set to 'Drivers'.
+2026-03-19 15:02:36 [INFO] Category filter set to 'All'.
+2026-03-19 15:02:37 [INFO] Category filter set to 'Games'.
+2026-03-19 15:02:38 [INFO] Category filter set to 'Drivers'.
+2026-03-19 15:02:38 [INFO] Category filter set to 'Games'.
+2026-03-19 15:02:39 [INFO] Category filter set to 'All'.
+2026-03-19 15:03:04 [INFO] Help and documentation are not available yet.
+2026-03-19 15:03:04 [INFO] Help and documentation are not available yet.
+2026-03-19 15:03:05 [INFO] Manual refresh started.
+2026-03-19 15:03:05 [INFO] Loaded catalog from remote server (9 apps).
+2026-03-19 15:03:05 [INFO] Detected installed app 'Mozilla Firefox' via Windows registry. Version=148.0.2
+2026-03-19 15:03:05 [INFO] Detected installed app 'Google Chrome' via Windows registry. Version=146.0.7680.153
+2026-03-19 15:03:05 [INFO] Detected installed app 'Discord' via Windows registry. Version=1.0.9229
+2026-03-19 15:03:05 [INFO] Detected installed app 'Steam' via Windows registry. Version=1.0.0.0
+2026-03-19 15:03:05 [INFO] Detected installed app 'Visual Studio Code' via Windows registry. Version=1.112.0
+2026-03-19 15:03:05 [INFO] Detected installed app 'Git' via Windows registry. Version=2.53.0.2
+2026-03-19 15:03:05 [INFO] Detected installed app 'NVIDIA App' via Windows registry. Version=11.0.6.383
+2026-03-19 15:03:05 [INFO] Windows install index prepared. RegistryEntries=440, AppPathMatches=3
+2026-03-19 15:03:05 [INFO] Installed app detection completed. Platform=Windows, DetectedInstalledApps=7
+2026-03-19 15:03:05 [INFO] Detected GPU vendor: NVIDIA
+2026-03-19 15:03:05 [INFO] Detected motherboard vendor: ASUS
+2026-03-19 15:03:08 [INFO] Recommended app 'NVIDIA App' for NVIDIA GPU. Supported=True, AutoSelected=False
+2026-03-19 15:03:08 [INFO] No catalog app found for recommendation rule: ASUS motherboard
+2026-03-19 15:03:08 [INFO] Recommendation summary: Total=1, Supported=1, Unsupported=0
+2026-03-19 15:03:08 [INFO] Manual refresh completed.
+2026-03-19 15:03:08 [INFO] Loaded 9 apps for Windows. Recommended: 1. 1 selected app(s) are unsupported and will be skipped. Refreshed current catalog and app state.
+2026-03-19 15:07:42 [INFO] Logging initialized.
+2026-03-19 15:07:43 [INFO] Loaded settings from C:\Users\naime\OneDrive\Desktop\Nova setup v.001\NovaSetup\bin\Debug\net8.0\Configs\settings.json
+2026-03-19 15:07:43 [INFO] Loaded catalog from remote server (9 apps).
+2026-03-19 15:07:43 [INFO] Loaded selection profile 'Website Starter'.
+2026-03-19 15:07:43 [INFO] Loaded 9 apps for Windows. Recommended: 0. 1 selected app(s) are unsupported and will be skipped. Scanning system in background...
+2026-03-19 15:07:43 [INFO] Detected installed app 'Mozilla Firefox' via Windows registry. Version=148.0.2
+2026-03-19 15:07:43 [INFO] Detected installed app 'Google Chrome' via Windows registry. Version=146.0.7680.153
+2026-03-19 15:07:43 [INFO] Detected installed app 'Discord' via Windows registry. Version=1.0.9229
+2026-03-19 15:07:43 [INFO] Detected installed app 'Steam' via Windows registry. Version=1.0.0.0
+2026-03-19 15:07:43 [INFO] Detected installed app 'Visual Studio Code' via Windows registry. Version=1.112.0
+2026-03-19 15:07:43 [INFO] Detected installed app 'Git' via Windows registry. Version=2.53.0.2
+2026-03-19 15:07:43 [INFO] Detected installed app 'NVIDIA App' via Windows registry. Version=11.0.6.383
+2026-03-19 15:07:44 [INFO] Windows install index prepared. RegistryEntries=440, AppPathMatches=3
+2026-03-19 15:07:44 [INFO] Installed app detection completed. Platform=Windows, DetectedInstalledApps=7
+2026-03-19 15:07:44 [INFO] Detected GPU vendor: NVIDIA
+2026-03-19 15:07:44 [INFO] Detected motherboard vendor: ASUS
+2026-03-19 15:07:47 [INFO] Recommended app 'NVIDIA App' for NVIDIA GPU. Supported=True, AutoSelected=False
+2026-03-19 15:07:47 [INFO] No catalog app found for recommendation rule: ASUS motherboard
+2026-03-19 15:07:47 [INFO] Recommendation summary: Total=1, Supported=1, Unsupported=0
+2026-03-19 15:07:47 [INFO] Recommendations applied in background. Total=1, Supported=1, Unsupported=0, AutoSelectedLater=0
+2026-03-19 15:07:47 [INFO] Saved selection profile to C:\Users\naime\OneDrive\Desktop\Nova setup v.001\NovaSetup\bin\Debug\net8.0\Configs\selection.json
+2026-03-19 15:07:47 [INFO] Auto-saved list 'Website Starter' with 3 app(s).
+2026-03-19 15:07:47 [INFO] Loaded 9 apps for Windows. Recommended: 1. 1 selected app(s) are unsupported and will be skipped.
+2026-03-19 15:07:56 [INFO] Account menu opened.
+2026-03-19 15:07:58 [INFO] Settings opened from account menu.
+2026-03-19 15:08:02 [INFO] Settings panel closed.

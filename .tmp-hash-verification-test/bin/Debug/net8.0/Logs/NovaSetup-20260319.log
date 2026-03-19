@@ -1,0 +1,3 @@
+2026-03-19 14:11:12 [INFO] Logging initialized.
+2026-03-19 14:11:12 [INFO] [HashVerification] SHA256 verified OK for C:\Users\naime\AppData\Local\Temp\nova-hash-test-17a84cfb5a504019ab088d78a98ef00f.txt.
+2026-03-19 14:11:12 [WARN] [HashVerification] SHA256 MISMATCH for C:\Users\naime\AppData\Local\Temp\nova-hash-test-17a84cfb5a504019ab088d78a98ef00f.txt. Expected: 0000000000000000000000000000000000000000000000000000000000000000 Got: 9bf013f4fe39fdadb5b039d709468b8b05d2caa78fa0b0c7a4ce253aba18214e

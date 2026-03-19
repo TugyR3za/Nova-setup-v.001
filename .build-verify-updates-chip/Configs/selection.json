@@ -1,0 +1,17 @@
+{
+  "ProfileName": "Website Starter",
+  "TargetPlatform": "Windows",
+  "SelectedApps": [
+    "firefox",
+    "steam",
+    "nvidia-app",
+    "htop"
+  ],
+  "Settings": {
+    "SilentInstall": true,
+    "SelfDelete": false,
+    "DefaultInstallLocation": "",
+    "OsSupportedApps": true,
+    "ShowOtherPlatforms": false
+  }
+}

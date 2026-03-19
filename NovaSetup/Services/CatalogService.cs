@@ -109,6 +109,10 @@ public sealed class CatalogService
         app.HomepageUrl ??= string.Empty;
         app.Description ??= string.Empty;
         app.IconPath ??= string.Empty;
+        app.Version ??= string.Empty;
+        app.License ??= string.Empty;
+        app.ReleaseNotesUrl ??= string.Empty;
+        app.Tags ??= new List<string>();
         app.RecommendationTags ??= new List<string>();
         app.SupportedPlatforms ??= new PlatformSupport();
     }

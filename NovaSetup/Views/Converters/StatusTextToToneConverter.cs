@@ -26,6 +26,7 @@ public sealed class StatusTextToToneConverter : IValueConverter
         return statusText.Trim().ToLowerInvariant() switch
         {
             "installed" => StatusTone.Success,
+            "update available" => StatusTone.Info,
             "available" => StatusTone.Info,
             "selected" => StatusTone.Info,
             "recommended" => StatusTone.Info,

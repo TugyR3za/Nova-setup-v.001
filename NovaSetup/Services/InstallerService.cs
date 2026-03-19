@@ -2,6 +2,7 @@ using System.Diagnostics;
 using System.ComponentModel;
 using System.Net.Http;
 using System.Security.Principal;
+using System.Runtime.InteropServices;
 using NovaSetup.Models;
 
 namespace NovaSetup.Services;
@@ -163,7 +164,7 @@ public sealed class InstallerService
             var wasInstalledBefore = IsCurrentlyInstalled(action.App, currentPlatform);
 
             string? installerPath = null;
-            if (!string.IsNullOrWhiteSpace(action.InstallDefinition.InstallerUrl))
+            if (HasInstallerDownloadUrl(action.InstallDefinition))
             {
                 var download = await DownloadInstallerAsync(action, tempRoot, cancellationToken);
                 if (!download.Success)
@@ -185,7 +186,7 @@ public sealed class InstallerService
                 {
                     downloadedFiles.Add(installerPath);
 
-                    if (!_hashVerificationService.VerifyFile(installerPath, action.InstallDefinition.Sha256))
+                    if (!_hashVerificationService.VerifyFile(installerPath, ResolveInstallerSha256(action.InstallDefinition)))
                     {
                         _loggingService?.LogError(
                             $"[Installer] Aborting install for {action.App.Name} — SHA256 verification failed. The file may be corrupted or tampered with.");
@@ -313,7 +314,7 @@ public sealed class InstallerService
         string tempRoot,
         CancellationToken cancellationToken)
     {
-        var installerUrl = action.InstallDefinition.InstallerUrl;
+        var installerUrl = ResolveInstallerUrl(action.InstallDefinition);
         if (string.IsNullOrWhiteSpace(installerUrl))
         {
             return DownloadOutcome.Fail("Installer URL is missing.");
@@ -367,6 +368,38 @@ public sealed class InstallerService
             _loggingService?.LogError($"Download failed for {action.App.Name}: {ex.Message}");
             return DownloadOutcome.Fail($"Download failed: {ex.Message}");
         }
+    }
+
+    private static string ResolveInstallerUrl(InstallDefinition definition)
+    {
+        if (definition is null)
+        {
+            return string.Empty;
+        }
+
+        return RuntimeInformation.OSArchitecture switch
+        {
+            Architecture.X86 when !string.IsNullOrWhiteSpace(definition.InstallerUrl32) => definition.InstallerUrl32,
+            Architecture.X64 when !string.IsNullOrWhiteSpace(definition.InstallerUrl64) => definition.InstallerUrl64,
+            Architecture.Arm64 when !string.IsNullOrWhiteSpace(definition.InstallerUrl64) => definition.InstallerUrl64,
+            _ => definition.InstallerUrl
+        };
+    }
+
+    private static string ResolveInstallerSha256(InstallDefinition definition)
+    {
+        if (definition is null)
+        {
+            return string.Empty;
+        }
+
+        return RuntimeInformation.OSArchitecture switch
+        {
+            Architecture.X86 when !string.IsNullOrWhiteSpace(definition.Sha25632) => definition.Sha25632,
+            Architecture.X64 when !string.IsNullOrWhiteSpace(definition.Sha25664) => definition.Sha25664,
+            Architecture.Arm64 when !string.IsNullOrWhiteSpace(definition.Sha25664) => definition.Sha25664,
+            _ => definition.Sha256
+        };
     }
 
     private async Task<ExecutionOutcome> ExecuteInstallCommandAsync(
@@ -788,6 +821,13 @@ public sealed class InstallerService
     {
         return !string.IsNullOrWhiteSpace(definition.Command) ||
                !string.IsNullOrWhiteSpace(definition.SilentCommand);
+    }
+
+    private static bool HasInstallerDownloadUrl(InstallDefinition definition)
+    {
+        return !string.IsNullOrWhiteSpace(definition.InstallerUrl) ||
+               !string.IsNullOrWhiteSpace(definition.InstallerUrl32) ||
+               !string.IsNullOrWhiteSpace(definition.InstallerUrl64);
     }
 
     private static string NormalizeWindowsCommand(string command, bool useSilent)

@@ -24,6 +24,12 @@ public partial class HeaderControl : UserControl
     public static readonly StyledProperty<bool> HasRecommendedAppsProperty =
         AvaloniaProperty.Register<HeaderControl, bool>(nameof(HasRecommendedApps));
 
+    public static readonly StyledProperty<int> UpdateAvailableCountProperty =
+        AvaloniaProperty.Register<HeaderControl, int>(nameof(UpdateAvailableCount));
+
+    public static readonly StyledProperty<bool> HasUpdatesAvailableProperty =
+        AvaloniaProperty.Register<HeaderControl, bool>(nameof(HasUpdatesAvailable));
+
     public static readonly StyledProperty<string?> CurrentPlatformProperty =
         AvaloniaProperty.Register<HeaderControl, string?>(nameof(CurrentPlatform));
 
@@ -32,6 +38,12 @@ public partial class HeaderControl : UserControl
 
     public static readonly StyledProperty<ICommand?> RefreshCatalogCommandProperty =
         AvaloniaProperty.Register<HeaderControl, ICommand?>(nameof(RefreshCatalogCommand));
+
+    public static readonly StyledProperty<ICommand?> ShowUpdatesFilterCommandProperty =
+        AvaloniaProperty.Register<HeaderControl, ICommand?>(nameof(ShowUpdatesFilterCommand));
+
+    public static readonly StyledProperty<ICommand?> ShowRecommendedFilterCommandProperty =
+        AvaloniaProperty.Register<HeaderControl, ICommand?>(nameof(ShowRecommendedFilterCommand));
 
     public HeaderControl()
     {
@@ -74,6 +86,18 @@ public partial class HeaderControl : UserControl
         set => SetValue(HasRecommendedAppsProperty, value);
     }
 
+    public int UpdateAvailableCount
+    {
+        get => GetValue(UpdateAvailableCountProperty);
+        set => SetValue(UpdateAvailableCountProperty, value);
+    }
+
+    public bool HasUpdatesAvailable
+    {
+        get => GetValue(HasUpdatesAvailableProperty);
+        set => SetValue(HasUpdatesAvailableProperty, value);
+    }
+
     public string? CurrentPlatform
     {
         get => GetValue(CurrentPlatformProperty);
@@ -90,5 +114,17 @@ public partial class HeaderControl : UserControl
     {
         get => GetValue(RefreshCatalogCommandProperty);
         set => SetValue(RefreshCatalogCommandProperty, value);
+    }
+
+    public ICommand? ShowUpdatesFilterCommand
+    {
+        get => GetValue(ShowUpdatesFilterCommandProperty);
+        set => SetValue(ShowUpdatesFilterCommandProperty, value);
+    }
+
+    public ICommand? ShowRecommendedFilterCommand
+    {
+        get => GetValue(ShowRecommendedFilterCommandProperty);
+        set => SetValue(ShowRecommendedFilterCommandProperty, value);
     }
 }

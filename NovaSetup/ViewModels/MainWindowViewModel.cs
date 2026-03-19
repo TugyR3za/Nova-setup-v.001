@@ -20,6 +20,8 @@ public sealed class MainWindowViewModel : ObservableObject
     private const string SectionMyLists = "My Lists";
     private const string SectionHistory = "History";
     private const string SectionLogs = "Logs";
+    private const string SectionAbout = "About";
+    private const string NovaGitHubUrl = "https://github.com/TugyR3za/Nova-setup-v.001";
 
     private readonly PlatformService _platformService;
     private readonly CatalogService _catalogService;
@@ -44,7 +46,10 @@ public sealed class MainWindowViewModel : ObservableObject
     private readonly RelayCommand _openLogFileCommand;
     private readonly RelayCommand _showHelpCommand;
     private readonly AsyncRelayCommand _refreshCatalogCommand;
+    private readonly RelayCommand _showUpdatesFilterCommand;
+    private readonly RelayCommand _showRecommendedFilterCommand;
     private readonly RelayCommand _openPublisherCommand;
+    private readonly RelayCommand _openAboutGitHubCommand;
     private readonly RelayCommand _showAppDetailsCommand;
     private readonly RelayCommand _closeAppDetailsCommand;
     private readonly RelayCommand _pauseInstallCommand;
@@ -59,6 +64,7 @@ public sealed class MainWindowViewModel : ObservableObject
     private readonly RelayCommand _navigateMyListsCommand;
     private readonly RelayCommand _navigateHistoryCommand;
     private readonly RelayCommand _navigateLogsCommand;
+    private readonly RelayCommand _navigateAboutCommand;
     private readonly RelayCommand _requestRestartNowCommand;
     private readonly AsyncRelayCommand _confirmRestartNowCommand;
     private readonly RelayCommand _cancelRestartCommand;
@@ -91,8 +97,10 @@ public sealed class MainWindowViewModel : ObservableObject
     private bool _isAllFilter = true;
     private bool _isGamesFilter;
     private bool _isDriversFilter;
+    private bool _isRecommendedFilter;
     private bool _isDevToolsFilter;
     private bool _isUtilitiesFilter;
+    private bool _isUpdatesFilter;
     private double _progressValue;
     private CancellationTokenSource? _settingsSaveCts;
     private CancellationTokenSource? _startupDetectionCts;
@@ -152,7 +160,10 @@ public sealed class MainWindowViewModel : ObservableObject
         _openLogFileCommand = new RelayCommand(_ => OpenLogFile());
         _showHelpCommand = new RelayCommand(_ => ShowHelpPlaceholder());
         _refreshCatalogCommand = new AsyncRelayCommand(RefreshCatalogAsync, () => !IsInstalling && _isInitialized);
+        _showUpdatesFilterCommand = new RelayCommand(_ => ShowUpdatesFilter(), _ => !IsInstalling && HasUpdatesAvailable);
+        _showRecommendedFilterCommand = new RelayCommand(_ => ShowRecommendedFilter(), _ => !IsInstalling && HasRecommendedApps);
         _openPublisherCommand = new RelayCommand(OpenPublisherHomepage);
+        _openAboutGitHubCommand = new RelayCommand(_ => OpenAboutGitHub(), _ => !IsInstalling);
         _showAppDetailsCommand = new RelayCommand(ShowAppDetails);
         _closeAppDetailsCommand = new RelayCommand(_ => CloseAppDetails());
         _pauseInstallCommand = new RelayCommand(_ => PauseInstallPlaceholder(), _ => IsInstalling);
@@ -167,6 +178,7 @@ public sealed class MainWindowViewModel : ObservableObject
         _navigateMyListsCommand = new RelayCommand(_ => NavigateTo(SectionMyLists), _ => !IsInstalling);
         _navigateHistoryCommand = new RelayCommand(_ => NavigateTo(SectionHistory), _ => !IsInstalling);
         _navigateLogsCommand = new RelayCommand(_ => NavigateTo(SectionLogs), _ => !IsInstalling);
+        _navigateAboutCommand = new RelayCommand(_ => NavigateTo(SectionAbout), _ => !IsInstalling);
         _requestRestartNowCommand = new RelayCommand(_ => RequestRestartNow(), _ => CanShowRestartActions());
         _confirmRestartNowCommand = new AsyncRelayCommand(ConfirmRestartNowAsync, CanConfirmRestartNow);
         _cancelRestartCommand = new RelayCommand(_ => CancelRestartNow(), _ => IsRestartConfirmationVisible);
@@ -194,9 +206,13 @@ public sealed class MainWindowViewModel : ObservableObject
 
     public int RecommendedCount => _apps.Count(app => app.IsRecommended);
 
+    public int UpdateAvailableCount => _apps.Count(app => app.HasUpdateAvailable);
+
     public int UnsupportedSelectedCount => _apps.Count(app => app.WillBeSkipped);
 
     public bool HasRecommendedApps => RecommendedCount > 0;
+
+    public bool HasUpdatesAvailable => UpdateAvailableCount > 0;
 
     public bool HasUnsupportedSelectedApps => UnsupportedSelectedCount > 0;
 
@@ -230,6 +246,10 @@ public sealed class MainWindowViewModel : ObservableObject
 
     public string LogFilePath => _loggingService.LogFilePath;
 
+    public string AboutVersionText => VersionService.GetFullVersionString();
+
+    public string AboutGitHubUrl => NovaGitHubUrl;
+
     public bool IsDashboardSelected => string.Equals(_currentSection, SectionDashboard, StringComparison.Ordinal);
     public bool IsDashboardUnselected => !IsDashboardSelected;
 
@@ -248,7 +268,10 @@ public sealed class MainWindowViewModel : ObservableObject
     public bool IsLogsSelected => string.Equals(_currentSection, SectionLogs, StringComparison.Ordinal);
     public bool IsLogsUnselected => !IsLogsSelected;
 
-    public bool IsHomeScreenVisible => !IsInstalling && !IsHistorySelected && !IsLogsSelected;
+    public bool IsAboutSelected => string.Equals(_currentSection, SectionAbout, StringComparison.Ordinal);
+    public bool IsAboutUnselected => !IsAboutSelected;
+
+    public bool IsHomeScreenVisible => !IsInstalling && !IsHistorySelected && !IsLogsSelected && !IsAboutSelected;
 
     public bool IsInstallScreenVisible => IsInstalling;
 
@@ -258,7 +281,9 @@ public sealed class MainWindowViewModel : ObservableObject
 
     public bool IsLogsScreenVisible => !IsInstalling && IsLogsSelected;
 
-    public bool IsSelectionPhase => !IsHistorySelected && !IsLogsSelected;
+    public bool IsAboutScreenVisible => !IsInstalling && IsAboutSelected;
+
+    public bool IsSelectionPhase => !IsHistorySelected && !IsLogsSelected && !IsAboutSelected;
 
     public bool IsSettingsPanelOpen
     {
@@ -422,6 +447,18 @@ public sealed class MainWindowViewModel : ObservableObject
         }
     }
 
+    public bool IsRecommendedFilter
+    {
+        get => _isRecommendedFilter;
+        set
+        {
+            if (SetProperty(ref _isRecommendedFilter, value) && value && !_updatingFilterFlags)
+            {
+                SetCategoryFilter("Recommended");
+            }
+        }
+    }
+
     public bool IsUtilitiesFilter
     {
         get => _isUtilitiesFilter;
@@ -430,6 +467,18 @@ public sealed class MainWindowViewModel : ObservableObject
             if (SetProperty(ref _isUtilitiesFilter, value) && value && !_updatingFilterFlags)
             {
                 SetCategoryFilter("Utilities");
+            }
+        }
+    }
+
+    public bool IsUpdatesFilter
+    {
+        get => _isUpdatesFilter;
+        set
+        {
+            if (SetProperty(ref _isUpdatesFilter, value) && value && !_updatingFilterFlags)
+            {
+                SetCategoryFilter("Updates");
             }
         }
     }
@@ -588,6 +637,29 @@ public sealed class MainWindowViewModel : ObservableObject
                 ? $"Supported on {CurrentPlatform}"
                 : $"Unsupported on {CurrentPlatform}; it will be skipped if selected.";
 
+    public string SelectedDetailCatalogVersionText =>
+        SelectedDetailApp is null
+            ? string.Empty
+            : string.IsNullOrWhiteSpace(SelectedDetailApp.Version)
+                ? "Catalog version: not listed"
+                : $"Catalog version: {SelectedDetailApp.Version}";
+
+    public string SelectedDetailInstalledVersionText =>
+        SelectedDetailApp is null
+            ? string.Empty
+            : string.IsNullOrWhiteSpace(SelectedDetailApp.InstalledVersion)
+                ? "Installed version: not detected"
+                : $"Installed version: {SelectedDetailApp.InstalledVersion}";
+
+    public string SelectedDetailUpdateStatusText =>
+        SelectedDetailApp is null
+            ? string.Empty
+            : SelectedDetailApp.HasUpdateAvailable
+                ? $"Update available: {SelectedDetailApp.InstalledVersion} -> {SelectedDetailApp.Version}"
+                : SelectedDetailApp.IsInstalled
+                    ? "Update status: up to date"
+                    : "Update status: not installed";
+
     public bool HasSelectedDetailRecommendation =>
         SelectedDetailApp?.IsRecommended == true &&
         !string.IsNullOrWhiteSpace(SelectedDetailApp.RecommendationReason);
@@ -614,7 +686,13 @@ public sealed class MainWindowViewModel : ObservableObject
 
     public ICommand RefreshCatalogCommand => _refreshCatalogCommand;
 
+    public ICommand ShowUpdatesFilterCommand => _showUpdatesFilterCommand;
+
+    public ICommand ShowRecommendedFilterCommand => _showRecommendedFilterCommand;
+
     public ICommand OpenPublisherCommand => _openPublisherCommand;
+
+    public ICommand OpenAboutGitHubCommand => _openAboutGitHubCommand;
 
     public ICommand ShowAppDetailsCommand => _showAppDetailsCommand;
 
@@ -643,6 +721,8 @@ public sealed class MainWindowViewModel : ObservableObject
     public ICommand NavigateHistoryCommand => _navigateHistoryCommand;
 
     public ICommand NavigateLogsCommand => _navigateLogsCommand;
+
+    public ICommand NavigateAboutCommand => _navigateAboutCommand;
 
     public ICommand RequestRestartNowCommand => _requestRestartNowCommand;
 
@@ -979,7 +1059,9 @@ public sealed class MainWindowViewModel : ObservableObject
 
             if (!string.IsNullOrWhiteSpace(query))
             {
-                var blob = $"{app.Name} {app.Category} {app.PublisherName} {app.Description}";
+                var tags = app.Tags.Count == 0 ? string.Empty : string.Join(' ', app.Tags);
+                var updateTerms = app.HasUpdateAvailable ? " update updates outdated newer-version" : string.Empty;
+                var blob = $"{app.Name} {app.Category} {app.PublisherName} {app.Description} {app.Version} {app.InstalledVersion} {app.StatusBadge} {tags}{updateTerms}";
                 if (!blob.Contains(query, StringComparison.OrdinalIgnoreCase))
                 {
                     continue;
@@ -1007,8 +1089,10 @@ public sealed class MainWindowViewModel : ObservableObject
             IsAllFilter = string.Equals(filter, "All", StringComparison.OrdinalIgnoreCase);
             IsGamesFilter = string.Equals(filter, "Games", StringComparison.OrdinalIgnoreCase);
             IsDriversFilter = string.Equals(filter, "Drivers", StringComparison.OrdinalIgnoreCase);
+            IsRecommendedFilter = string.Equals(filter, "Recommended", StringComparison.OrdinalIgnoreCase);
             IsDevToolsFilter = string.Equals(filter, "Dev Tools", StringComparison.OrdinalIgnoreCase);
             IsUtilitiesFilter = string.Equals(filter, "Utilities", StringComparison.OrdinalIgnoreCase);
+            IsUpdatesFilter = string.Equals(filter, "Updates", StringComparison.OrdinalIgnoreCase);
         }
         finally
         {
@@ -1017,6 +1101,26 @@ public sealed class MainWindowViewModel : ObservableObject
 
         _loggingService.LogInfo($"Category filter set to '{SelectedFilter}'.");
         ApplyVisibilityFilter();
+    }
+
+    private void ShowUpdatesFilter()
+    {
+        if (!string.Equals(_currentSection, SectionApps, StringComparison.Ordinal))
+        {
+            NavigateTo(SectionApps);
+        }
+
+        SetCategoryFilter("Updates");
+    }
+
+    private void ShowRecommendedFilter()
+    {
+        if (!string.Equals(_currentSection, SectionApps, StringComparison.Ordinal))
+        {
+            NavigateTo(SectionApps);
+        }
+
+        SetCategoryFilter("Recommended");
     }
 
     private bool MatchesSelectedFilter(AppItem app)
@@ -1031,9 +1135,11 @@ public sealed class MainWindowViewModel : ObservableObject
         {
             "Games" => category.Contains("gaming", StringComparison.OrdinalIgnoreCase),
             "Drivers" => IsDriverCategory(category),
+            "Recommended" => app.IsRecommended,
             "Dev Tools" => category.Contains("coding", StringComparison.OrdinalIgnoreCase) ||
                            category.Contains("dev", StringComparison.OrdinalIgnoreCase),
             "Utilities" => category.Contains("util", StringComparison.OrdinalIgnoreCase),
+            "Updates" => app.HasUpdateAvailable,
             _ => true
         };
     }
@@ -1061,6 +1167,7 @@ public sealed class MainWindowViewModel : ObservableObject
         OnPropertyChanged(nameof(IsSummaryScreenVisible));
         OnPropertyChanged(nameof(IsHistoryEmptyScreenVisible));
         OnPropertyChanged(nameof(IsLogsScreenVisible));
+        OnPropertyChanged(nameof(IsAboutScreenVisible));
         OnPropertyChanged(nameof(IsSelectionPhase));
     }
 
@@ -1080,6 +1187,8 @@ public sealed class MainWindowViewModel : ObservableObject
         OnPropertyChanged(nameof(IsHistoryUnselected));
         OnPropertyChanged(nameof(IsLogsSelected));
         OnPropertyChanged(nameof(IsLogsUnselected));
+        OnPropertyChanged(nameof(IsAboutSelected));
+        OnPropertyChanged(nameof(IsAboutUnselected));
         NotifyScreenStateChanged();
         ApplyVisibilityFilter();
     }
@@ -1105,6 +1214,10 @@ public sealed class MainWindowViewModel : ObservableObject
         else if (section == SectionLogs)
         {
             StatusText = "Logs page selected. Use Open Log File to inspect the current log.";
+        }
+        else if (section == SectionAbout)
+        {
+            StatusText = $"About page selected. Running {AboutVersionText}.";
         }
 
         NotifyNavigationStateChanged();
@@ -1144,11 +1257,12 @@ public sealed class MainWindowViewModel : ObservableObject
 
         try
         {
-            IReadOnlyList<string> installedIds = Array.Empty<string>();
+            IReadOnlyDictionary<string, InstalledAppState> installedApps =
+                new Dictionary<string, InstalledAppState>(StringComparer.OrdinalIgnoreCase);
             if (Settings.AutoDetectInstalledAppsOnStartup)
             {
-                installedIds = await Task.Run(
-                    () => _detectionService.DetectInstalledAppIds(appSnapshot, _currentPlatformId),
+                installedApps = await Task.Run(
+                    () => _detectionService.DetectInstalledAppStates(appSnapshot, _currentPlatformId),
                     cancellationToken);
             }
 
@@ -1160,7 +1274,7 @@ public sealed class MainWindowViewModel : ObservableObject
 
             await Dispatcher.UIThread.InvokeAsync(() =>
             {
-                ApplyBackgroundDetectionResults(installedIds, hardwareDetection, selectionSnapshot);
+                ApplyBackgroundDetectionResults(installedApps, hardwareDetection, selectionSnapshot);
             });
         }
         catch (OperationCanceledException)
@@ -1187,13 +1301,13 @@ public sealed class MainWindowViewModel : ObservableObject
     }
 
     private void ApplyBackgroundDetectionResults(
-        IReadOnlyList<string> installedIds,
+        IReadOnlyDictionary<string, InstalledAppState> installedApps,
         HardwareDetectionResult hardwareDetection,
         IReadOnlyDictionary<string, bool> selectionSnapshot)
     {
         if (Settings.AutoDetectInstalledAppsOnStartup)
         {
-            ApplyInstalledAppResults(installedIds);
+            ApplyInstalledAppResults(installedApps);
         }
 
         _suppressAppSelectionHandling = true;
@@ -1246,12 +1360,12 @@ public sealed class MainWindowViewModel : ObservableObject
 
         try
         {
-            var installedIds = await Task.Run(
-                () => _detectionService.DetectInstalledAppIds(appSnapshot, _currentPlatformId));
+            var installedApps = await Task.Run(
+                () => _detectionService.DetectInstalledAppStates(appSnapshot, _currentPlatformId));
 
             await Dispatcher.UIThread.InvokeAsync(() =>
             {
-                ApplyInstalledAppResults(installedIds);
+                ApplyInstalledAppResults(installedApps);
                 ApplyVisibilityFilter();
                 NotifyAppSummaryStateChanged();
                 StatusText = BuildLoadedStatusText(detectionPending: false);
@@ -1267,12 +1381,21 @@ public sealed class MainWindowViewModel : ObservableObject
         }
     }
 
-    private void ApplyInstalledAppResults(IReadOnlyList<string> installedIds)
+    private void ApplyInstalledAppResults(IReadOnlyDictionary<string, InstalledAppState> installedApps)
     {
-        var installedIdSet = new HashSet<string>(installedIds, StringComparer.OrdinalIgnoreCase);
         foreach (var app in _apps)
         {
-            app.IsInstalled = installedIdSet.Contains(app.Id);
+            if (installedApps.TryGetValue(app.Id, out var state))
+            {
+                app.IsInstalled = state.IsInstalled;
+                app.InstalledVersion = state.InstalledVersion;
+            }
+            else
+            {
+                app.IsInstalled = false;
+                app.InstalledVersion = string.Empty;
+            }
+
             ApplyPlatformFlags(app);
         }
 
@@ -1379,6 +1502,14 @@ public sealed class MainWindowViewModel : ObservableObject
         IsAccountMenuOpen = false;
         IsSettingsPanelOpen = true;
         _loggingService.LogInfo("Settings opened from account menu.");
+    }
+
+    private void OpenAboutGitHub()
+    {
+        if (!_browserService.OpenUrl(NovaGitHubUrl))
+        {
+            StatusText = "Unable to open the Nova GitHub repository.";
+        }
     }
 
     public void CloseAccountMenuOverlay()
@@ -1499,12 +1630,13 @@ public sealed class MainWindowViewModel : ObservableObject
         }
 
         var appSnapshot = _apps.ToList();
-        IReadOnlyList<string> installedIds = Array.Empty<string>();
+        IReadOnlyDictionary<string, InstalledAppState> installedApps =
+            new Dictionary<string, InstalledAppState>(StringComparer.OrdinalIgnoreCase);
         HardwareDetectionResult? hardwareDetection = null;
 
         try
         {
-            installedIds = await Task.Run(() => _detectionService.DetectInstalledAppIds(appSnapshot, _currentPlatformId));
+            installedApps = await Task.Run(() => _detectionService.DetectInstalledAppStates(appSnapshot, _currentPlatformId));
             hardwareDetection = await Task.Run(() => _detectionService.DetectHardware(_currentPlatformId));
         }
         catch (Exception ex)
@@ -1512,7 +1644,7 @@ public sealed class MainWindowViewModel : ObservableObject
             _loggingService.LogError($"Manual refresh background scan failed: {ex.Message}");
         }
 
-        ApplyInstalledAppResults(installedIds);
+        ApplyInstalledAppResults(installedApps);
 
         if (hardwareDetection is not null)
         {
@@ -1758,8 +1890,9 @@ public sealed class MainWindowViewModel : ObservableObject
         if (result.Success)
         {
             app.IsInstalled = true;
+            app.InstalledVersion = string.IsNullOrWhiteSpace(app.Version) ? app.InstalledVersion : app.Version;
             app.HasInstallFailed = false;
-            app.StatusBadge = "Installed";
+            app.StatusBadge = app.HasUpdateAvailable ? "Update Available" : "Installed";
         }
         else if (result.Skipped)
         {
@@ -1767,7 +1900,7 @@ public sealed class MainWindowViewModel : ObservableObject
             {
                 app.IsInstalled = true;
                 app.HasInstallFailed = false;
-                app.StatusBadge = "Installed";
+                app.StatusBadge = app.HasUpdateAvailable ? "Update Available" : "Installed";
             }
             else if (result.Message.Contains("requires manual installer interaction", StringComparison.OrdinalIgnoreCase) ||
                      result.Message.Contains("requires manual install", StringComparison.OrdinalIgnoreCase))
@@ -1799,16 +1932,10 @@ public sealed class MainWindowViewModel : ObservableObject
 
     private async Task RefreshInstalledStatesAfterInstallAsync()
     {
-        var detectedIds = await Task.Run(() =>
-            _detectionService.DetectInstalledAppIds(_apps.ToList(), _currentPlatformId));
+        var installedApps = await Task.Run(() =>
+            _detectionService.DetectInstalledAppStates(_apps.ToList(), _currentPlatformId));
 
-        var installedSet = new HashSet<string>(detectedIds, StringComparer.OrdinalIgnoreCase);
-        foreach (var app in _apps)
-        {
-            app.IsInstalled = installedSet.Contains(app.Id);
-            ApplyPlatformFlags(app);
-        }
-
+        ApplyInstalledAppResults(installedApps);
         NotifyAppSummaryStateChanged();
     }
 
@@ -1907,7 +2034,7 @@ public sealed class MainWindowViewModel : ObservableObject
 
         if (app.IsInstalled && !app.HasInstallFailed)
         {
-            app.StatusBadge = "Installed";
+            app.StatusBadge = app.HasUpdateAvailable ? "Update Available" : "Installed";
         }
         else if (app.IsSelected && Settings.SilentInstall && !app.SupportsSilentInstall && !app.HasInstallFailed)
         {
@@ -2053,6 +2180,8 @@ public sealed class MainWindowViewModel : ObservableObject
     {
         _installCommand.RaiseCanExecuteChanged();
         _refreshCatalogCommand.RaiseCanExecuteChanged();
+        _showRecommendedFilterCommand.RaiseCanExecuteChanged();
+        _showUpdatesFilterCommand.RaiseCanExecuteChanged();
         _pauseInstallCommand.RaiseCanExecuteChanged();
         _navigateDashboardCommand.RaiseCanExecuteChanged();
         _navigateAppsCommand.RaiseCanExecuteChanged();
@@ -2060,8 +2189,10 @@ public sealed class MainWindowViewModel : ObservableObject
         _navigateMyListsCommand.RaiseCanExecuteChanged();
         _navigateHistoryCommand.RaiseCanExecuteChanged();
         _navigateLogsCommand.RaiseCanExecuteChanged();
+        _navigateAboutCommand.RaiseCanExecuteChanged();
         _openAccountProfileCommand.RaiseCanExecuteChanged();
         _openAccountSettingsCommand.RaiseCanExecuteChanged();
+        _openAboutGitHubCommand.RaiseCanExecuteChanged();
         _requestRestartNowCommand.RaiseCanExecuteChanged();
         _confirmRestartNowCommand.RaiseCanExecuteChanged();
         _cancelRestartCommand.RaiseCanExecuteChanged();
@@ -2075,9 +2206,13 @@ public sealed class MainWindowViewModel : ObservableObject
         OnPropertyChanged(nameof(SelectedFooterText));
         OnPropertyChanged(nameof(RecommendedCount));
         OnPropertyChanged(nameof(HasRecommendedApps));
+        OnPropertyChanged(nameof(UpdateAvailableCount));
+        OnPropertyChanged(nameof(HasUpdatesAvailable));
         OnPropertyChanged(nameof(RecommendedAppsSummary));
         OnPropertyChanged(nameof(UnsupportedSelectedCount));
         OnPropertyChanged(nameof(HasUnsupportedSelectedApps));
+        _showRecommendedFilterCommand.RaiseCanExecuteChanged();
+        _showUpdatesFilterCommand.RaiseCanExecuteChanged();
     }
 
     private void NotifyAppDetailsStateChanged()
@@ -2087,6 +2222,9 @@ public sealed class MainWindowViewModel : ObservableObject
         OnPropertyChanged(nameof(SelectedDetailPlatformsText));
         OnPropertyChanged(nameof(SelectedDetailInstallSupportText));
         OnPropertyChanged(nameof(SelectedDetailSupportStatusText));
+        OnPropertyChanged(nameof(SelectedDetailCatalogVersionText));
+        OnPropertyChanged(nameof(SelectedDetailInstalledVersionText));
+        OnPropertyChanged(nameof(SelectedDetailUpdateStatusText));
         OnPropertyChanged(nameof(HasSelectedDetailRecommendation));
     }
 

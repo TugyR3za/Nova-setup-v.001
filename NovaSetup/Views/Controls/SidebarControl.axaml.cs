@@ -39,6 +39,12 @@ public partial class SidebarControl : UserControl
     public static readonly StyledProperty<bool> IsLogsUnselectedProperty =
         AvaloniaProperty.Register<SidebarControl, bool>(nameof(IsLogsUnselected), true);
 
+    public static readonly StyledProperty<bool> IsAboutSelectedProperty =
+        AvaloniaProperty.Register<SidebarControl, bool>(nameof(IsAboutSelected));
+
+    public static readonly StyledProperty<bool> IsAboutUnselectedProperty =
+        AvaloniaProperty.Register<SidebarControl, bool>(nameof(IsAboutUnselected), true);
+
     public static readonly StyledProperty<ICommand?> NavigateDashboardCommandProperty =
         AvaloniaProperty.Register<SidebarControl, ICommand?>(nameof(NavigateDashboardCommand));
 
@@ -53,6 +59,9 @@ public partial class SidebarControl : UserControl
 
     public static readonly StyledProperty<ICommand?> NavigateLogsCommandProperty =
         AvaloniaProperty.Register<SidebarControl, ICommand?>(nameof(NavigateLogsCommand));
+
+    public static readonly StyledProperty<ICommand?> NavigateAboutCommandProperty =
+        AvaloniaProperty.Register<SidebarControl, ICommand?>(nameof(NavigateAboutCommand));
 
     public static readonly StyledProperty<ICommand?> ToggleAccountMenuCommandProperty =
         AvaloniaProperty.Register<SidebarControl, ICommand?>(nameof(ToggleAccountMenuCommand));
@@ -139,6 +148,18 @@ public partial class SidebarControl : UserControl
         set => SetValue(IsLogsUnselectedProperty, value);
     }
 
+    public bool IsAboutSelected
+    {
+        get => GetValue(IsAboutSelectedProperty);
+        set => SetValue(IsAboutSelectedProperty, value);
+    }
+
+    public bool IsAboutUnselected
+    {
+        get => GetValue(IsAboutUnselectedProperty);
+        set => SetValue(IsAboutUnselectedProperty, value);
+    }
+
     public ICommand? NavigateDashboardCommand
     {
         get => GetValue(NavigateDashboardCommandProperty);
@@ -167,6 +188,12 @@ public partial class SidebarControl : UserControl
     {
         get => GetValue(NavigateLogsCommandProperty);
         set => SetValue(NavigateLogsCommandProperty, value);
+    }
+
+    public ICommand? NavigateAboutCommand
+    {
+        get => GetValue(NavigateAboutCommandProperty);
+        set => SetValue(NavigateAboutCommandProperty, value);
     }
 
     public ICommand? ToggleAccountMenuCommand

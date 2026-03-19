@@ -158,6 +158,31 @@
               <TextBlock Grid.Column="1" Text="Logs" VerticalAlignment="Center" />
             </Grid>
           </Button>
+
+          <Button Classes="nav navActive"
+                  IsVisible="{Binding #Root.IsAboutSelected}"
+                  Command="{Binding #Root.NavigateAboutCommand}">
+            <Grid ColumnDefinitions="18,*" ColumnSpacing="10">
+              <Path Data="{DynamicResource IconHelpGeometry}"
+                    Fill="{DynamicResource TextPrimaryBrush}"
+                    Width="16"
+                    Height="16"
+                    VerticalAlignment="Center" />
+              <TextBlock Grid.Column="1" Text="About" VerticalAlignment="Center" />
+            </Grid>
+          </Button>
+          <Button Classes="nav"
+                  IsVisible="{Binding #Root.IsAboutUnselected}"
+                  Command="{Binding #Root.NavigateAboutCommand}">
+            <Grid ColumnDefinitions="18,*" ColumnSpacing="10">
+              <Path Data="{DynamicResource IconHelpGeometry}"
+                    Fill="{DynamicResource TextMutedBrush}"
+                    Width="16"
+                    Height="16"
+                    VerticalAlignment="Center" />
+              <TextBlock Grid.Column="1" Text="About" VerticalAlignment="Center" />
+            </Grid>
+          </Button>
         </StackPanel>
       </ScrollViewer>
 

@@ -12,6 +12,10 @@ public class AppItem : ObservableObject
     private string _homepageUrl = string.Empty;
     private string _description = string.Empty;
     private string _iconPath = string.Empty;
+    private string _version = string.Empty;
+    private string _installedVersion = string.Empty;
+    private string _license = string.Empty;
+    private string _releaseNotesUrl = string.Empty;
     private PlatformSupport _supportedPlatforms = new();
     private InstallDefinition? _windowsInstall;
     private InstallDefinition? _linuxInstall;
@@ -24,6 +28,7 @@ public class AppItem : ObservableObject
     private bool _requiresRestartHint;
     private bool _supportsSilentInstall;
     private List<string> _recommendationTags = new();
+    private List<string> _tags = new();
 
     // Runtime/UI state (not part of apps.json schema).
     private bool _supportsCustomPath;
@@ -77,6 +82,37 @@ public class AppItem : ObservableObject
     {
         get => _iconPath;
         set => SetProperty(ref _iconPath, value);
+    }
+
+    public string Version
+    {
+        get => _version;
+        set => SetProperty(ref _version, value);
+    }
+
+    [JsonIgnore]
+    public string InstalledVersion
+    {
+        get => _installedVersion;
+        set => SetProperty(ref _installedVersion, value);
+    }
+
+    public string License
+    {
+        get => _license;
+        set => SetProperty(ref _license, value);
+    }
+
+    public string ReleaseNotesUrl
+    {
+        get => _releaseNotesUrl;
+        set => SetProperty(ref _releaseNotesUrl, value);
+    }
+
+    public List<string> Tags
+    {
+        get => _tags;
+        set => SetProperty(ref _tags, value ?? new List<string>());
     }
 
     public PlatformSupport SupportedPlatforms
@@ -181,6 +217,13 @@ public class AppItem : ObservableObject
 
     [JsonIgnore]
     public string IconGlyph => string.IsNullOrWhiteSpace(Name) ? "?" : Name[0].ToString().ToUpperInvariant();
+
+    [JsonIgnore]
+    public bool HasUpdateAvailable =>
+        IsInstalled &&
+        !string.IsNullOrEmpty(Version) &&
+        !string.IsNullOrEmpty(InstalledVersion) &&
+        Version != InstalledVersion;
 }
 
 public class InstallDefinition
@@ -188,10 +231,18 @@ public class InstallDefinition
     // Optional direct installer URL for download-first install flows.
     public string InstallerUrl { get; set; } = string.Empty;
 
+    public string InstallerUrl32 { get; set; } = string.Empty;
+
+    public string InstallerUrl64 { get; set; } = string.Empty;
+
     // Optional explicit output file name for downloaded installers.
     public string InstallerFileName { get; set; } = string.Empty;
 
     public string Sha256 { get; set; } = string.Empty;
+
+    public string Sha25632 { get; set; } = string.Empty;
+
+    public string Sha25664 { get; set; } = string.Empty;
 
     public string Command { get; set; } = string.Empty;
 
@@ -201,6 +252,8 @@ public class InstallDefinition
     public string Arguments { get; set; } = string.Empty;
 
     public string SilentArguments { get; set; } = string.Empty;
+
+    public string Architecture { get; set; } = string.Empty;
 
     public bool RequiresRestart { get; set; }
 

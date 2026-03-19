@@ -27,6 +27,11 @@ public partial class FilterBarControl : UserControl
             nameof(IsDriversFilter),
             defaultBindingMode: BindingMode.TwoWay);
 
+    public static readonly StyledProperty<bool> IsRecommendedFilterProperty =
+        AvaloniaProperty.Register<FilterBarControl, bool>(
+            nameof(IsRecommendedFilter),
+            defaultBindingMode: BindingMode.TwoWay);
+
     public static readonly StyledProperty<bool> IsDevToolsFilterProperty =
         AvaloniaProperty.Register<FilterBarControl, bool>(
             nameof(IsDevToolsFilter),
@@ -35,6 +40,11 @@ public partial class FilterBarControl : UserControl
     public static readonly StyledProperty<bool> IsUtilitiesFilterProperty =
         AvaloniaProperty.Register<FilterBarControl, bool>(
             nameof(IsUtilitiesFilter),
+            defaultBindingMode: BindingMode.TwoWay);
+
+    public static readonly StyledProperty<bool> IsUpdatesFilterProperty =
+        AvaloniaProperty.Register<FilterBarControl, bool>(
+            nameof(IsUpdatesFilter),
             defaultBindingMode: BindingMode.TwoWay);
 
     public FilterBarControl()
@@ -66,6 +76,12 @@ public partial class FilterBarControl : UserControl
         set => SetValue(IsDriversFilterProperty, value);
     }
 
+    public bool IsRecommendedFilter
+    {
+        get => GetValue(IsRecommendedFilterProperty);
+        set => SetValue(IsRecommendedFilterProperty, value);
+    }
+
     public bool IsDevToolsFilter
     {
         get => GetValue(IsDevToolsFilterProperty);
@@ -76,5 +92,11 @@ public partial class FilterBarControl : UserControl
     {
         get => GetValue(IsUtilitiesFilterProperty);
         set => SetValue(IsUtilitiesFilterProperty, value);
+    }
+
+    public bool IsUpdatesFilter
+    {
+        get => GetValue(IsUpdatesFilterProperty);
+        set => SetValue(IsUpdatesFilterProperty, value);
     }
 }

@@ -23,12 +23,20 @@
                      Content="Drivers" />
         <RadioButton GroupName="filter"
                      Classes="pill"
+                     IsChecked="{Binding #Root.IsRecommendedFilter, Mode=TwoWay}"
+                     Content="Recommended" />
+        <RadioButton GroupName="filter"
+                     Classes="pill"
                      IsChecked="{Binding #Root.IsDevToolsFilter, Mode=TwoWay}"
                      Content="Dev Tools" />
         <RadioButton GroupName="filter"
                      Classes="pill"
                      IsChecked="{Binding #Root.IsUtilitiesFilter, Mode=TwoWay}"
                      Content="Utilities" />
+        <RadioButton GroupName="filter"
+                     Classes="pill"
+                     IsChecked="{Binding #Root.IsUpdatesFilter, Mode=TwoWay}"
+                     Content="Updates" />
       </StackPanel>
     </ScrollViewer>
 

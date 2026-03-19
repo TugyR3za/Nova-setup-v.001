@@ -1,0 +1,43 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="NovaSetup.Views.AboutView"
+             x:CompileBindings="False"
+             x:Name="Root">
+  <ScrollViewer VerticalScrollBarVisibility="Auto"
+                HorizontalScrollBarVisibility="Disabled">
+    <StackPanel Spacing="12"
+                Margin="0,0,6,0">
+      <Border Classes="card"
+              Padding="18">
+        <StackPanel Spacing="4">
+          <TextBlock Text="Nova"
+                     FontSize="34"
+                     FontWeight="Bold" />
+          <TextBlock Text="{Binding #Root.VersionText}"
+                     FontSize="15"
+                     Foreground="{DynamicResource TextMutedBrush}" />
+          <TextBlock Text="The fast, modern Windows app installer"
+                     FontSize="15"
+                     Foreground="{DynamicResource TextMutedBrush}"
+                     TextWrapping="Wrap" />
+        </StackPanel>
+      </Border>
+
+      <Border Classes="card">
+        <StackPanel Spacing="10">
+          <TextBlock Text="Project"
+                     FontSize="18"
+                     FontWeight="SemiBold" />
+
+          <Button Classes="link"
+                  Command="{Binding #Root.OpenGitHubCommand}"
+                  Content="{Binding #Root.GitHubUrl}" />
+
+          <TextBlock Text="© 2026 Nova. All rights reserved."
+                     Foreground="{DynamicResource TextMutedBrush}"
+                     TextWrapping="Wrap" />
+        </StackPanel>
+      </Border>
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>

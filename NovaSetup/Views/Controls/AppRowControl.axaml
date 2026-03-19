@@ -11,7 +11,7 @@
 
   <Border Classes="rowCard"
           Opacity="{Binding #Root.Item.RowOpacity}">
-    <Grid ColumnDefinitions="36,*,84,116,52"
+    <Grid ColumnDefinitions="36,*,84,140,52"
           ColumnSpacing="8">
       <CheckBox Classes="appCheck"
                 IsChecked="{Binding #Root.Item.IsSelected}"

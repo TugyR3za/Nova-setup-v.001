@@ -81,32 +81,45 @@ public sealed class DetectionService
 
     public int DetectInstalledApps(IList<AppItem> apps, string currentPlatform)
     {
-        var detectedIds = DetectInstalledAppIds(apps, currentPlatform);
-        var installedIdSet = new HashSet<string>(detectedIds, StringComparer.OrdinalIgnoreCase);
+        var detectedStates = DetectInstalledAppStates(apps, currentPlatform);
 
         foreach (var app in apps)
         {
-            app.IsInstalled = installedIdSet.Contains(app.Id);
+            if (detectedStates.TryGetValue(app.Id, out var state))
+            {
+                app.IsInstalled = state.IsInstalled;
+                app.InstalledVersion = state.InstalledVersion;
+            }
+            else
+            {
+                app.IsInstalled = false;
+                app.InstalledVersion = string.Empty;
+            }
         }
 
-        var detectedCount = installedIdSet.Count;
+        var detectedCount = detectedStates.Count;
         _loggingService?.LogInfo($"Installed app detection completed. DetectedInstalledApps={detectedCount}");
         return detectedCount;
     }
 
-    public IReadOnlyList<string> DetectInstalledAppIds(IEnumerable<AppItem> apps, string currentPlatform)
+    public IReadOnlyDictionary<string, InstalledAppState> DetectInstalledAppStates(IEnumerable<AppItem> apps, string currentPlatform)
     {
         var appList = apps?.ToList() ?? new List<AppItem>();
-        IReadOnlyList<string> detectedIds = currentPlatform switch
+        IReadOnlyDictionary<string, InstalledAppState> detectedStates = currentPlatform switch
         {
-            PlatformService.Windows => DetectWindowsInstalledAppIds(appList),
-            _ => DetectCommandBasedInstalledAppIds(appList, currentPlatform)
+            PlatformService.Windows => DetectWindowsInstalledAppStates(appList),
+            _ => DetectCommandBasedInstalledAppStates(appList, currentPlatform)
         };
 
-        var detectedCount = detectedIds.Count;
+        var detectedCount = detectedStates.Count;
         _loggingService?.LogInfo(
             $"Installed app detection completed. Platform={currentPlatform}, DetectedInstalledApps={detectedCount}");
-        return detectedIds;
+        return detectedStates;
+    }
+
+    public IReadOnlyList<string> DetectInstalledAppIds(IEnumerable<AppItem> apps, string currentPlatform)
+    {
+        return DetectInstalledAppStates(apps, currentPlatform).Keys.ToList();
     }
 
     public bool IsAppInstalled(AppItem app, string currentPlatform)
@@ -194,32 +207,35 @@ public sealed class DetectionService
         return summary;
     }
 
-    private IReadOnlyList<string> DetectWindowsInstalledAppIds(IReadOnlyList<AppItem> apps)
+    private IReadOnlyDictionary<string, InstalledAppState> DetectWindowsInstalledAppStates(IReadOnlyList<AppItem> apps)
     {
         var detectionIndex = BuildWindowsInstallIndex(apps);
-        var detectedIds = new List<string>();
+        var detectedStates = new Dictionary<string, InstalledAppState>(StringComparer.OrdinalIgnoreCase);
 
         foreach (var app in apps)
         {
-            var detectionSource = DetectWindowsApp(app, detectionIndex);
-            if (detectionSource is null)
+            var detectionMatch = DetectWindowsApp(app, detectionIndex);
+            if (detectionMatch is null)
             {
                 continue;
             }
 
-            detectedIds.Add(app.Id);
-            _loggingService?.LogInfo($"Detected installed app '{app.Name}' via {detectionSource}.");
+            detectedStates[app.Id] = new InstalledAppState(true, detectionMatch.InstalledVersion);
+            var versionSuffix = string.IsNullOrWhiteSpace(detectionMatch.InstalledVersion)
+                ? string.Empty
+                : $" Version={detectionMatch.InstalledVersion}";
+            _loggingService?.LogInfo($"Detected installed app '{app.Name}' via {detectionMatch.Source}.{versionSuffix}");
         }
 
         _loggingService?.LogInfo(
             $"Windows install index prepared. RegistryEntries={detectionIndex.UninstallEntries.Count}, AppPathMatches={detectionIndex.AppPathExecutables.Count}");
 
-        return detectedIds;
+        return detectedStates;
     }
 
-    private IReadOnlyList<string> DetectCommandBasedInstalledAppIds(IReadOnlyList<AppItem> apps, string currentPlatform)
+    private IReadOnlyDictionary<string, InstalledAppState> DetectCommandBasedInstalledAppStates(IReadOnlyList<AppItem> apps, string currentPlatform)
     {
-        var detectedIds = new List<string>();
+        var detectedStates = new Dictionary<string, InstalledAppState>(StringComparer.OrdinalIgnoreCase);
 
         foreach (var app in apps)
         {
@@ -228,51 +244,59 @@ public sealed class DetectionService
                 continue;
             }
 
-            detectedIds.Add(app.Id);
+            detectedStates[app.Id] = new InstalledAppState(true, string.Empty);
         }
 
-        return detectedIds;
+        return detectedStates;
     }
 
-    private string? DetectWindowsApp(AppItem app, WindowsInstallIndex detectionIndex)
+    private WindowsInstallMatch? DetectWindowsApp(AppItem app, WindowsInstallIndex detectionIndex)
     {
-        if (HasExplicitDisplayNameMatch(app, detectionIndex.UninstallEntries))
+        var explicitDisplayNameMatch = FindExplicitDisplayNameMatch(app, detectionIndex.UninstallEntries);
+        if (explicitDisplayNameMatch is not null)
         {
-            return "Windows registry";
+            return new WindowsInstallMatch(
+                "Windows registry",
+                ResolveVersionFromUninstallEntry(app, explicitDisplayNameMatch));
         }
 
-        if (IsRegisteredInUninstallEntries(app, detectionIndex.UninstallEntries))
+        var uninstallMatch = FindRegisteredUninstallEntry(app, detectionIndex.UninstallEntries);
+        if (uninstallMatch is not null)
         {
-            return "Windows registry";
+            return new WindowsInstallMatch(
+                "Windows registry",
+                ResolveVersionFromUninstallEntry(app, uninstallMatch));
         }
 
-        if (HasRegisteredAppPath(app, detectionIndex.AppPathExecutables))
+        if (TryGetRegisteredAppPath(app, detectionIndex.AppPathExecutables, out var registeredAppPath))
         {
-            return "App Paths";
+            return new WindowsInstallMatch("App Paths", TryGetFileVersion(registeredAppPath));
         }
 
-        if (HasExecutableOnPath(app, PlatformService.Windows))
+        var executableOnPath = TryGetExecutableOnPath(app, PlatformService.Windows);
+        if (!string.IsNullOrWhiteSpace(executableOnPath))
         {
-            return "PATH";
+            return new WindowsInstallMatch("PATH", TryGetFileVersion(executableOnPath));
         }
 
-        if (HasExecutableInKnownWindowsLocations(app))
+        var executableInKnownLocation = TryGetExecutableInKnownWindowsLocations(app);
+        if (!string.IsNullOrWhiteSpace(executableInKnownLocation))
         {
-            return "Known install path";
+            return new WindowsInstallMatch("Known install path", TryGetFileVersion(executableInKnownLocation));
         }
 
         return null;
     }
 
-    private static bool HasExplicitDisplayNameMatch(AppItem app, IEnumerable<WindowsInstalledEntry> uninstallEntries)
+    private static WindowsInstalledEntry? FindExplicitDisplayNameMatch(AppItem app, IEnumerable<WindowsInstalledEntry> uninstallEntries)
     {
         var explicitDisplayName = app.WindowsInstall?.DetectDisplayNameContains;
         if (string.IsNullOrWhiteSpace(explicitDisplayName))
         {
-            return false;
+            return null;
         }
 
-        return uninstallEntries.Any(entry =>
+        return uninstallEntries.FirstOrDefault(entry =>
             !string.IsNullOrWhiteSpace(entry.DisplayName) &&
             entry.DisplayName.Contains(explicitDisplayName, StringComparison.OrdinalIgnoreCase));
     }
@@ -464,6 +488,11 @@ public sealed class DetectionService
 
     private static bool HasExecutableOnPath(AppItem app, string currentPlatform)
     {
+        return !string.IsNullOrWhiteSpace(TryGetExecutableOnPath(app, currentPlatform));
+    }
+
+    private static string? TryGetExecutableOnPath(AppItem app, string currentPlatform)
+    {
         var detectExecutable = currentPlatform switch
         {
             PlatformService.Windows => app.WindowsInstall?.DetectExecutable,
@@ -479,11 +508,13 @@ public sealed class DetectionService
 
             if (!string.IsNullOrWhiteSpace(output))
             {
-                return true;
+                return output
+                    .Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                    .FirstOrDefault();
             }
         }
 
-        return false;
+        return null;
     }
 
     private static WindowsInstallIndex BuildWindowsInstallIndex(IEnumerable<AppItem> apps)
@@ -536,6 +567,7 @@ public sealed class DetectionService
 
                     var displayName = appKey.GetValue("DisplayName")?.ToString() ?? string.Empty;
                     var publisher = appKey.GetValue("Publisher")?.ToString() ?? string.Empty;
+                    var displayVersion = appKey.GetValue("DisplayVersion")?.ToString() ?? string.Empty;
                     var installLocation = appKey.GetValue("InstallLocation")?.ToString() ?? string.Empty;
                     var displayIcon = appKey.GetValue("DisplayIcon")?.ToString() ?? string.Empty;
                     var uninstallString = appKey.GetValue("UninstallString")?.ToString() ?? string.Empty;
@@ -547,7 +579,7 @@ public sealed class DetectionService
                         continue;
                     }
 
-                    var fingerprint = $"{displayName}|{publisher}|{installLocation}|{displayIcon}|{uninstallString}";
+                    var fingerprint = $"{displayName}|{publisher}|{displayVersion}|{installLocation}|{displayIcon}|{uninstallString}";
                     if (!fingerprints.Add(fingerprint))
                     {
                         continue;
@@ -556,6 +588,7 @@ public sealed class DetectionService
                     entries.Add(new WindowsInstalledEntry(
                         displayName,
                         publisher,
+                        displayVersion,
                         installLocation,
                         displayIcon,
                         uninstallString));
@@ -570,9 +603,9 @@ public sealed class DetectionService
         return entries;
     }
 
-    private static HashSet<string> ReadWindowsAppPathExecutables(IEnumerable<string> executableCandidates)
+    private static Dictionary<string, string> ReadWindowsAppPathExecutables(IEnumerable<string> executableCandidates)
     {
-        var found = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var found = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         if (!OperatingSystem.IsWindows())
         {
             return found;
@@ -604,7 +637,7 @@ public sealed class DetectionService
                     var registeredPath = appKey.GetValue(string.Empty)?.ToString() ?? string.Empty;
                     if (!string.IsNullOrWhiteSpace(registeredPath))
                     {
-                        found.Add(NormalizeExecutableCandidate(candidate));
+                        found[NormalizeExecutableCandidate(candidate)] = registeredPath;
                     }
                 }
                 catch
@@ -617,12 +650,12 @@ public sealed class DetectionService
         return found;
     }
 
-    private static bool IsRegisteredInUninstallEntries(AppItem app, IEnumerable<WindowsInstalledEntry> uninstallEntries)
+    private static WindowsInstalledEntry? FindRegisteredUninstallEntry(AppItem app, IEnumerable<WindowsInstalledEntry> uninstallEntries)
     {
         var appNameTokens = BuildTokens(app.Name);
         if (appNameTokens.Count == 0)
         {
-            return false;
+            return null;
         }
 
         var appPublisherTokens = BuildTokens(app.PublisherName, ignoreNoise: true);
@@ -632,18 +665,18 @@ public sealed class DetectionService
         {
             if (IsStrongNameMatch(appNameTokens, appPublisherTokens, entry))
             {
-                return true;
+                return entry;
             }
 
             if (detectExecutableTokens.Count > 0 &&
                 detectExecutableTokens.All(token => entry.SearchTokens.Contains(token)) &&
                 (appPublisherTokens.Count == 0 || entry.PublisherTokens.Overlaps(appPublisherTokens)))
             {
-                return true;
+                return entry;
             }
         }
 
-        return false;
+        return null;
     }
 
     private static bool IsStrongNameMatch(
@@ -677,12 +710,14 @@ public sealed class DetectionService
                appNameTokens.Count(token => entry.DisplayNameTokens.Contains(token)) >= Math.Min(2, appNameTokens.Count);
     }
 
-    private static bool HasRegisteredAppPath(AppItem app, ISet<string> appPathExecutables)
+    private static bool TryGetRegisteredAppPath(AppItem app, IReadOnlyDictionary<string, string> appPathExecutables, out string registeredPath)
     {
+        registeredPath = string.Empty;
         foreach (var candidate in BuildExecutableCandidates(app.WindowsInstall?.DetectExecutable))
         {
-            if (appPathExecutables.Contains(NormalizeExecutableCandidate(candidate)))
+            if (appPathExecutables.TryGetValue(NormalizeExecutableCandidate(candidate), out var candidatePath))
             {
+                registeredPath = candidatePath;
                 return true;
             }
         }
@@ -692,13 +727,18 @@ public sealed class DetectionService
 
     private static bool HasExecutableInKnownWindowsLocations(AppItem app)
     {
+        return !string.IsNullOrWhiteSpace(TryGetExecutableInKnownWindowsLocations(app));
+    }
+
+    private static string? TryGetExecutableInKnownWindowsLocations(AppItem app)
+    {
         foreach (var path in GetKnownWindowsInstallProbePaths(app))
         {
             try
             {
                 if (File.Exists(path))
                 {
-                    return true;
+                    return path;
                 }
             }
             catch
@@ -707,7 +747,7 @@ public sealed class DetectionService
             }
         }
 
-        return false;
+        return null;
     }
 
     private static IEnumerable<string> GetKnownWindowsInstallProbePaths(AppItem app)
@@ -765,6 +805,79 @@ public sealed class DetectionService
             {
                 yield return candidate;
             }
+        }
+    }
+
+    private static string ResolveVersionFromUninstallEntry(AppItem app, WindowsInstalledEntry entry)
+    {
+        if (!string.IsNullOrWhiteSpace(entry.DisplayVersion))
+        {
+            return entry.DisplayVersion.Trim();
+        }
+
+        foreach (var candidatePath in GetExecutableProbePathsFromEntry(app, entry))
+        {
+            var detectedVersion = TryGetFileVersion(candidatePath);
+            if (!string.IsNullOrWhiteSpace(detectedVersion))
+            {
+                return detectedVersion;
+            }
+        }
+
+        return string.Empty;
+    }
+
+    private static IEnumerable<string> GetExecutableProbePathsFromEntry(AppItem app, WindowsInstalledEntry entry)
+    {
+        if (!string.IsNullOrWhiteSpace(entry.DisplayIcon))
+        {
+            var displayIconPath = entry.DisplayIcon;
+            var commaIndex = displayIconPath.IndexOf(',');
+            if (commaIndex >= 0)
+            {
+                displayIconPath = displayIconPath[..commaIndex];
+            }
+
+            displayIconPath = displayIconPath.Trim().Trim('"');
+            if (!string.IsNullOrWhiteSpace(displayIconPath))
+            {
+                yield return displayIconPath;
+            }
+        }
+
+        if (!string.IsNullOrWhiteSpace(entry.InstallLocation))
+        {
+            var detectExecutable = app.WindowsInstall?.DetectExecutable ?? string.Empty;
+            if (!string.IsNullOrWhiteSpace(detectExecutable))
+            {
+                yield return Path.Combine(entry.InstallLocation, detectExecutable);
+                yield return Path.Combine(entry.InstallLocation, NormalizeExecutableCandidate(detectExecutable));
+            }
+        }
+    }
+
+    private static string TryGetFileVersion(string? filePath)
+    {
+        if (string.IsNullOrWhiteSpace(filePath))
+        {
+            return string.Empty;
+        }
+
+        try
+        {
+            if (!File.Exists(filePath))
+            {
+                return string.Empty;
+            }
+
+            var info = FileVersionInfo.GetVersionInfo(filePath);
+            return !string.IsNullOrWhiteSpace(info.ProductVersion)
+                ? info.ProductVersion.Trim()
+                : info.FileVersion?.Trim() ?? string.Empty;
+        }
+        catch
+        {
+            return string.Empty;
         }
     }
 
@@ -848,19 +961,23 @@ public sealed class DetectionService
 
     private sealed record WindowsInstallIndex(
         IReadOnlyList<WindowsInstalledEntry> UninstallEntries,
-        HashSet<string> AppPathExecutables);
+        Dictionary<string, string> AppPathExecutables);
+
+    private sealed record WindowsInstallMatch(string Source, string InstalledVersion);
 
     private sealed class WindowsInstalledEntry
     {
         public WindowsInstalledEntry(
             string displayName,
             string publisher,
+            string displayVersion,
             string installLocation,
             string displayIcon,
             string uninstallString)
         {
             DisplayName = displayName;
             Publisher = publisher;
+            DisplayVersion = displayVersion;
             InstallLocation = installLocation;
             DisplayIcon = displayIcon;
             UninstallString = uninstallString;
@@ -872,6 +989,8 @@ public sealed class DetectionService
         public string DisplayName { get; }
 
         public string Publisher { get; }
+
+        public string DisplayVersion { get; }
 
         public string InstallLocation { get; }
 
@@ -886,6 +1005,8 @@ public sealed class DetectionService
         public HashSet<string> SearchTokens { get; }
     }
 }
+
+public sealed record InstalledAppState(bool IsInstalled, string InstalledVersion);
 
 public sealed class HardwareDetectionResult
 {

@@ -3,6 +3,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:controls="clr-namespace:NovaSetup.Views.Controls"
+        xmlns:views="clr-namespace:NovaSetup.Views"
         xmlns:design="clr-namespace:NovaSetup.Design"
         mc:Ignorable="d"
         d:DesignWidth="1500"
@@ -38,11 +39,14 @@
                                      IsHistoryUnselected="{Binding IsHistoryUnselected}"
                                      IsLogsSelected="{Binding IsLogsSelected}"
                                      IsLogsUnselected="{Binding IsLogsUnselected}"
+                                     IsAboutSelected="{Binding IsAboutSelected}"
+                                     IsAboutUnselected="{Binding IsAboutUnselected}"
                                      NavigateDashboardCommand="{Binding NavigateDashboardCommand}"
                                      NavigateAppsCommand="{Binding NavigateAppsCommand}"
                                      NavigateMyListsCommand="{Binding NavigateMyListsCommand}"
                                      NavigateHistoryCommand="{Binding NavigateHistoryCommand}"
                                      NavigateLogsCommand="{Binding NavigateLogsCommand}"
+                                     NavigateAboutCommand="{Binding NavigateAboutCommand}"
                                      ToggleAccountMenuCommand="{Binding ToggleAccountMenuCommand}"
                                      OpenAccountProfileCommand="{Binding OpenAccountProfileCommand}"
                                      OpenAccountSettingsCommand="{Binding OpenAccountSettingsCommand}"
@@ -63,8 +67,12 @@
                                                 SelectedCount="{Binding SelectedCount}"
                                                 RecommendedCount="{Binding RecommendedCount}"
                                                 HasRecommendedApps="{Binding HasRecommendedApps}"
+                                                ShowRecommendedFilterCommand="{Binding ShowRecommendedFilterCommand}"
+                                                UpdateAvailableCount="{Binding UpdateAvailableCount}"
+                                                HasUpdatesAvailable="{Binding HasUpdatesAvailable}"
                                                 CurrentPlatform="{Binding CurrentPlatform}"
                                                 RefreshCatalogCommand="{Binding RefreshCatalogCommand}"
+                                                ShowUpdatesFilterCommand="{Binding ShowUpdatesFilterCommand}"
                                                 HelpCommand="{Binding ShowHelpCommand}" />
 
                         <ScrollViewer Grid.Row="1"
@@ -179,13 +187,15 @@
                                 IsVisible="{Binding IsDashboardUnselected}"
                                 Padding="12">
                             <Grid RowDefinitions="Auto,*,Auto" RowSpacing="8">
-                                <controls:FilterBarControl Grid.Row="0"
-                                                           SearchText="{Binding SearchText, Mode=TwoWay}"
-                                                           IsAllFilter="{Binding IsAllFilter, Mode=TwoWay}"
-                                                           IsGamesFilter="{Binding IsGamesFilter, Mode=TwoWay}"
-                                                           IsDriversFilter="{Binding IsDriversFilter, Mode=TwoWay}"
-                                                           IsDevToolsFilter="{Binding IsDevToolsFilter, Mode=TwoWay}"
-                                                           IsUtilitiesFilter="{Binding IsUtilitiesFilter, Mode=TwoWay}" />
+                        <controls:FilterBarControl Grid.Row="0"
+                                                   SearchText="{Binding SearchText, Mode=TwoWay}"
+                                                   IsAllFilter="{Binding IsAllFilter, Mode=TwoWay}"
+                                                   IsGamesFilter="{Binding IsGamesFilter, Mode=TwoWay}"
+                                                   IsDriversFilter="{Binding IsDriversFilter, Mode=TwoWay}"
+                                                   IsRecommendedFilter="{Binding IsRecommendedFilter, Mode=TwoWay}"
+                                                   IsDevToolsFilter="{Binding IsDevToolsFilter, Mode=TwoWay}"
+                                                   IsUtilitiesFilter="{Binding IsUtilitiesFilter, Mode=TwoWay}"
+                                                   IsUpdatesFilter="{Binding IsUpdatesFilter, Mode=TwoWay}" />
 
                                 <controls:AppListControl Grid.Row="1"
                                                          Items="{Binding VisibleApps}"
@@ -514,6 +524,11 @@
                             </Border>
                         </StackPanel>
                     </ScrollViewer>
+
+                    <views:AboutView IsVisible="{Binding IsAboutScreenVisible}"
+                                     VersionText="{Binding AboutVersionText}"
+                                     GitHubUrl="{Binding AboutGitHubUrl}"
+                                     OpenGitHubCommand="{Binding OpenAboutGitHubCommand}" />
                     <Border IsVisible="{Binding IsSettingsPanelOpen}"
                             Classes="card"
                             Width="370"
@@ -851,6 +866,21 @@
                                         </Border>
                                         <Border Classes="metaChip">
                                             <TextBlock Text="{Binding SelectedDetailApp.StatusBadge, StringFormat='Status: {0}'}"
+                                                       Foreground="{DynamicResource TextMutedBrush}"
+                                                       TextWrapping="Wrap" />
+                                        </Border>
+                                        <Border Classes="metaChip">
+                                            <TextBlock Text="{Binding SelectedDetailCatalogVersionText}"
+                                                       Foreground="{DynamicResource TextMutedBrush}"
+                                                       TextWrapping="Wrap" />
+                                        </Border>
+                                        <Border Classes="metaChip">
+                                            <TextBlock Text="{Binding SelectedDetailInstalledVersionText}"
+                                                       Foreground="{DynamicResource TextMutedBrush}"
+                                                       TextWrapping="Wrap" />
+                                        </Border>
+                                        <Border Classes="metaChip">
+                                            <TextBlock Text="{Binding SelectedDetailUpdateStatusText}"
                                                        Foreground="{DynamicResource TextMutedBrush}"
                                                        TextWrapping="Wrap" />
                                         </Border>

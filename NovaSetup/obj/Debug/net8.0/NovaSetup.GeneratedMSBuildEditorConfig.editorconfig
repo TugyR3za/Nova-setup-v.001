@@ -38,6 +38,9 @@ build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
 [C:/Users/naime/OneDrive/Desktop/Nova setup v.001/NovaSetup/Themes/SharedStyles.axaml]
 build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
 
+[C:/Users/naime/OneDrive/Desktop/Nova setup v.001/NovaSetup/Views/AboutView.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
 [C:/Users/naime/OneDrive/Desktop/Nova setup v.001/NovaSetup/Views/Controls/AppListControl.axaml]
 build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
 

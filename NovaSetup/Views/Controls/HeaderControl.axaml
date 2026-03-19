@@ -34,12 +34,26 @@
                        FontSize="12"
                        Foreground="{DynamicResource TextMutedBrush}" />
           </Border>
-          <Border Classes="metaChip"
-                  IsVisible="{Binding #Root.HasRecommendedApps}">
-            <TextBlock Text="{Binding #Root.RecommendedCount, StringFormat='Recommended: {0}'}"
-                       FontSize="12"
-                       Foreground="{DynamicResource TextMutedBrush}" />
-          </Border>
+          <Button Classes="link"
+                  Command="{Binding #Root.ShowRecommendedFilterCommand}"
+                  IsVisible="{Binding #Root.HasRecommendedApps}"
+                  ToolTip.Tip="Show recommended apps">
+            <Border Classes="metaChip">
+              <TextBlock Text="{Binding #Root.RecommendedCount, StringFormat='Recommended: {0}'}"
+                         FontSize="12"
+                         Foreground="{DynamicResource TextMutedBrush}" />
+            </Border>
+          </Button>
+          <Button Classes="link"
+                  Command="{Binding #Root.ShowUpdatesFilterCommand}"
+                  IsVisible="{Binding #Root.HasUpdatesAvailable}"
+                  ToolTip.Tip="Show apps with updates">
+            <Border Classes="metaChip">
+              <TextBlock Text="{Binding #Root.UpdateAvailableCount, StringFormat='Updates: {0}'}"
+                         FontSize="12"
+                         Foreground="{DynamicResource TextMutedBrush}" />
+            </Border>
+          </Button>
           <Border Classes="metaChip">
             <TextBlock Text="{Binding #Root.CurrentPlatform, StringFormat='OS: {0}'}"
                        FontSize="12"
