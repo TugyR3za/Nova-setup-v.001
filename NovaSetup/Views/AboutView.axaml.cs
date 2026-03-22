@@ -9,6 +9,12 @@ public partial class AboutView : UserControl
     public static readonly StyledProperty<string?> VersionTextProperty =
         AvaloniaProperty.Register<AboutView, string?>(nameof(VersionText));
 
+    public static readonly StyledProperty<string?> CurrentVersionTextProperty =
+        AvaloniaProperty.Register<AboutView, string?>(nameof(CurrentVersionText));
+
+    public static readonly StyledProperty<string?> RemoteVersionTextProperty =
+        AvaloniaProperty.Register<AboutView, string?>(nameof(RemoteVersionText));
+
     public static readonly StyledProperty<string?> GitHubUrlProperty =
         AvaloniaProperty.Register<AboutView, string?>(nameof(GitHubUrl));
 
@@ -33,6 +39,18 @@ public partial class AboutView : UserControl
     {
         get => GetValue(VersionTextProperty);
         set => SetValue(VersionTextProperty, value);
+    }
+
+    public string? CurrentVersionText
+    {
+        get => GetValue(CurrentVersionTextProperty);
+        set => SetValue(CurrentVersionTextProperty, value);
+    }
+
+    public string? RemoteVersionText
+    {
+        get => GetValue(RemoteVersionTextProperty);
+        set => SetValue(RemoteVersionTextProperty, value);
     }
 
     public string? GitHubUrl

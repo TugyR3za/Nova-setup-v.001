@@ -3,6 +3,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:controls="clr-namespace:NovaSetup.Views.Controls"
+        xmlns:converters="clr-namespace:NovaSetup.Views.Converters"
         xmlns:views="clr-namespace:NovaSetup.Views"
         xmlns:design="clr-namespace:NovaSetup.Design"
         mc:Ignorable="d"
@@ -21,6 +22,10 @@
     <Design.DataContext>
         <design:MainWindowSampleData />
     </Design.DataContext>
+
+    <Window.Resources>
+        <converters:LogLevelToBrushConverter x:Key="LogLevelToBrushConverter" />
+    </Window.Resources>
 
     <Grid RowDefinitions="Auto,*"
           RowSpacing="8">
@@ -86,9 +91,9 @@
                     Classes="shellPanel"
                     Background="{DynamicResource PanelBrush}"
                     Padding="14">
-                <Grid>
+                <Grid RowDefinitions="*,Auto,Auto">
                     <Grid IsVisible="{Binding IsHomeScreenVisible}"
-                          RowDefinitions="Auto,*"
+                          RowDefinitions="Auto,Auto,Auto,*"
                           RowSpacing="10">
                         <controls:HeaderControl Grid.Row="0"
                                                 Title="{Binding HomeTitle}"
@@ -105,7 +110,144 @@
                                                 ShowUpdatesFilterCommand="{Binding ShowUpdatesFilterCommand}"
                                                 HelpCommand="{Binding ShowHelpCommand}" />
 
-                        <ScrollViewer Grid.Row="1"
+                        <Border Grid.Row="1"
+                                Classes="card"
+                                Padding="12">
+                            <StackPanel Spacing="10">
+                                <Grid ColumnDefinitions="Auto,Auto,Auto,*,Auto"
+                                      ColumnSpacing="8">
+                                    <Button Grid.Column="0"
+                                            Classes="ghost compact"
+                                            Content="Save Profile"
+                                            Command="{Binding SaveProfileCommand}" />
+                                    <Button Grid.Column="1"
+                                            Classes="ghost compact"
+                                            Content="Load Profile"
+                                            Command="{Binding LoadProfileCommand}" />
+                                    <Button Grid.Column="2"
+                                            Classes="ghost compact"
+                                            Content="Export Profile"
+                                            Command="{Binding ExportProfileCommand}" />
+
+                                    <TextBlock Grid.Column="4"
+                                               Text="{Binding CurrentProfileName, StringFormat='Active profile: {0}'}"
+                                               VerticalAlignment="Center"
+                                               Foreground="{DynamicResource TextMutedBrush}"
+                                               TextWrapping="Wrap" />
+                                </Grid>
+
+                                <Grid IsVisible="{Binding IsSaveProfilePanelOpen}"
+                                      ColumnDefinitions="1.2*,2*,Auto,Auto"
+                                      ColumnSpacing="10">
+                                    <StackPanel Grid.Column="0"
+                                                Spacing="4">
+                                        <TextBlock Text="Profile name" />
+                                        <TextBox Watermark="My Setup"
+                                                 Text="{Binding PendingProfileName, Mode=TwoWay}" />
+                                    </StackPanel>
+
+                                    <StackPanel Grid.Column="1"
+                                                Spacing="4">
+                                        <TextBlock Text="Description" />
+                                        <TextBox Watermark="Optional description"
+                                                 Text="{Binding PendingProfileDescription, Mode=TwoWay}" />
+                                    </StackPanel>
+
+                                    <Button Grid.Column="2"
+                                            Classes="compact"
+                                            Content="Save"
+                                            Command="{Binding ConfirmSaveProfileCommand}"
+                                            VerticalAlignment="Bottom" />
+
+                                    <Button Grid.Column="3"
+                                            Classes="ghost compact"
+                                            Content="Cancel"
+                                            Command="{Binding CancelSaveProfileCommand}"
+                                            VerticalAlignment="Bottom" />
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Grid.Row="2"
+                                Classes="card"
+                                IsVisible="{Binding IsMyListsSelected}"
+                                Padding="12">
+                            <StackPanel Spacing="10">
+                                <Grid ColumnDefinitions="*,Auto,Auto"
+                                      ColumnSpacing="8">
+                                    <StackPanel Spacing="2">
+                                        <TextBlock Text="Saved profiles"
+                                                   FontSize="18"
+                                                   FontWeight="SemiBold" />
+                                        <TextBlock Text="Profiles saved on this machine. Load one to reapply its app selection instantly."
+                                                   Foreground="{DynamicResource TextMutedBrush}"
+                                                   TextWrapping="Wrap" />
+                                    </StackPanel>
+
+                                    <Button Grid.Column="1"
+                                            Classes="ghost compact"
+                                            Content="Load Selected"
+                                            Command="{Binding LoadSavedProfileCommand}"
+                                            VerticalAlignment="Center" />
+
+                                    <Button Grid.Column="2"
+                                            Classes="ghost compact"
+                                            Content="Delete"
+                                            Command="{Binding DeleteSavedProfileCommand}"
+                                            VerticalAlignment="Center" />
+                                </Grid>
+
+                                <TextBlock Text="No saved local profiles yet."
+                                           IsVisible="{Binding HasNoSavedProfiles}"
+                                           Foreground="{DynamicResource TextMutedBrush}"
+                                           TextWrapping="Wrap" />
+
+                                <ListBox ItemsSource="{Binding SavedProfiles}"
+                                         SelectedItem="{Binding SelectedSavedProfile, Mode=TwoWay}"
+                                         IsVisible="{Binding HasSavedProfiles}"
+                                         MaxHeight="220"
+                                         Background="{DynamicResource InputBrush}"
+                                         BorderBrush="{DynamicResource InputBorderBrush}"
+                                         BorderThickness="1">
+                                    <ListBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <Border Padding="10,8">
+                                                <Grid ColumnDefinitions="*,Auto"
+                                                      ColumnSpacing="12">
+                                                    <StackPanel Spacing="3">
+                                                        <TextBlock Text="{Binding ProfileName}"
+                                                                   FontWeight="SemiBold"
+                                                                   TextWrapping="Wrap" />
+                                                        <TextBlock Text="{Binding Description}"
+                                                                   IsVisible="{Binding HasDescription}"
+                                                                   Foreground="{DynamicResource TextMutedBrush}"
+                                                                   TextWrapping="Wrap" />
+                                                        <TextBlock Text="{Binding DisplayCreatedOn, StringFormat='Saved: {0}'}"
+                                                                   Foreground="{DynamicResource TextMutedBrush}"
+                                                                   FontSize="12" />
+                                                    </StackPanel>
+
+                                                    <StackPanel Grid.Column="1"
+                                                                Spacing="3"
+                                                                HorizontalAlignment="Right">
+                                                        <Border Classes="metaChip">
+                                                            <TextBlock Text="{Binding DisplaySelectedAppsText}"
+                                                                       Foreground="{DynamicResource TextMutedBrush}" />
+                                                        </Border>
+                                                        <TextBlock Text="{Binding Platform}"
+                                                                   Foreground="{DynamicResource TextMutedBrush}"
+                                                                   FontSize="12"
+                                                                   HorizontalAlignment="Right" />
+                                                    </StackPanel>
+                                                </Grid>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ListBox.ItemTemplate>
+                                </ListBox>
+                            </StackPanel>
+                        </Border>
+
+                        <ScrollViewer Grid.Row="3"
                                       IsVisible="{Binding IsDashboardSelected}"
                                       VerticalScrollBarVisibility="Auto"
                                       HorizontalScrollBarVisibility="Disabled">
@@ -212,7 +354,7 @@
                             </StackPanel>
                         </ScrollViewer>
 
-                        <Border Grid.Row="1"
+                        <Border Grid.Row="3"
                                 Classes="card"
                                 IsVisible="{Binding IsDashboardUnselected}"
                                 Padding="12">
@@ -557,11 +699,118 @@
 
                     <views:AboutView IsVisible="{Binding IsAboutScreenVisible}"
                                      VersionText="{Binding AboutVersionText}"
+                                     CurrentVersionText="{Binding AboutCurrentVersionText}"
+                                     RemoteVersionText="{Binding AboutRemoteVersionText}"
                                      GitHubUrl="{Binding AboutGitHubUrl}"
                                      OpenGitHubCommand="{Binding OpenAboutGitHubCommand}"
                                      CheckForUpdatesCommand="{Binding ManualCheckForUpdatesCommand}"
                                      UpdateStatusText="{Binding AboutUpdateStatusText}"
                                      IsUpdateStatusVisible="{Binding IsAboutUpdateStatusVisible}" />
+
+                    <GridSplitter Grid.Row="1"
+                                  x:Name="DeveloperConsoleSplitter"
+                                  Height="6"
+                                  Margin="0,8,0,0"
+                                  HorizontalAlignment="Stretch"
+                                  ResizeDirection="Rows"
+                                  ResizeBehavior="PreviousAndNext"
+                                  Background="{DynamicResource CardBorderBrush}" />
+
+                    <Border Grid.Row="2"
+                            x:Name="DeveloperConsolePanel"
+                            IsVisible="{Binding IsDeveloperModeEnabled}"
+                            Classes="card"
+                            Padding="0"
+                            Margin="0,8,0,0"
+                            Height="180"
+                            MinHeight="40">
+                        <Grid RowDefinitions="Auto,*">
+                            <Border Background="{DynamicResource InputBrush}"
+                                    BorderBrush="{DynamicResource CardBorderBrush}"
+                                    BorderThickness="0,0,0,1"
+                                    Padding="12,8">
+                                <Grid ColumnDefinitions="Auto,*,Auto,Auto,Auto,Auto,Auto,Auto"
+                                      ColumnSpacing="8">
+                                    <Button Grid.Column="0"
+                                            x:Name="DeveloperConsoleToggleButton"
+                                            Classes="compact ghost"
+                                            Content="Collapse"
+                                            Click="OnDeveloperConsoleToggleClick" />
+
+                                    <TextBlock Grid.Column="1"
+                                               Text="Developer Console"
+                                               VerticalAlignment="Center"
+                                               FontWeight="SemiBold" />
+
+                                    <TextBlock Grid.Column="2"
+                                               Text="{Binding LiveLogs.Count, StringFormat='Entries: {0}'}"
+                                               VerticalAlignment="Center"
+                                               Foreground="{DynamicResource TextMutedBrush}" />
+
+                                    <ComboBox Grid.Column="3"
+                                              Width="128"
+                                              ItemsSource="{Binding LogLevelFilterOptions}"
+                                              SelectedItem="{Binding SelectedLogLevelFilterOption}">
+                                        <ComboBox.ItemTemplate>
+                                            <DataTemplate>
+                                                <TextBlock Text="{Binding Label}" />
+                                            </DataTemplate>
+                                        </ComboBox.ItemTemplate>
+                                    </ComboBox>
+
+                                    <Button Grid.Column="4"
+                                            Classes="compact ghost"
+                                            Content="Copy Selected"
+                                            Command="{Binding CopySelectedLogCommand}" />
+
+                                    <Button Grid.Column="5"
+                                            Classes="compact ghost"
+                                            Content="Clear"
+                                            Command="{Binding ClearLogsCommand}" />
+
+                                    <Button Grid.Column="6"
+                                            Classes="compact ghost"
+                                            Content="Export"
+                                            Command="{Binding ExportLogsCommand}" />
+
+                                    <Button Grid.Column="7"
+                                            Classes="compact ghost"
+                                            Content="Copy All"
+                                            Command="{Binding CopyLogsCommand}" />
+                                </Grid>
+                            </Border>
+
+                            <Grid Grid.Row="1"
+                                  x:Name="DeveloperConsoleContent"
+                                  Margin="10">
+                                <Border Background="{DynamicResource InputBrush}"
+                                        BorderBrush="{DynamicResource InputBorderBrush}"
+                                        BorderThickness="1"
+                                        CornerRadius="12"
+                                        Padding="4">
+                                    <ListBox x:Name="DeveloperLogListBox"
+                                             ItemsSource="{Binding FilteredLiveLogs}"
+                                             SelectedItem="{Binding SelectedLiveLogEntry, Mode=TwoWay}"
+                                             SelectionMode="Single"
+                                             Background="Transparent"
+                                             BorderThickness="0">
+                                        <ListBox.ItemTemplate>
+                                            <DataTemplate>
+                                                <Border Padding="8,4"
+                                                        Background="Transparent">
+                                                    <TextBlock Text="{Binding DisplayText}"
+                                                               TextWrapping="Wrap"
+                                                               FontFamily="Cascadia Code, Consolas, Segoe UI Mono"
+                                                               Foreground="{Binding Level, Converter={StaticResource LogLevelToBrushConverter}}" />
+                                                </Border>
+                                            </DataTemplate>
+                                        </ListBox.ItemTemplate>
+                                    </ListBox>
+                                </Border>
+                            </Grid>
+                        </Grid>
+                    </Border>
+
                     <Border IsVisible="{Binding IsSettingsPanelOpen}"
                             Classes="card"
                             Width="370"

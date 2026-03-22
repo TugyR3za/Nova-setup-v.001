@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Net.Http.Headers;
 
 namespace NovaSetup.Services;
 
@@ -25,7 +26,17 @@ public sealed class UpdateCheckerService
         try
         {
             using var timeoutCts = new CancellationTokenSource(TimeSpan.FromSeconds(6));
-            var json = await CatalogService.SharedHttpClient.GetStringAsync(VersionUrl, timeoutCts.Token);
+            var requestUrl = $"{VersionUrl}?ts={DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}";
+            using var request = new HttpRequestMessage(HttpMethod.Get, requestUrl);
+            request.Headers.CacheControl = new CacheControlHeaderValue
+            {
+                NoCache = true,
+                NoStore = true
+            };
+
+            using var response = await CatalogService.SharedHttpClient.SendAsync(request, timeoutCts.Token);
+            response.EnsureSuccessStatusCode();
+            var json = await response.Content.ReadAsStringAsync(timeoutCts.Token);
             var remoteInfo = JsonSerializer.Deserialize<RemoteVersionInfo>(json, new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true

@@ -158,6 +158,9 @@ public sealed class InstallerService
             return CreateSkippedResult(action.App, "Install already in progress.");
         }
 
+        var stopwatch = Stopwatch.StartNew();
+        var exitCode = -1;
+
         try
         {
             _loggingService?.LogInfo($"Installing app: {action.App.Name}");
@@ -220,6 +223,7 @@ public sealed class InstallerService
             }
 
             var execution = await ExecuteInstallCommandAsync(action, command, currentPlatform, cancellationToken);
+            exitCode = execution.ExitCode;
             var restartRequired = DetermineIfRestartNeeded(action, execution.ExitCode);
             var wasVerifiedAfterInstall = false;
             if (!wasInstalledBefore)
@@ -305,6 +309,8 @@ public sealed class InstallerService
         }
         finally
         {
+            _loggingService?.LogDebug($"[Installer] Process exit code for {action.App.Name}: {exitCode}");
+            _loggingService?.LogDebug($"[Installer] Elapsed install time for {action.App.Name}: {stopwatch.ElapsedMilliseconds} ms");
             AllowedCommandsService.Instance.EndInstall(action.App.Id);
         }
     }
@@ -455,6 +461,8 @@ public sealed class InstallerService
                 };
 
             _loggingService?.LogInfo($"Executing install command: {command}");
+            _loggingService?.LogDebug($"[Installer] Full command: {command}");
+            _loggingService?.LogDebug($"[Installer] Working directory: {ResolveWorkingDirectory(startInfo)}");
             using var process = new Process { StartInfo = startInfo };
             process.Start();
 
@@ -467,6 +475,7 @@ public sealed class InstallerService
             var exitCode = process.ExitCode;
 
             _loggingService?.LogInfo($"Command completed. ExitCode={exitCode}");
+            _loggingService?.LogDebug($"[Installer] Process exit code: {exitCode}");
             if (!string.IsNullOrWhiteSpace(stdout))
             {
                 _loggingService?.LogInfo($"Command output: {TrimForLog(stdout)}");
@@ -505,12 +514,15 @@ public sealed class InstallerService
             var startInfo = BuildElevatedStartInfo(command);
 
             _loggingService?.LogInfo($"Executing install command with administrator approval: {command}");
+            _loggingService?.LogDebug($"[Installer] Full command: {command}");
+            _loggingService?.LogDebug($"[Installer] Working directory: {ResolveWorkingDirectory(startInfo)}");
             using var process = new Process { StartInfo = startInfo };
             process.Start();
             await process.WaitForExitAsync(cancellationToken);
 
             var exitCode = process.ExitCode;
             _loggingService?.LogInfo($"Elevated command completed. ExitCode={exitCode}");
+            _loggingService?.LogDebug($"[Installer] Process exit code: {exitCode}");
 
             var success = exitCode == 0 || exitCode == 3010 || exitCode == 1641;
             var message = success
@@ -821,6 +833,13 @@ public sealed class InstallerService
     {
         return !string.IsNullOrWhiteSpace(definition.Command) ||
                !string.IsNullOrWhiteSpace(definition.SilentCommand);
+    }
+
+    private static string ResolveWorkingDirectory(ProcessStartInfo startInfo)
+    {
+        return string.IsNullOrWhiteSpace(startInfo.WorkingDirectory)
+            ? Environment.CurrentDirectory
+            : startInfo.WorkingDirectory;
     }
 
     private static bool HasInstallerDownloadUrl(InstallDefinition definition)

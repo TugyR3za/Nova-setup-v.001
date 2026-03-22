@@ -24,9 +24,10 @@ public partial class App : Application
         {
             var loggingService = new LoggingService();
             var platformService = new PlatformService();
-            var catalogService = new CatalogService(platformService, loggingService);
-            var selectionService = new SelectionService(loggingService);
             var settingsService = new SettingsService(loggingService);
+            var profileService = new ProfileService(settingsService, loggingService);
+            var catalogService = new CatalogService(platformService, loggingService);
+            var selectionService = new SelectionService(profileService, loggingService);
             var detectionService = new DetectionService(loggingService);
             var installerService = new InstallerService(loggingService, detectionService);
             var browserService = new BrowserService(loggingService);
@@ -39,7 +40,8 @@ public partial class App : Application
                 installerService,
                 loggingService,
                 browserService,
-                settingsService);
+                settingsService,
+                profileService);
 
             var splashScreen = new SplashScreen();
             desktop.MainWindow = splashScreen;

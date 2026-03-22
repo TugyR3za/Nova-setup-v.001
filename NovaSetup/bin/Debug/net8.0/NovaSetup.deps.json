@@ -6,7 +6,7 @@
   "compilationOptions": {},
   "targets": {
     ".NETCoreApp,Version=v8.0": {
-      "NovaSetup/1.0.0": {
+      "NovaSetup/0.5.0": {
         "dependencies": {
           "Avalonia": "11.3.12",
           "Avalonia.Desktop": "11.3.12",
@@ -440,7 +440,7 @@
     }
   },
   "libraries": {
-    "NovaSetup/1.0.0": {
+    "NovaSetup/0.5.0": {
       "type": "project",
       "serviceable": false,
       "sha512": ""

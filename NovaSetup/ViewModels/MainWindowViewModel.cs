@@ -4,6 +4,9 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Windows.Input;
 using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Platform.Storage;
 using Avalonia.Threading;
 using Avalonia.Styling;
 using NovaSetup.Models;
@@ -22,6 +25,12 @@ public sealed class MainWindowViewModel : ObservableObject
     private const string SectionLogs = "Logs";
     private const string SectionAbout = "About";
     private const string NovaGitHubUrl = "https://github.com/TugyR3za/Nova-setup-v.001";
+    private const string LogFilterAll = "All";
+    private const string LogFilterInfo = "Info";
+    private const string LogFilterSuccess = "Success";
+    private const string LogFilterWarning = "Warning";
+    private const string LogFilterError = "Error";
+    private const string LogFilterDebug = "Debug";
 
     private readonly PlatformService _platformService;
     private readonly CatalogService _catalogService;
@@ -31,9 +40,12 @@ public sealed class MainWindowViewModel : ObservableObject
     private readonly LoggingService _loggingService;
     private readonly BrowserService _browserService;
     private readonly SettingsService _settingsService;
+    private readonly ProfileService _profileService;
 
     private readonly ObservableCollection<AppItem> _apps = new();
     private readonly ObservableCollection<AppItem> _visibleApps = new();
+    private readonly ObservableCollection<NovaProfile> _savedProfiles = new();
+    private readonly ObservableCollection<LogEntry> _filteredLiveLogs = new();
     private readonly ObservableCollection<InstallResult> _installResults = new();
     private readonly ObservableCollection<InstallResult> _installedResults = new();
     private readonly ObservableCollection<InstallResult> _failedResults = new();
@@ -43,6 +55,13 @@ public sealed class MainWindowViewModel : ObservableObject
 
     private readonly AsyncRelayCommand _installCommand;
     private readonly RelayCommand _saveListCommand;
+    private readonly RelayCommand _saveProfileCommand;
+    private readonly AsyncRelayCommand _confirmSaveProfileCommand;
+    private readonly RelayCommand _cancelSaveProfileCommand;
+    private readonly AsyncRelayCommand _loadProfileCommand;
+    private readonly AsyncRelayCommand _exportProfileCommand;
+    private readonly AsyncRelayCommand _loadSavedProfileCommand;
+    private readonly AsyncRelayCommand _deleteSavedProfileCommand;
     private readonly RelayCommand _openLogFileCommand;
     private readonly RelayCommand _showHelpCommand;
     private readonly AsyncRelayCommand _refreshCatalogCommand;
@@ -51,6 +70,10 @@ public sealed class MainWindowViewModel : ObservableObject
     private readonly RelayCommand _dismissUpdateCommand;
     private readonly RelayCommand _downloadUpdateCommand;
     private readonly AsyncRelayCommand _manualCheckForUpdatesCommand;
+    private readonly AsyncRelayCommand _clearLogsCommand;
+    private readonly AsyncRelayCommand _copyLogsCommand;
+    private readonly AsyncRelayCommand _copySelectedLogCommand;
+    private readonly AsyncRelayCommand _exportLogsCommand;
     private readonly RelayCommand _openPublisherCommand;
     private readonly RelayCommand _openAboutGitHubCommand;
     private readonly RelayCommand _showAppDetailsCommand;
@@ -83,6 +106,7 @@ public sealed class MainWindowViewModel : ObservableObject
     private bool _isSettingsPanelOpen;
     private bool _isAccountMenuOpen;
     private bool _isAppDetailsOpen;
+    private bool _isSaveProfilePanelOpen;
     private bool _suppressSettingsLogging;
     private bool _suppressAppSelectionHandling;
     private bool _installedAppsDetected;
@@ -90,6 +114,8 @@ public sealed class MainWindowViewModel : ObservableObject
     private string _currentPlatformId = PlatformService.Unknown;
     private string _currentPlatform = "Unknown OS";
     private string _currentProfileName = "Website Starter";
+    private string _pendingProfileName = "My Setup";
+    private string _pendingProfileDescription = string.Empty;
     private string _statusText = "Ready.";
     private string _installStatusText = "Install has not started.";
     private string _installSummaryText = string.Empty;
@@ -101,7 +127,10 @@ public sealed class MainWindowViewModel : ObservableObject
     private string _updateVersionText = string.Empty;
     private string _updateDownloadUrl = string.Empty;
     private string _aboutUpdateStatusText = string.Empty;
+    private string _aboutRemoteVersionText = "Latest available: Not checked yet";
     private AppItem? _selectedDetailApp;
+    private NovaProfile? _selectedSavedProfile;
+    private LogEntry? _selectedLiveLogEntry;
     private bool _isAllFilter = true;
     private bool _isGamesFilter;
     private bool _isDriversFilter;
@@ -109,6 +138,7 @@ public sealed class MainWindowViewModel : ObservableObject
     private bool _isDevToolsFilter;
     private bool _isUtilitiesFilter;
     private bool _isUpdatesFilter;
+    private string _selectedLogLevelFilter = LogFilterAll;
     private double _progressValue;
     private CancellationTokenSource? _settingsSaveCts;
     private CancellationTokenSource? _startupDetectionCts;
@@ -141,6 +171,16 @@ public sealed class MainWindowViewModel : ObservableObject
         new(AppSettings.LanguageTurkish, "Turkish")
     ];
 
+    private static readonly IReadOnlyList<SettingChoice> LogLevelFilterChoices =
+    [
+        new(LogFilterAll, "All levels"),
+        new(LogFilterInfo, "Info"),
+        new(LogFilterSuccess, "Success"),
+        new(LogFilterWarning, "Warning"),
+        new(LogFilterError, "Error"),
+        new(LogFilterDebug, "Debug")
+    ];
+
     public MainWindowViewModel(
         PlatformService platformService,
         CatalogService catalogService,
@@ -149,7 +189,8 @@ public sealed class MainWindowViewModel : ObservableObject
         InstallerService installerService,
         LoggingService loggingService,
         BrowserService browserService,
-        SettingsService settingsService)
+        SettingsService settingsService,
+        ProfileService profileService)
     {
         _platformService = platformService;
         _catalogService = catalogService;
@@ -159,12 +200,22 @@ public sealed class MainWindowViewModel : ObservableObject
         _loggingService = loggingService;
         _browserService = browserService;
         _settingsService = settingsService;
+        _profileService = profileService;
 
         Settings = new AppSettings();
         Settings.PropertyChanged += HandleSettingsChanged;
+        LoggingService.DeveloperModeAccessor = () => Settings.DeveloperMode;
+        _selectionService.SettingsAccessor = () => Settings;
 
         _installCommand = new AsyncRelayCommand(InstallSelectedAsync, CanInstall);
         _saveListCommand = new RelayCommand(_ => SaveCurrentList());
+        _saveProfileCommand = new RelayCommand(_ => BeginSaveProfile(), _ => !IsInstalling && _isInitialized);
+        _confirmSaveProfileCommand = new AsyncRelayCommand(ConfirmSaveProfileAsync, () => !IsInstalling && IsSaveProfilePanelOpen);
+        _cancelSaveProfileCommand = new RelayCommand(_ => CancelSaveProfile(), _ => IsSaveProfilePanelOpen);
+        _loadProfileCommand = new AsyncRelayCommand(LoadProfileAsync, () => !IsInstalling && _isInitialized);
+        _exportProfileCommand = new AsyncRelayCommand(ExportProfileAsync, () => !IsInstalling && _isInitialized);
+        _loadSavedProfileCommand = new AsyncRelayCommand(LoadSelectedSavedProfileAsync, () => !IsInstalling && SelectedSavedProfile is not null);
+        _deleteSavedProfileCommand = new AsyncRelayCommand(DeleteSelectedSavedProfileAsync, () => !IsInstalling && SelectedSavedProfile is not null);
         _openLogFileCommand = new RelayCommand(_ => OpenLogFile());
         _showHelpCommand = new RelayCommand(_ => ShowHelpPlaceholder());
         _refreshCatalogCommand = new AsyncRelayCommand(RefreshCatalogAsync, () => !IsInstalling && _isInitialized);
@@ -173,6 +224,10 @@ public sealed class MainWindowViewModel : ObservableObject
         _dismissUpdateCommand = new RelayCommand(_ => DismissUpdateBanner(), _ => IsUpdateAvailable);
         _downloadUpdateCommand = new RelayCommand(_ => DownloadUpdate(), _ => IsUpdateAvailable && !string.IsNullOrWhiteSpace(UpdateDownloadUrl));
         _manualCheckForUpdatesCommand = new AsyncRelayCommand(() => CheckForUpdatesAsync(forceManualCheck: true), () => !IsInstalling);
+        _clearLogsCommand = new AsyncRelayCommand(ClearLogsAsync, () => IsDeveloperModeEnabled);
+        _copyLogsCommand = new AsyncRelayCommand(CopyLogsAsync, () => IsDeveloperModeEnabled && FilteredLiveLogs.Count > 0);
+        _copySelectedLogCommand = new AsyncRelayCommand(CopySelectedLogAsync, () => IsDeveloperModeEnabled && SelectedLiveLogEntry is not null);
+        _exportLogsCommand = new AsyncRelayCommand(ExportLogsAsync, () => IsDeveloperModeEnabled && FilteredLiveLogs.Count > 0);
         _openPublisherCommand = new RelayCommand(OpenPublisherHomepage);
         _openAboutGitHubCommand = new RelayCommand(_ => OpenAboutGitHub(), _ => !IsInstalling);
         _showAppDetailsCommand = new RelayCommand(ShowAppDetails);
@@ -197,6 +252,7 @@ public sealed class MainWindowViewModel : ObservableObject
         _resetSettingsCommand = new AsyncRelayCommand(ResetSettingsAsync, () => !IsInstalling);
 
         HookCollectionNotifications();
+        RefreshFilteredLiveLogs();
     }
 
     public AppSettings Settings { get; }
@@ -211,6 +267,12 @@ public sealed class MainWindowViewModel : ObservableObject
 
     public ObservableCollection<AppItem> VisibleApps => _visibleApps;
 
+    public ObservableCollection<NovaProfile> SavedProfiles => _savedProfiles;
+
+    public ObservableCollection<LogEntry> LiveLogs => LoggingService.LiveLogs;
+
+    public ObservableCollection<LogEntry> FilteredLiveLogs => _filteredLiveLogs;
+
     public int SelectedCount => _apps.Count(app => app.IsSelected);
 
     public int VisibleAppCount => _visibleApps.Count;
@@ -220,6 +282,10 @@ public sealed class MainWindowViewModel : ObservableObject
     public int UpdateAvailableCount => _apps.Count(app => app.HasUpdateAvailable);
 
     public int UnsupportedSelectedCount => _apps.Count(app => app.WillBeSkipped);
+
+    public bool HasSavedProfiles => _savedProfiles.Count > 0;
+
+    public bool HasNoSavedProfiles => !HasSavedProfiles;
 
     public bool HasRecommendedApps => RecommendedCount > 0;
 
@@ -237,6 +303,42 @@ public sealed class MainWindowViewModel : ObservableObject
     {
         get => _currentProfileName;
         private set => SetProperty(ref _currentProfileName, string.IsNullOrWhiteSpace(value) ? "Website Starter" : value.Trim());
+    }
+
+    public NovaProfile? SelectedSavedProfile
+    {
+        get => _selectedSavedProfile;
+        set
+        {
+            if (SetProperty(ref _selectedSavedProfile, value))
+            {
+                UpdateCommandStates();
+            }
+        }
+    }
+
+    public bool IsSaveProfilePanelOpen
+    {
+        get => _isSaveProfilePanelOpen;
+        private set
+        {
+            if (SetProperty(ref _isSaveProfilePanelOpen, value))
+            {
+                UpdateCommandStates();
+            }
+        }
+    }
+
+    public string PendingProfileName
+    {
+        get => _pendingProfileName;
+        set => SetProperty(ref _pendingProfileName, string.IsNullOrWhiteSpace(value) ? string.Empty : value.Trim());
+    }
+
+    public string PendingProfileDescription
+    {
+        get => _pendingProfileDescription;
+        set => SetProperty(ref _pendingProfileDescription, value ?? string.Empty);
     }
 
     public string HomeTitle => _currentSection switch
@@ -258,6 +360,14 @@ public sealed class MainWindowViewModel : ObservableObject
     public string LogFilePath => _loggingService.LogFilePath;
 
     public string AboutVersionText => VersionService.GetFullVersionString();
+
+    public string AboutCurrentVersionText => $"Current version: {VersionService.GetFullVersionString()}";
+
+    public string AboutRemoteVersionText
+    {
+        get => _aboutRemoteVersionText;
+        private set => SetProperty(ref _aboutRemoteVersionText, value ?? "Latest available: Not checked yet");
+    }
 
     public string AboutGitHubUrl => NovaGitHubUrl;
 
@@ -304,6 +414,34 @@ public sealed class MainWindowViewModel : ObservableObject
     }
 
     public bool IsAboutUpdateStatusVisible => !string.IsNullOrWhiteSpace(AboutUpdateStatusText);
+
+    public SettingChoice? SelectedLogLevelFilterOption
+    {
+        get => LogLevelFilterChoices.FirstOrDefault(choice => choice.Value == _selectedLogLevelFilter) ?? LogLevelFilterChoices[0];
+        set
+        {
+            if (value is null || value.Value == _selectedLogLevelFilter)
+            {
+                return;
+            }
+
+            _selectedLogLevelFilter = value.Value;
+            OnPropertyChanged();
+            RefreshFilteredLiveLogs();
+        }
+    }
+
+    public LogEntry? SelectedLiveLogEntry
+    {
+        get => _selectedLiveLogEntry;
+        set
+        {
+            if (SetProperty(ref _selectedLiveLogEntry, value))
+            {
+                _copySelectedLogCommand.RaiseCanExecuteChanged();
+            }
+        }
+    }
 
     public bool IsDashboardSelected => string.Equals(_currentSection, SectionDashboard, StringComparison.Ordinal);
     public bool IsDashboardUnselected => !IsDashboardSelected;
@@ -374,6 +512,8 @@ public sealed class MainWindowViewModel : ObservableObject
     public IReadOnlyList<SettingChoice> ThemeOptions => ThemeChoices;
 
     public IReadOnlyList<SettingChoice> LanguageOptions => LanguageChoices;
+
+    public IReadOnlyList<SettingChoice> LogLevelFilterOptions => LogLevelFilterChoices;
 
     public SettingChoice? SelectedRestartBehaviorOption
     {
@@ -735,6 +875,20 @@ public sealed class MainWindowViewModel : ObservableObject
 
     public ICommand SaveListCommand => _saveListCommand;
 
+    public ICommand SaveProfileCommand => _saveProfileCommand;
+
+    public ICommand ConfirmSaveProfileCommand => _confirmSaveProfileCommand;
+
+    public ICommand CancelSaveProfileCommand => _cancelSaveProfileCommand;
+
+    public ICommand LoadProfileCommand => _loadProfileCommand;
+
+    public ICommand ExportProfileCommand => _exportProfileCommand;
+
+    public ICommand LoadSavedProfileCommand => _loadSavedProfileCommand;
+
+    public ICommand DeleteSavedProfileCommand => _deleteSavedProfileCommand;
+
     public ICommand OpenLogFileCommand => _openLogFileCommand;
 
     public ICommand ShowHelpCommand => _showHelpCommand;
@@ -750,6 +904,14 @@ public sealed class MainWindowViewModel : ObservableObject
     public ICommand DownloadUpdateCommand => _downloadUpdateCommand;
 
     public ICommand ManualCheckForUpdatesCommand => _manualCheckForUpdatesCommand;
+
+    public ICommand ClearLogsCommand => _clearLogsCommand;
+
+    public ICommand CopyLogsCommand => _copyLogsCommand;
+
+    public ICommand CopySelectedLogCommand => _copySelectedLogCommand;
+
+    public ICommand ExportLogsCommand => _exportLogsCommand;
 
     public ICommand OpenPublisherCommand => _openPublisherCommand;
 
@@ -854,6 +1016,7 @@ public sealed class MainWindowViewModel : ObservableObject
             NotifySettingsOptionBindingsChanged();
             NotifyScreenStateChanged();
             UpdateCommandStates();
+            await RefreshSavedProfilesAsync();
 
             if (runDetectionInBackground)
             {
@@ -900,6 +1063,20 @@ public sealed class MainWindowViewModel : ObservableObject
             OnPropertyChanged(nameof(VisibleAppCount));
             OnPropertyChanged(nameof(SelectedFooterText));
         };
+        _savedProfiles.CollectionChanged += (_, _) =>
+        {
+            OnPropertyChanged(nameof(HasSavedProfiles));
+            OnPropertyChanged(nameof(HasNoSavedProfiles));
+            _loadSavedProfileCommand.RaiseCanExecuteChanged();
+            _deleteSavedProfileCommand.RaiseCanExecuteChanged();
+        };
+        LoggingService.LiveLogs.CollectionChanged += HandleLiveLogsCollectionChanged;
+    }
+
+    private void HandleLiveLogsCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    {
+        RefreshFilteredLiveLogs();
+        OnPropertyChanged(nameof(LiveLogs));
     }
 
     private void HandleSettingsChanged(object? sender, PropertyChangedEventArgs e)
@@ -941,6 +1118,11 @@ public sealed class MainWindowViewModel : ObservableObject
             case nameof(AppSettings.DeveloperMode):
                 OnPropertyChanged(nameof(IsDeveloperModeEnabled));
                 NotifyScreenStateChanged();
+                RefreshFilteredLiveLogs();
+                _clearLogsCommand.RaiseCanExecuteChanged();
+                _copyLogsCommand.RaiseCanExecuteChanged();
+                _copySelectedLogCommand.RaiseCanExecuteChanged();
+                _exportLogsCommand.RaiseCanExecuteChanged();
                 break;
         }
 
@@ -955,6 +1137,8 @@ public sealed class MainWindowViewModel : ObservableObject
         if (Settings.SaveProfilesAutomatically)
         {
             SaveCurrentList(showStatusMessage: false);
+            _ = _selectionService.SaveAutoProfileAsync(GetSelectedAppIds());
+            _ = RefreshSavedProfilesAsync();
         }
     }
 
@@ -1450,6 +1634,8 @@ public sealed class MainWindowViewModel : ObservableObject
         if (Settings.SaveProfilesAutomatically)
         {
             SaveCurrentList(showStatusMessage: false);
+            _ = _selectionService.SaveAutoProfileAsync(GetSelectedAppIds());
+            _ = RefreshSavedProfilesAsync();
         }
 
         StatusText = BuildLoadedStatusText(detectionPending: false);
@@ -1570,6 +1756,277 @@ public sealed class MainWindowViewModel : ObservableObject
         }
     }
 
+    private void BeginSaveProfile()
+    {
+        PendingProfileName = string.IsNullOrWhiteSpace(CurrentProfileName) ? "My Setup" : CurrentProfileName;
+        PendingProfileDescription = string.Empty;
+        IsSaveProfilePanelOpen = true;
+        StatusText = "Enter a profile name and save the current selection.";
+    }
+
+    private void CancelSaveProfile()
+    {
+        IsSaveProfilePanelOpen = false;
+        PendingProfileName = string.Empty;
+        PendingProfileDescription = string.Empty;
+        StatusText = "Profile save cancelled.";
+    }
+
+    private async Task ConfirmSaveProfileAsync()
+    {
+        var profileName = NormalizeProfileNameForUi(PendingProfileName);
+        var description = PendingProfileDescription.Trim();
+        var selectedIds = GetSelectedAppIds().ToList();
+
+        await _profileService.SaveProfileAsync(profileName, selectedIds, description);
+        await RefreshSavedProfilesAsync(selectProfileName: profileName);
+        CurrentProfileName = profileName;
+        IsSaveProfilePanelOpen = false;
+        PendingProfileName = string.Empty;
+        PendingProfileDescription = string.Empty;
+
+        StatusText = $"Saved profile '{profileName}' with {selectedIds.Count} app(s).";
+        _loggingService.LogInfo(StatusText);
+    }
+
+    private async Task LoadProfileAsync()
+    {
+        var storageProvider = GetStorageProvider();
+        if (storageProvider is null)
+        {
+            StatusText = "Unable to load profiles on this platform.";
+            _loggingService.LogWarning("Profile load failed because no storage provider was available.");
+            return;
+        }
+
+        var files = await storageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
+        {
+            Title = "Load Nova Profile",
+            AllowMultiple = false,
+            FileTypeFilter =
+            [
+                new FilePickerFileType("Nova profiles")
+                {
+                    Patterns = ["*.nova"],
+                    MimeTypes = ["application/json"]
+                }
+            ]
+        });
+
+        var file = files.FirstOrDefault();
+        if (file is null)
+        {
+            return;
+        }
+
+        var localPath = file.TryGetLocalPath();
+        if (string.IsNullOrWhiteSpace(localPath))
+        {
+            StatusText = "Selected profile could not be opened from this location.";
+            _loggingService.LogWarning($"Profile load skipped because '{file.Name}' did not expose a local file path.");
+            return;
+        }
+
+        var profile = await _profileService.LoadProfileAsync(localPath);
+        if (profile is null)
+        {
+            StatusText = $"Could not load profile from {Path.GetFileName(localPath)}.";
+            return;
+        }
+
+        ApplyLoadedProfile(profile);
+    }
+
+    private async Task LoadSelectedSavedProfileAsync()
+    {
+        if (SelectedSavedProfile is null)
+        {
+            return;
+        }
+
+        ApplyLoadedProfile(SelectedSavedProfile);
+        await RefreshSavedProfilesAsync(selectProfileName: SelectedSavedProfile.ProfileName);
+    }
+
+    private async Task ExportProfileAsync()
+    {
+        var storageProvider = GetStorageProvider();
+        if (storageProvider is null)
+        {
+            StatusText = "Unable to export profiles on this platform.";
+            _loggingService.LogWarning("Profile export failed because no storage provider was available.");
+            return;
+        }
+
+        var profileName = NormalizeProfileNameForUi(CurrentProfileName);
+        var file = await storageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
+        {
+            Title = "Export Nova Profile",
+            SuggestedFileName = profileName,
+            DefaultExtension = "nova",
+            FileTypeChoices =
+            [
+                new FilePickerFileType("Nova profiles")
+                {
+                    Patterns = ["*.nova"],
+                    MimeTypes = ["application/json"]
+                }
+            ]
+        });
+
+        if (file is null)
+        {
+            return;
+        }
+
+        var localPath = file.TryGetLocalPath();
+        if (string.IsNullOrWhiteSpace(localPath))
+        {
+            StatusText = "Selected export location is not writable from Nova.";
+            _loggingService.LogWarning($"Profile export skipped because '{file.Name}' did not expose a local file path.");
+            return;
+        }
+
+        var selectedIds = GetSelectedAppIds().ToList();
+        await _profileService.ExportProfileAsync(profileName, selectedIds, localPath);
+        StatusText = $"Exported profile '{profileName}' to {Path.GetFileName(localPath)}.";
+        _loggingService.LogInfo(StatusText);
+    }
+
+    private async Task DeleteSelectedSavedProfileAsync()
+    {
+        if (SelectedSavedProfile is null)
+        {
+            return;
+        }
+
+        var profileName = SelectedSavedProfile.ProfileName;
+        await _profileService.DeleteProfileAsync(profileName);
+        await RefreshSavedProfilesAsync();
+
+        if (string.Equals(CurrentProfileName, profileName, StringComparison.OrdinalIgnoreCase))
+        {
+            CurrentProfileName = "Website Starter";
+        }
+
+        StatusText = $"Deleted profile '{profileName}'.";
+        _loggingService.LogInfo(StatusText);
+    }
+
+    private async Task RefreshSavedProfilesAsync(string? selectProfileName = null)
+    {
+        var profiles = await _profileService.GetSavedProfilesAsync();
+        var orderedProfiles = profiles
+            .OrderByDescending(profile => TryParseProfileDate(profile.CreatedOn))
+            .ThenBy(profile => profile.ProfileName, StringComparer.OrdinalIgnoreCase)
+            .ToList();
+
+        _savedProfiles.Clear();
+        foreach (var profile in orderedProfiles)
+        {
+            _savedProfiles.Add(profile);
+        }
+
+        var selectedProfile = !string.IsNullOrWhiteSpace(selectProfileName)
+            ? _savedProfiles.FirstOrDefault(profile =>
+                string.Equals(profile.ProfileName, selectProfileName, StringComparison.OrdinalIgnoreCase))
+            : SelectedSavedProfile is not null
+                ? _savedProfiles.FirstOrDefault(profile =>
+                    string.Equals(profile.ProfileName, SelectedSavedProfile.ProfileName, StringComparison.OrdinalIgnoreCase))
+                : null;
+
+        SelectedSavedProfile = selectedProfile ?? _savedProfiles.FirstOrDefault();
+    }
+
+    private void ApplyLoadedProfile(NovaProfile profile)
+    {
+        var targetIds = new HashSet<string>(
+            profile.SelectedAppIds.Where(id => !string.IsNullOrWhiteSpace(id)),
+            StringComparer.OrdinalIgnoreCase);
+        var existingIds = new HashSet<string>(_apps.Select(app => app.Id), StringComparer.OrdinalIgnoreCase);
+        var matchingIds = targetIds.Where(existingIds.Contains).ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+        _suppressAppSelectionHandling = true;
+        try
+        {
+            foreach (var app in _apps)
+            {
+                app.IsSelected = matchingIds.Contains(app.Id);
+                ApplyPlatformFlags(app);
+            }
+        }
+        finally
+        {
+            _suppressAppSelectionHandling = false;
+        }
+
+        CurrentProfileName = string.IsNullOrWhiteSpace(profile.ProfileName) ? "My Setup" : profile.ProfileName;
+        IsSaveProfilePanelOpen = false;
+        PendingProfileName = string.Empty;
+        PendingProfileDescription = string.Empty;
+        SelectedSavedProfile = _savedProfiles.FirstOrDefault(savedProfile =>
+            string.Equals(savedProfile.ProfileName, CurrentProfileName, StringComparison.OrdinalIgnoreCase));
+        ApplyVisibilityFilter();
+        NotifyAppSummaryStateChanged();
+        UpdateCommandStates();
+        SaveCurrentList(showStatusMessage: false);
+        _ = _selectionService.SaveAutoProfileAsync(matchingIds);
+        _ = RefreshSavedProfilesAsync(selectProfileName: CurrentProfileName);
+
+        if (!string.IsNullOrWhiteSpace(profile.Platform) &&
+            !string.Equals(profile.Platform, _currentPlatformId, StringComparison.OrdinalIgnoreCase))
+        {
+            _loggingService.LogWarning($"Profile was created on {profile.Platform} — some apps may not be available on {_currentPlatformId}");
+        }
+
+        var missingCount = targetIds.Count - matchingIds.Count;
+        if (missingCount > 0)
+        {
+            _loggingService.LogWarning($"Profile '{CurrentProfileName}' contained {missingCount} app(s) not present in the current catalog.");
+        }
+
+        var message = $"Profile loaded: {CurrentProfileName} ({matchingIds.Count} apps selected)";
+        StatusText = message;
+        _loggingService.LogInfo(message);
+    }
+
+    private IEnumerable<string> GetSelectedAppIds()
+    {
+        return _apps
+            .Where(app => app.IsSelected)
+            .Select(app => app.Id)
+            .Distinct(StringComparer.OrdinalIgnoreCase);
+    }
+
+    private static string NormalizeProfileNameForUi(string? profileName)
+    {
+        var value = string.IsNullOrWhiteSpace(profileName) ? "My Setup" : profileName.Trim();
+        foreach (var invalidCharacter in Path.GetInvalidFileNameChars())
+        {
+            value = value.Replace(invalidCharacter, '_');
+        }
+
+        return string.IsNullOrWhiteSpace(value) ? "My Setup" : value;
+    }
+
+    private static DateTimeOffset TryParseProfileDate(string? value)
+    {
+        return DateTimeOffset.TryParse(value, out var parsed)
+            ? parsed
+            : DateTimeOffset.MinValue;
+    }
+
+    private IStorageProvider? GetStorageProvider()
+    {
+        if (Application.Current?.ApplicationLifetime is not IClassicDesktopStyleApplicationLifetime desktop ||
+            desktop.MainWindow is not Window window)
+        {
+            return null;
+        }
+
+        return TopLevel.GetTopLevel(window)?.StorageProvider;
+    }
+
     private void ToggleSettingsPanel()
     {
         IsSettingsPanelOpen = !IsSettingsPanelOpen;
@@ -1629,6 +2086,11 @@ public sealed class MainWindowViewModel : ObservableObject
 
         await Dispatcher.UIThread.InvokeAsync(() =>
         {
+            if (!string.IsNullOrWhiteSpace(result.LatestVersion))
+            {
+                AboutRemoteVersionText = $"Latest available: Nova v{result.LatestVersion}";
+            }
+
             if (result.UpdateAvailable)
             {
                 IsUpdateAvailable = true;
@@ -1643,6 +2105,10 @@ public sealed class MainWindowViewModel : ObservableObject
             if (forceManualCheck)
             {
                 AboutUpdateStatusText = "Nova is up to date";
+                if (string.IsNullOrWhiteSpace(result.LatestVersion))
+                {
+                    AboutRemoteVersionText = "Latest available: Unknown";
+                }
             }
         });
     }
@@ -1782,6 +2248,147 @@ public sealed class MainWindowViewModel : ObservableObject
             StatusText = "Could not open log file.";
             _loggingService.LogError($"Failed to open log file: {ex.Message}");
         }
+    }
+
+    private async Task ClearLogsAsync()
+    {
+        await Dispatcher.UIThread.InvokeAsync(() => LoggingService.LiveLogs.Clear());
+    }
+
+    private async Task CopyLogsAsync()
+    {
+        var allLogs = string.Join(Environment.NewLine, FilteredLiveLogs.Select(entry => entry.DisplayText));
+        if (string.IsNullOrWhiteSpace(allLogs))
+        {
+            return;
+        }
+
+        if (Application.Current?.ApplicationLifetime is not IClassicDesktopStyleApplicationLifetime desktop ||
+            desktop.MainWindow is not Window window)
+        {
+            return;
+        }
+
+        var clipboard = TopLevel.GetTopLevel(window)?.Clipboard;
+        if (clipboard is null)
+        {
+            return;
+        }
+
+        await clipboard.SetTextAsync(allLogs);
+        _loggingService.LogInfo("Copied developer console logs to clipboard.");
+    }
+
+    private async Task CopySelectedLogAsync()
+    {
+        if (SelectedLiveLogEntry is null)
+        {
+            return;
+        }
+
+        if (Application.Current?.ApplicationLifetime is not IClassicDesktopStyleApplicationLifetime desktop ||
+            desktop.MainWindow is not Window window)
+        {
+            return;
+        }
+
+        var clipboard = TopLevel.GetTopLevel(window)?.Clipboard;
+        if (clipboard is null)
+        {
+            return;
+        }
+
+        await clipboard.SetTextAsync(SelectedLiveLogEntry.DisplayText);
+        _loggingService.LogInfo("Copied selected developer console log entry to clipboard.");
+    }
+
+    private async Task ExportLogsAsync()
+    {
+        if (FilteredLiveLogs.Count == 0)
+        {
+            return;
+        }
+
+        if (Application.Current?.ApplicationLifetime is not IClassicDesktopStyleApplicationLifetime desktop ||
+            desktop.MainWindow is not Window window)
+        {
+            return;
+        }
+
+        var topLevel = TopLevel.GetTopLevel(window);
+        var storageProvider = topLevel?.StorageProvider;
+        if (storageProvider is null)
+        {
+            StatusText = "Unable to export developer console logs on this platform.";
+            _loggingService.LogWarning("Developer console export failed because no storage provider was available.");
+            return;
+        }
+
+        var file = await storageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
+        {
+            Title = "Export Developer Console Logs",
+            SuggestedFileName = $"nova-developer-console-{DateTime.Now:yyyyMMdd-HHmmss}.txt",
+            DefaultExtension = "txt",
+            FileTypeChoices =
+            [
+                new FilePickerFileType("Text files")
+                {
+                    Patterns = ["*.txt"],
+                    MimeTypes = ["text/plain"]
+                }
+            ]
+        });
+
+        if (file is null)
+        {
+            return;
+        }
+
+        var content = string.Join(Environment.NewLine, FilteredLiveLogs.Select(entry => entry.DisplayText));
+        await using var stream = await file.OpenWriteAsync();
+        await using var writer = new StreamWriter(stream);
+        await writer.WriteAsync(content);
+        await writer.FlushAsync();
+
+        StatusText = $"Developer console exported to {file.Name}.";
+        _loggingService.LogInfo($"Exported developer console logs to {file.Name}.");
+    }
+
+    private void RefreshFilteredLiveLogs()
+    {
+        IEnumerable<LogEntry> source = LoggingService.LiveLogs;
+        source = _selectedLogLevelFilter switch
+        {
+            LogFilterInfo => source.Where(entry => entry.Level == LogLevel.Info),
+            LogFilterSuccess => source.Where(entry => entry.Level == LogLevel.Success),
+            LogFilterWarning => source.Where(entry => entry.Level == LogLevel.Warning),
+            LogFilterError => source.Where(entry => entry.Level == LogLevel.Error),
+            LogFilterDebug => source.Where(entry => entry.Level == LogLevel.Debug),
+            _ => source
+        };
+
+        var selectedDisplayText = SelectedLiveLogEntry?.DisplayText;
+
+        _filteredLiveLogs.Clear();
+        foreach (var entry in source)
+        {
+            _filteredLiveLogs.Add(entry);
+        }
+
+        if (!string.IsNullOrWhiteSpace(selectedDisplayText))
+        {
+            SelectedLiveLogEntry = _filteredLiveLogs.FirstOrDefault(entry =>
+                string.Equals(entry.DisplayText, selectedDisplayText, StringComparison.Ordinal));
+        }
+        else if (SelectedLiveLogEntry is not null && !_filteredLiveLogs.Contains(SelectedLiveLogEntry))
+        {
+            SelectedLiveLogEntry = null;
+        }
+
+        OnPropertyChanged(nameof(FilteredLiveLogs));
+        _copyLogsCommand.RaiseCanExecuteChanged();
+        _copySelectedLogCommand.RaiseCanExecuteChanged();
+        _exportLogsCommand.RaiseCanExecuteChanged();
     }
 
     private void ShowHelpPlaceholder()
@@ -2367,11 +2974,22 @@ public sealed class MainWindowViewModel : ObservableObject
     {
         _installCommand.RaiseCanExecuteChanged();
         _refreshCatalogCommand.RaiseCanExecuteChanged();
+        _saveProfileCommand.RaiseCanExecuteChanged();
+        _confirmSaveProfileCommand.RaiseCanExecuteChanged();
+        _cancelSaveProfileCommand.RaiseCanExecuteChanged();
+        _loadProfileCommand.RaiseCanExecuteChanged();
+        _exportProfileCommand.RaiseCanExecuteChanged();
+        _loadSavedProfileCommand.RaiseCanExecuteChanged();
+        _deleteSavedProfileCommand.RaiseCanExecuteChanged();
         _showRecommendedFilterCommand.RaiseCanExecuteChanged();
         _showUpdatesFilterCommand.RaiseCanExecuteChanged();
         _dismissUpdateCommand.RaiseCanExecuteChanged();
         _downloadUpdateCommand.RaiseCanExecuteChanged();
         _manualCheckForUpdatesCommand.RaiseCanExecuteChanged();
+        _clearLogsCommand.RaiseCanExecuteChanged();
+        _copyLogsCommand.RaiseCanExecuteChanged();
+        _copySelectedLogCommand.RaiseCanExecuteChanged();
+        _exportLogsCommand.RaiseCanExecuteChanged();
         _pauseInstallCommand.RaiseCanExecuteChanged();
         _navigateDashboardCommand.RaiseCanExecuteChanged();
         _navigateAppsCommand.RaiseCanExecuteChanged();
@@ -2426,3 +3044,5 @@ public sealed class MainWindowViewModel : ObservableObject
 
     public sealed record SettingChoice(string Value, string Label);
 }
+
+

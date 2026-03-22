@@ -6,16 +6,20 @@ namespace NovaSetup.Services;
 public sealed class SelectionService
 {
     private readonly LoggingService? _loggingService;
+    private readonly ProfileService _profileService;
     private readonly JsonSerializerOptions _jsonOptions = new()
     {
         PropertyNameCaseInsensitive = true,
         WriteIndented = true
     };
 
-    public SelectionService(LoggingService? loggingService = null)
+    public SelectionService(ProfileService profileService, LoggingService? loggingService = null)
     {
+        _profileService = profileService;
         _loggingService = loggingService;
     }
+
+    public Func<AppSettings>? SettingsAccessor { get; set; }
 
     // Loads Configs/selection.json if present and returns null on missing/invalid data.
     public SelectionConfig? LoadSelection()
@@ -101,6 +105,29 @@ public sealed class SelectionService
         var json = JsonSerializer.Serialize(selection, _jsonOptions);
         File.WriteAllText(configPath, json);
         _loggingService?.Info($"Saved selection profile to {configPath}");
+    }
+
+    public async Task SaveAutoProfileAsync(IEnumerable<string> selectedAppIds)
+    {
+        var settings = SettingsAccessor?.Invoke();
+        if (settings?.SaveProfilesAutomatically != true)
+        {
+            return;
+        }
+
+        try
+        {
+            var selectedIds = selectedAppIds?
+                .Where(id => !string.IsNullOrWhiteSpace(id))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToList() ?? new List<string>();
+
+            await _profileService.SaveProfileAsync("AutoSave", selectedIds);
+        }
+        catch (Exception ex)
+        {
+            _loggingService?.Warn($"Auto-save profile failed: {ex.Message}");
+        }
     }
 
     private static void ApplyLegacySettingsFallback(SelectionConfig selection, string rawJson)
