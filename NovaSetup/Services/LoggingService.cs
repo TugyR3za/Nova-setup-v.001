@@ -51,6 +51,7 @@ public sealed class LoggingService
 
     public void LogSuccess(string message)
     {
+        Write("SUCCESS", message);
         AppendLiveLog(LogLevel.Success, message);
     }
 

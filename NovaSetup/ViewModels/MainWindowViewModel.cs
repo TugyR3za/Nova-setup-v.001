@@ -1075,8 +1075,12 @@ public sealed class MainWindowViewModel : ObservableObject
 
     private void HandleLiveLogsCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
-        RefreshFilteredLiveLogs();
-        OnPropertyChanged(nameof(LiveLogs));
+        // Marshal to UI thread to safely mutate UI-bound collections
+        Dispatcher.UIThread.InvokeAsync(() =>
+        {
+            RefreshFilteredLiveLogs();
+            OnPropertyChanged(nameof(LiveLogs));
+        });
     }
 
     private void HandleSettingsChanged(object? sender, PropertyChangedEventArgs e)
@@ -2266,12 +2270,16 @@ public sealed class MainWindowViewModel : ObservableObject
         if (Application.Current?.ApplicationLifetime is not IClassicDesktopStyleApplicationLifetime desktop ||
             desktop.MainWindow is not Window window)
         {
+            StatusText = "Clipboard unavailable: operation requires desktop clipboard access.";
+            _loggingService.LogWarning("Copy logs failed: clipboard unavailable (no desktop application lifetime).");
             return;
         }
 
         var clipboard = TopLevel.GetTopLevel(window)?.Clipboard;
         if (clipboard is null)
         {
+            StatusText = "Clipboard unavailable: operation requires desktop clipboard access.";
+            _loggingService.LogWarning("Copy logs failed: clipboard unavailable (TopLevel not available).");
             return;
         }
 
@@ -2344,19 +2352,34 @@ public sealed class MainWindowViewModel : ObservableObject
             return;
         }
 
-        var content = string.Join(Environment.NewLine, FilteredLiveLogs.Select(entry => entry.DisplayText));
-        await using var stream = await file.OpenWriteAsync();
-        await using var writer = new StreamWriter(stream);
-        await writer.WriteAsync(content);
-        await writer.FlushAsync();
+        try
+        {
+            var content = string.Join(Environment.NewLine, FilteredLiveLogs.Select(entry => entry.DisplayText));
+            await using var stream = await file.OpenWriteAsync();
+            await using var writer = new StreamWriter(stream);
+            await writer.WriteAsync(content);
+            await writer.FlushAsync();
 
-        StatusText = $"Developer console exported to {file.Name}.";
-        _loggingService.LogInfo($"Exported developer console logs to {file.Name}.");
+            StatusText = $"Developer console exported to {file.Name}.";
+            _loggingService.LogInfo($"Exported developer console logs to {file.Name}.");
+        }
+        catch (Exception ex)
+        {
+            StatusText = $"Export failed for {file.Name}: {ex.Message}";
+            _loggingService.LogError($"Export logs failed for {file.Name}: {ex.Message}");
+        }
     }
 
     private void RefreshFilteredLiveLogs()
     {
-        IEnumerable<LogEntry> source = LoggingService.LiveLogs;
+        // Take a thread-safe snapshot of LiveLogs to avoid concurrent modification exceptions
+        List<LogEntry> snapshot;
+        lock (LoggingService.LiveLogs)
+        {
+            snapshot = new List<LogEntry>(LoggingService.LiveLogs);
+        }
+
+        IEnumerable<LogEntry> source = snapshot;
         source = _selectedLogLevelFilter switch
         {
             LogFilterInfo => source.Where(entry => entry.Level == LogLevel.Info),

@@ -170,7 +170,19 @@ public partial class MainWindow : Window
             return;
         }
 
-        DeveloperLogListBox.ScrollIntoView(LoggingService.LiveLogs[^1]);
+        try
+        {
+            // Capture the last log item to avoid TOCTOU race condition
+            var lastLogItem = LoggingService.LiveLogs.LastOrDefault();
+            if (lastLogItem != null)
+            {
+                DeveloperLogListBox.ScrollIntoView(lastLogItem);
+            }
+        }
+        catch
+        {
+            // Silently ignore if collection was modified or scrolling fails
+        }
     }
 
     private void UpdateDeveloperConsoleState()

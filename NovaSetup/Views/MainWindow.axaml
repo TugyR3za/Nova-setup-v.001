@@ -714,6 +714,7 @@
                                   HorizontalAlignment="Stretch"
                                   ResizeDirection="Rows"
                                   ResizeBehavior="PreviousAndNext"
+                                  IsVisible="{Binding IsDeveloperModeEnabled}"
                                   Background="{DynamicResource CardBorderBrush}" />
 
                     <Border Grid.Row="2"
@@ -743,7 +744,7 @@
                                                FontWeight="SemiBold" />
 
                                     <TextBlock Grid.Column="2"
-                                               Text="{Binding LiveLogs.Count, StringFormat='Entries: {0}'}"
+                                               Text="{Binding FilteredLiveLogs.Count, StringFormat='Entries: {0}'}"
                                                VerticalAlignment="Center"
                                                Foreground="{DynamicResource TextMutedBrush}" />
 

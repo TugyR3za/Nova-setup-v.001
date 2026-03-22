@@ -1,2 +1,37 @@
 
 .builder/config/data.json
+
+# Build output directories
+[Bb]in/
+[Oo]bj/
+
+# NuGet
+*.nupkg
+*.snupkg
+.nuget/
+
+# Visual Studio
+.vs/
+.vscode/
+*.sln.user
+*.suo
+*.user
+
+# Rider
+.idea/
+*.sln.iml
+
+# .NET
+appsettings.*.json
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Telemetry
+.dotnet/
+
+# Build artifacts that should not be tracked
+project.assets.json
+project.assets.json.lock
