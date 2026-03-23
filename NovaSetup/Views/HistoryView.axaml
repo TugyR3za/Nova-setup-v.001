@@ -1,0 +1,100 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="NovaSetup.Views.HistoryView"
+             x:CompileBindings="False">
+  <ScrollViewer VerticalScrollBarVisibility="Auto"
+                HorizontalScrollBarVisibility="Disabled">
+    <StackPanel Spacing="12"
+                Margin="0,0,6,0">
+      <Border Classes="card"
+              Padding="18">
+        <Grid ColumnDefinitions="*,Auto"
+              ColumnSpacing="12">
+          <StackPanel Spacing="4">
+            <TextBlock Text="History"
+                       FontSize="34"
+                       FontWeight="Bold" />
+            <TextBlock Text="Persistent install history stored locally on this device."
+                       FontSize="15"
+                       Foreground="{DynamicResource TextMutedBrush}"
+                       TextWrapping="Wrap" />
+            <TextBlock Text="{Binding TotalInstallsText}"
+                       Foreground="{DynamicResource TextMutedBrush}" />
+          </StackPanel>
+
+          <Button Grid.Column="1"
+                  Classes="ghost compact"
+                  Content="Clear History"
+                  Command="{Binding ClearHistoryCommand}"
+                  VerticalAlignment="Top" />
+        </Grid>
+      </Border>
+
+      <Border Classes="card"
+              IsVisible="{Binding HasRecords}">
+        <StackPanel Spacing="8">
+          <Grid ColumnDefinitions="2.2*,1.2*,1.1*,1*,1.8*,1*"
+                ColumnSpacing="12">
+            <TextBlock Text="App Name" FontWeight="SemiBold" />
+            <TextBlock Grid.Column="1" Text="Version" FontWeight="SemiBold" />
+            <TextBlock Grid.Column="2" Text="Method" FontWeight="SemiBold" />
+            <TextBlock Grid.Column="3" Text="Status" FontWeight="SemiBold" />
+            <TextBlock Grid.Column="4" Text="Date/Time" FontWeight="SemiBold" />
+            <TextBlock Grid.Column="5" Text="Elapsed" FontWeight="SemiBold" />
+          </Grid>
+
+          <ItemsControl ItemsSource="{Binding Records}">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate>
+                <Border BorderBrush="{DynamicResource CardBorderBrush}"
+                        BorderThickness="0,1,0,0"
+                        Padding="0,10,0,0">
+                  <Grid ColumnDefinitions="2.2*,1.2*,1.1*,1*,1.8*,1*"
+                        ColumnSpacing="12">
+                    <TextBlock Text="{Binding AppName}"
+                               TextWrapping="Wrap" />
+                    <TextBlock Grid.Column="1"
+                               Text="{Binding DisplayVersion}"
+                               Foreground="{DynamicResource TextMutedBrush}" />
+                    <TextBlock Grid.Column="2"
+                               Text="{Binding InstallMethod}"
+                               Foreground="{DynamicResource TextMutedBrush}" />
+
+                    <Grid Grid.Column="3">
+                      <TextBlock Text="Success"
+                                 IsVisible="{Binding Success}"
+                                 Foreground="{DynamicResource SuccessBrush}" />
+                      <TextBlock Text="Failed"
+                                 IsVisible="{Binding Failed}"
+                                 Foreground="{DynamicResource DangerBrush}" />
+                    </Grid>
+
+                    <TextBlock Grid.Column="4"
+                               Text="{Binding DisplayInstalledAt}"
+                               Foreground="{DynamicResource TextMutedBrush}" />
+                    <TextBlock Grid.Column="5"
+                               Text="{Binding DisplayElapsed}"
+                               Foreground="{DynamicResource TextMutedBrush}" />
+                  </Grid>
+                </Border>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+        </StackPanel>
+      </Border>
+
+      <Border Classes="card"
+              IsVisible="{Binding HasNoRecords}"
+              Padding="20">
+        <StackPanel Spacing="8">
+          <TextBlock Text="No install history yet."
+                     FontSize="20"
+                     FontWeight="SemiBold" />
+          <TextBlock Text="Install attempts will appear here once Nova records them."
+                     Foreground="{DynamicResource TextMutedBrush}"
+                     TextWrapping="Wrap" />
+        </StackPanel>
+      </Border>
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>

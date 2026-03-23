@@ -99,7 +99,7 @@ public sealed class CatalogService
 
     public IEnumerable<AppItem> FilterSupportedApps(IEnumerable<AppItem> apps)
     {
-        return apps.Where(app => app.IsSupportedOnCurrentPlatform);
+        return apps.Where(app => app.IsSupportedOnCurrentPlatform && !app.IsHidden);
     }
 
     private static void Normalize(AppItem app)
@@ -115,6 +115,7 @@ public sealed class CatalogService
         app.License ??= string.Empty;
         app.ReleaseNotesUrl ??= string.Empty;
         app.Tags ??= new List<string>();
+        app.Dependencies ??= new List<string>();
         app.RecommendationTags ??= new List<string>();
         app.SupportedPlatforms ??= new PlatformSupport();
     }

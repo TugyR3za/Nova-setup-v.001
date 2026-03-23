@@ -403,5 +403,71 @@
       "DetectExecutable": "htop"
     },
     "SupportsSilentInstall": true
+  },
+  {
+    "Id": "dotnet-runtime-8",
+    "Name": ".NET Runtime 8",
+    "Category": "Dependencies",
+    "PublisherName": "Microsoft",
+    "HomepageUrl": "https://dotnet.microsoft.com/en-us/download/dotnet/8.0",
+    "Description": ".NET 8 runtime used by apps that require the .NET runtime to already exist on the machine.",
+    "SupportedPlatforms": {
+      "Windows": true,
+      "Linux": false
+    },
+    "WindowsInstall": {
+      "Command": "winget install --id Microsoft.DotNet.Runtime.8 -e --accept-source-agreements --accept-package-agreements",
+      "SilentCommand": "winget install --id Microsoft.DotNet.Runtime.8 -e --silent --accept-source-agreements --accept-package-agreements",
+      "RequiresRestart": false,
+      "NeedsManualInstall": false,
+      "DetectDisplayNameContains": ".NET Runtime 8",
+      "DetectExecutable": "dotnet"
+    },
+    "SupportsSilentInstall": true,
+    "IsHidden": true
+  },
+  {
+    "Id": "vcredist-2022",
+    "Name": "VC++ Redistributable 2022",
+    "Category": "Dependencies",
+    "PublisherName": "Microsoft",
+    "HomepageUrl": "https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist",
+    "Description": "Microsoft Visual C++ 2022 Redistributable runtime.",
+    "SupportedPlatforms": {
+      "Windows": true,
+      "Linux": false
+    },
+    "WindowsInstall": {
+      "Command": "winget install --id Microsoft.VCRedist.2022.x64 -e --accept-source-agreements --accept-package-agreements",
+      "SilentCommand": "winget install --id Microsoft.VCRedist.2022.x64 -e --silent --accept-source-agreements --accept-package-agreements",
+      "RequiresRestart": false,
+      "NeedsManualInstall": false,
+      "DetectDisplayNameContains": "Microsoft Visual C++ 2022",
+      "DetectExecutable": ""
+    },
+    "SupportsSilentInstall": true,
+    "IsHidden": true
+  },
+  {
+    "Id": "directx",
+    "Name": "DirectX End-User Runtime",
+    "Category": "Dependencies",
+    "PublisherName": "Microsoft",
+    "HomepageUrl": "https://www.microsoft.com/en-us/download/details.aspx?id=35",
+    "Description": "DirectX runtime components used by apps and games that require the DirectX end-user runtime.",
+    "SupportedPlatforms": {
+      "Windows": true,
+      "Linux": false
+    },
+    "WindowsInstall": {
+      "Command": "winget install --id Microsoft.DirectX -e --accept-source-agreements --accept-package-agreements",
+      "SilentCommand": "winget install --id Microsoft.DirectX -e --silent --accept-source-agreements --accept-package-agreements",
+      "RequiresRestart": false,
+      "NeedsManualInstall": false,
+      "DetectDisplayNameContains": "DirectX",
+      "DetectExecutable": ""
+    },
+    "SupportsSilentInstall": true,
+    "IsHidden": true
   }
 ]

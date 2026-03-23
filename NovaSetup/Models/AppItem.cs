@@ -16,6 +16,7 @@ public class AppItem : ObservableObject
     private string _installedVersion = string.Empty;
     private string _license = string.Empty;
     private string _releaseNotesUrl = string.Empty;
+    private List<string> _dependencies = new();
     private PlatformSupport _supportedPlatforms = new();
     private InstallDefinition? _windowsInstall;
     private InstallDefinition? _linuxInstall;
@@ -27,6 +28,7 @@ public class AppItem : ObservableObject
     private string _recommendationReason = string.Empty;
     private bool _requiresRestartHint;
     private bool _supportsSilentInstall;
+    private bool _isHidden;
     private List<string> _recommendationTags = new();
     private List<string> _tags = new();
 
@@ -115,6 +117,12 @@ public class AppItem : ObservableObject
         set => SetProperty(ref _tags, value ?? new List<string>());
     }
 
+    public List<string> Dependencies
+    {
+        get => _dependencies;
+        set => SetProperty(ref _dependencies, value ?? new List<string>());
+    }
+
     public PlatformSupport SupportedPlatforms
     {
         get => _supportedPlatforms;
@@ -179,6 +187,12 @@ public class AppItem : ObservableObject
     {
         get => _supportsSilentInstall;
         set => SetProperty(ref _supportsSilentInstall, value);
+    }
+
+    public bool IsHidden
+    {
+        get => _isHidden;
+        set => SetProperty(ref _isHidden, value);
     }
 
     public List<string> RecommendationTags

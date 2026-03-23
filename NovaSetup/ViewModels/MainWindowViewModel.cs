@@ -41,6 +41,7 @@ public sealed class MainWindowViewModel : ObservableObject
     private readonly BrowserService _browserService;
     private readonly SettingsService _settingsService;
     private readonly ProfileService _profileService;
+    private readonly DependencyResolverService _dependencyResolverService;
 
     private readonly ObservableCollection<AppItem> _apps = new();
     private readonly ObservableCollection<AppItem> _visibleApps = new();
@@ -126,6 +127,8 @@ public sealed class MainWindowViewModel : ObservableObject
     private bool _isUpdateAvailable;
     private string _updateVersionText = string.Empty;
     private string _updateDownloadUrl = string.Empty;
+    private bool _isDependencyInfoVisible;
+    private string _dependencyInfoText = string.Empty;
     private string _aboutUpdateStatusText = string.Empty;
     private string _aboutRemoteVersionText = "Latest available: Not checked yet";
     private AppItem? _selectedDetailApp;
@@ -142,6 +145,7 @@ public sealed class MainWindowViewModel : ObservableObject
     private double _progressValue;
     private CancellationTokenSource? _settingsSaveCts;
     private CancellationTokenSource? _startupDetectionCts;
+    private CancellationTokenSource? _dependencyInfoDismissCts;
 
     private static readonly IReadOnlyList<SettingChoice> RestartBehaviorChoices =
     [
@@ -190,7 +194,8 @@ public sealed class MainWindowViewModel : ObservableObject
         LoggingService loggingService,
         BrowserService browserService,
         SettingsService settingsService,
-        ProfileService profileService)
+        ProfileService profileService,
+        HistoryService historyService)
     {
         _platformService = platformService;
         _catalogService = catalogService;
@@ -201,8 +206,10 @@ public sealed class MainWindowViewModel : ObservableObject
         _browserService = browserService;
         _settingsService = settingsService;
         _profileService = profileService;
+        _dependencyResolverService = new DependencyResolverService(loggingService);
 
         Settings = new AppSettings();
+        HistoryViewModel = new HistoryViewModel(historyService, loggingService);
         Settings.PropertyChanged += HandleSettingsChanged;
         LoggingService.DeveloperModeAccessor = () => Settings.DeveloperMode;
         _selectionService.SettingsAccessor = () => Settings;
@@ -256,6 +263,8 @@ public sealed class MainWindowViewModel : ObservableObject
     }
 
     public AppSettings Settings { get; }
+
+    public HistoryViewModel HistoryViewModel { get; }
 
     public string CurrentPlatform
     {
@@ -399,6 +408,18 @@ public sealed class MainWindowViewModel : ObservableObject
                 UpdateCommandStates();
             }
         }
+    }
+
+    public bool IsDependencyInfoVisible
+    {
+        get => _isDependencyInfoVisible;
+        private set => SetProperty(ref _isDependencyInfoVisible, value);
+    }
+
+    public string DependencyInfoText
+    {
+        get => _dependencyInfoText;
+        private set => SetProperty(ref _dependencyInfoText, value ?? string.Empty);
     }
 
     public string AboutUpdateStatusText
@@ -1017,6 +1038,7 @@ public sealed class MainWindowViewModel : ObservableObject
             NotifyScreenStateChanged();
             UpdateCommandStates();
             await RefreshSavedProfilesAsync();
+            await HistoryViewModel.RefreshAsync();
 
             if (runDetectionInBackground)
             {
@@ -1325,6 +1347,11 @@ public sealed class MainWindowViewModel : ObservableObject
 
         foreach (var app in _apps)
         {
+            if (app.IsHidden)
+            {
+                continue;
+            }
+
             var includeByPlatform = !Settings.OsSupportedApps || app.IsSupportedOnCurrentPlatform || app.IsSelected;
             if (!includeByPlatform)
             {
@@ -1497,9 +1524,10 @@ public sealed class MainWindowViewModel : ObservableObject
 
         _loggingService.LogInfo($"Navigation changed to '{section}'.");
 
-        if (section == SectionHistory && !HasInstallResults)
+        if (section == SectionHistory)
         {
-            StatusText = "No install history yet.";
+            StatusText = "Install history page selected.";
+            _ = HistoryViewModel.RefreshAsync();
         }
         else if (section == SectionLogs)
         {
@@ -2527,10 +2555,12 @@ public sealed class MainWindowViewModel : ObservableObject
             return;
         }
 
+        ShowDependencyInstallInfo(selectedApps);
         ResetInstallOutputState();
         IsSettingsPanelOpen = false;
         CloseAppDetails(logAction: false);
         IsInstalling = true;
+        _ = AutoDismissDependencyInfoAsync();
 
         InstallStatusText = $"Starting installation for {selectedApps.Count} app(s)...";
         _loggingService.LogInfo(InstallStatusText);
@@ -2552,7 +2582,8 @@ public sealed class MainWindowViewModel : ObservableObject
                 silentInstallEnabled: Settings.SilentInstall,
                 keepInstallersAfterInstall: Settings.KeepInstallersAfterInstall,
                 downloadLocationMode: Settings.DownloadLocationMode,
-                customDownloadFolder: Settings.CustomDownloadFolder);
+                customDownloadFolder: Settings.CustomDownloadFolder,
+                catalogApps: _apps);
 
             foreach (var result in batchResults)
             {
@@ -2565,6 +2596,7 @@ public sealed class MainWindowViewModel : ObservableObject
         }
 
         await RefreshInstalledStatesAfterInstallAsync();
+        await HistoryViewModel.RefreshAsync();
         FinalizeInstallSummary();
         IsInstalling = false;
         await ApplyPostInstallRestartBehaviorAsync();
@@ -2585,6 +2617,74 @@ public sealed class MainWindowViewModel : ObservableObject
         _skippedResults.Clear();
         _restartRequiredResults.Clear();
         _unsupportedSkippedResults.Clear();
+    }
+
+    private void ShowDependencyInstallInfo(IReadOnlyCollection<AppItem> selectedApps)
+    {
+        var selectedIds = selectedApps
+            .Where(app => !string.IsNullOrWhiteSpace(app.Id))
+            .Select(app => app.Id)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
+        var allAppsById = _apps
+            .Where(app => !string.IsNullOrWhiteSpace(app.Id))
+            .GroupBy(app => app.Id, StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(group => group.Key, group => group.First(), StringComparer.OrdinalIgnoreCase);
+        var missingDependencies = _dependencyResolverService.GetMissingDependencies(selectedIds, allAppsById, _detectionService);
+
+        if (missingDependencies.Count == 0)
+        {
+            ClearDependencyInfoBanner();
+            return;
+        }
+
+        DependencyInfoText = "The following dependencies will also be installed: " +
+                             string.Join(", ", missingDependencies.Select(app => app.Name));
+        IsDependencyInfoVisible = true;
+        _loggingService.LogInfo(DependencyInfoText);
+    }
+
+    private async Task AutoDismissDependencyInfoAsync()
+    {
+        _dependencyInfoDismissCts?.Cancel();
+
+        if (!IsDependencyInfoVisible)
+        {
+            return;
+        }
+
+        var cts = new CancellationTokenSource();
+        _dependencyInfoDismissCts = cts;
+
+        try
+        {
+            await Task.Delay(TimeSpan.FromSeconds(3), cts.Token);
+            if (cts.IsCancellationRequested)
+            {
+                return;
+            }
+
+            ClearDependencyInfoBanner();
+        }
+        catch (OperationCanceledException)
+        {
+            // Intentionally ignored.
+        }
+        finally
+        {
+            if (ReferenceEquals(_dependencyInfoDismissCts, cts))
+            {
+                _dependencyInfoDismissCts = null;
+            }
+
+            cts.Dispose();
+        }
+    }
+
+    private void ClearDependencyInfoBanner()
+    {
+        IsDependencyInfoVisible = false;
+        DependencyInfoText = string.Empty;
     }
 
     private void AddInstallResult(InstallResult result)

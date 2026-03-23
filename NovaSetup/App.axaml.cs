@@ -26,10 +26,11 @@ public partial class App : Application
             var platformService = new PlatformService();
             var settingsService = new SettingsService(loggingService);
             var profileService = new ProfileService(settingsService, loggingService);
+            var historyService = new HistoryService(loggingService);
             var catalogService = new CatalogService(platformService, loggingService);
             var selectionService = new SelectionService(profileService, loggingService);
             var detectionService = new DetectionService(loggingService);
-            var installerService = new InstallerService(loggingService, detectionService);
+            var installerService = new InstallerService(loggingService, detectionService, historyService);
             var browserService = new BrowserService(loggingService);
 
             var mainWindowViewModel = new MainWindowViewModel(
@@ -41,7 +42,8 @@ public partial class App : Application
                 loggingService,
                 browserService,
                 settingsService,
-                profileService);
+                profileService,
+                historyService);
 
             var splashScreen = new SplashScreen();
             desktop.MainWindow = splashScreen;

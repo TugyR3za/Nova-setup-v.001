@@ -13,12 +13,19 @@ public sealed class InstallerService
 
     private readonly LoggingService? _loggingService;
     private readonly DetectionService? _detectionService;
+    private readonly HistoryService? _historyService;
+    private readonly DependencyResolverService _dependencyResolverService;
     private readonly HashVerificationService _hashVerificationService;
 
-    public InstallerService(LoggingService? loggingService = null, DetectionService? detectionService = null)
+    public InstallerService(
+        LoggingService? loggingService = null,
+        DetectionService? detectionService = null,
+        HistoryService? historyService = null)
     {
         _loggingService = loggingService;
         _detectionService = detectionService;
+        _historyService = historyService;
+        _dependencyResolverService = new DependencyResolverService(loggingService);
         _hashVerificationService = new HashVerificationService(loggingService);
     }
 
@@ -29,15 +36,53 @@ public sealed class InstallerService
         bool keepInstallersAfterInstall = false,
         string downloadLocationMode = AppSettings.DownloadSystemDefault,
         string customDownloadFolder = "",
+        IEnumerable<AppItem>? catalogApps = null,
         CancellationToken cancellationToken = default)
     {
         var source = selectedApps?.ToList() ?? new List<AppItem>();
         var results = new List<InstallResult>();
+        var catalogSource = (catalogApps ?? source).ToList();
+        var allAppsById = catalogSource
+            .Where(app => app is not null && !string.IsNullOrWhiteSpace(app.Id))
+            .GroupBy(app => app.Id, StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(group => group.Key, group => group.First(), StringComparer.OrdinalIgnoreCase);
+        var requestedIds = source
+            .Where(app => app is not null && !string.IsNullOrWhiteSpace(app.Id))
+            .Select(app => app.Id)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
 
         _loggingService?.LogInfo(
             $"Install started. Platform={currentPlatform}, CandidateCount={source.Count}, Silent={silentInstallEnabled}.");
 
-        var plan = PrepareInstallPlan(source, currentPlatform, silentInstallEnabled, results);
+        var orderedIds = _dependencyResolverService.ResolveBuildOrder(requestedIds, allAppsById);
+        var missingDependencies = _detectionService is null
+            ? new List<AppItem>()
+            : _dependencyResolverService.GetMissingDependencies(requestedIds, allAppsById, _detectionService);
+        var requestedSet = new HashSet<string>(requestedIds, StringComparer.OrdinalIgnoreCase);
+        var missingDependencySet = new HashSet<string>(
+            missingDependencies.Select(app => app.Id),
+            StringComparer.OrdinalIgnoreCase);
+        var installQueueIds = orderedIds
+            .Where(id => requestedSet.Contains(id) || missingDependencySet.Contains(id))
+            .ToList();
+
+        foreach (var dependency in missingDependencies)
+        {
+            var requesterName = FindDependencyRequesterName(dependency.Id, requestedIds, allAppsById);
+            _loggingService?.LogInfo(
+                $"[DependencyResolver] Auto-adding dependency: {dependency.Name} required by {requesterName}");
+        }
+
+        if (installQueueIds.Count > 0)
+        {
+            var orderText = string.Join(
+                " -> ",
+                installQueueIds.Select(id => allAppsById.TryGetValue(id, out var app) ? app.Name : id));
+            _loggingService?.LogInfo($"[DependencyResolver] Install order resolved: {orderText}");
+        }
+
+        var plan = PrepareInstallPlan(installQueueIds, allAppsById, currentPlatform, silentInstallEnabled, results);
         if (plan.Count == 0)
         {
             _loggingService?.LogInfo("No install actions generated.");
@@ -78,15 +123,21 @@ public sealed class InstallerService
     }
 
     private List<InstallAction> PrepareInstallPlan(
-        IEnumerable<AppItem> selectedApps,
+        IEnumerable<string> orderedAppIds,
+        IReadOnlyDictionary<string, AppItem> allAppsById,
         string currentPlatform,
         bool silentInstallEnabled,
         List<InstallResult> results)
     {
         var plan = new List<InstallAction>();
 
-        foreach (var app in selectedApps.Where(app => app.IsSelected))
+        foreach (var appId in orderedAppIds)
         {
+            if (!allAppsById.TryGetValue(appId, out var app))
+            {
+                continue;
+            }
+
             app.HasInstallFailed = false;
 
             if (!app.IsSupportedOnCurrentPlatform)
@@ -144,6 +195,55 @@ public sealed class InstallerService
         return plan;
     }
 
+    private static string FindDependencyRequesterName(
+        string dependencyId,
+        IEnumerable<string> requestedIds,
+        IReadOnlyDictionary<string, AppItem> allAppsById)
+    {
+        foreach (var requestedId in requestedIds)
+        {
+            if (!allAppsById.TryGetValue(requestedId, out var requestedApp))
+            {
+                continue;
+            }
+
+            if (DependsOn(requestedApp, dependencyId, allAppsById, new HashSet<string>(StringComparer.OrdinalIgnoreCase)))
+            {
+                return requestedApp.Name;
+            }
+        }
+
+        return dependencyId;
+    }
+
+    private static bool DependsOn(
+        AppItem app,
+        string dependencyId,
+        IReadOnlyDictionary<string, AppItem> allAppsById,
+        HashSet<string> visited)
+    {
+        if (!visited.Add(app.Id))
+        {
+            return false;
+        }
+
+        foreach (var candidateDependencyId in app.Dependencies)
+        {
+            if (candidateDependencyId.Equals(dependencyId, StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+
+            if (allAppsById.TryGetValue(candidateDependencyId, out var dependencyApp) &&
+                DependsOn(dependencyApp, dependencyId, allAppsById, visited))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     private async Task<InstallResult> InstallAppAsync(
         InstallAction action,
         string currentPlatform,
@@ -160,6 +260,8 @@ public sealed class InstallerService
 
         var stopwatch = Stopwatch.StartNew();
         var exitCode = -1;
+        string? command = null;
+        string installMethod = "manual";
 
         try
         {
@@ -180,7 +282,13 @@ public sealed class InstallerService
                     else
                     {
                         action.App.HasInstallFailed = true;
-                        return CreateFailureResult(action.App, AppendElevationDeniedMessage(download.Message));
+                        installMethod = DetermineInstallMethod(null, installerPath);
+                        return await FinalizeInstallResultAsync(
+                            action.App,
+                            currentPlatform,
+                            installMethod,
+                            stopwatch.ElapsedMilliseconds,
+                            CreateFailureResult(action.App, AppendElevationDeniedMessage(download.Message)));
                     }
                 }
 
@@ -204,22 +312,34 @@ public sealed class InstallerService
                         }
 
                         action.App.HasInstallFailed = true;
-                        return CreateFailureResult(action.App, "SHA256 verification failed.");
+                        installMethod = DetermineInstallMethod(null, installerPath);
+                        return await FinalizeInstallResultAsync(
+                            action.App,
+                            currentPlatform,
+                            installMethod,
+                            stopwatch.ElapsedMilliseconds,
+                            CreateFailureResult(action.App, "SHA256 verification failed."));
                     }
                 }
             }
 
-            var command = currentPlatform == PlatformService.Windows
+            command = currentPlatform == PlatformService.Windows
                 ? BuildWindowsInstallCommand(action, installerPath)
                 : BuildLinuxInstallCommand(action, installerPath);
+            installMethod = DetermineInstallMethod(command, installerPath);
 
             if (string.IsNullOrWhiteSpace(command))
             {
                 _loggingService?.LogError($"Install command is empty for {action.App.Name}.");
                 action.App.HasInstallFailed = true;
-                return CreateFailureResult(
+                return await FinalizeInstallResultAsync(
                     action.App,
-                    AppendElevationDeniedMessage("No valid install command could be built."));
+                    currentPlatform,
+                    installMethod,
+                    stopwatch.ElapsedMilliseconds,
+                    CreateFailureResult(
+                        action.App,
+                        AppendElevationDeniedMessage("No valid install command could be built.")));
             }
 
             var execution = await ExecuteInstallCommandAsync(action, command, currentPlatform, cancellationToken);
@@ -243,15 +363,20 @@ public sealed class InstallerService
                         $"Installer reported exit code {execution.ExitCode}, but {action.App.Name} was verified as installed afterwards.";
                     _loggingService?.LogWarning(recoveredMessage);
 
-                    return new InstallResult
-                    {
-                        AppId = action.App.Id,
-                        AppName = action.App.Name,
-                        Success = true,
-                        Skipped = false,
-                        RequiresRestart = restartRequired,
-                        Message = recoveredMessage
-                    };
+                    return await FinalizeInstallResultAsync(
+                        action.App,
+                        currentPlatform,
+                        installMethod,
+                        stopwatch.ElapsedMilliseconds,
+                        new InstallResult
+                        {
+                            AppId = action.App.Id,
+                            AppName = action.App.Name,
+                            Success = true,
+                            Skipped = false,
+                            RequiresRestart = restartRequired,
+                            Message = recoveredMessage
+                        });
                 }
 
                 action.App.HasInstallFailed = true;
@@ -260,15 +385,20 @@ public sealed class InstallerService
                 _loggingService?.LogError(
                     $"Install failed for {action.App.Name}. ExitCode={execution.ExitCode}. {failureMessage}");
 
-                return new InstallResult
-                {
-                    AppId = action.App.Id,
-                    AppName = action.App.Name,
-                    Success = false,
-                    Skipped = false,
-                    RequiresRestart = restartRequired,
-                    Message = failureMessage
-                };
+                return await FinalizeInstallResultAsync(
+                    action.App,
+                    currentPlatform,
+                    installMethod,
+                    stopwatch.ElapsedMilliseconds,
+                    new InstallResult
+                    {
+                        AppId = action.App.Id,
+                        AppName = action.App.Name,
+                        Success = false,
+                        Skipped = false,
+                        RequiresRestart = restartRequired,
+                        Message = failureMessage
+                    });
             }
 
             if (!wasInstalledBefore && !wasVerifiedAfterInstall)
@@ -279,15 +409,20 @@ public sealed class InstallerService
                 _loggingService?.LogError(
                     $"Install could not be verified for {action.App.Name} after a successful exit code. {verificationFailureMessage}");
 
-                return new InstallResult
-                {
-                    AppId = action.App.Id,
-                    AppName = action.App.Name,
-                    Success = false,
-                    Skipped = false,
-                    RequiresRestart = restartRequired,
-                    Message = verificationFailureMessage
-                };
+                return await FinalizeInstallResultAsync(
+                    action.App,
+                    currentPlatform,
+                    installMethod,
+                    stopwatch.ElapsedMilliseconds,
+                    new InstallResult
+                    {
+                        AppId = action.App.Id,
+                        AppName = action.App.Name,
+                        Success = false,
+                        Skipped = false,
+                        RequiresRestart = restartRequired,
+                        Message = verificationFailureMessage
+                    });
             }
 
             action.App.IsInstalled = true;
@@ -295,17 +430,22 @@ public sealed class InstallerService
             action.App.StatusBadge = "Installed";
 
             _loggingService?.LogInfo($"Install succeeded for {action.App.Name}. ExitCode={execution.ExitCode}.");
-            return new InstallResult
-            {
-                AppId = action.App.Id,
-                AppName = action.App.Name,
-                Success = true,
-                Skipped = false,
-                RequiresRestart = restartRequired,
-                Message = execution.RanElevated
-                    ? "Install completed after administrator approval."
-                    : execution.Message
-            };
+            return await FinalizeInstallResultAsync(
+                action.App,
+                currentPlatform,
+                installMethod,
+                stopwatch.ElapsedMilliseconds,
+                new InstallResult
+                {
+                    AppId = action.App.Id,
+                    AppName = action.App.Name,
+                    Success = true,
+                    Skipped = false,
+                    RequiresRestart = restartRequired,
+                    Message = execution.RanElevated
+                        ? "Install completed after administrator approval."
+                        : execution.Message
+                });
         }
         finally
         {
@@ -313,6 +453,43 @@ public sealed class InstallerService
             _loggingService?.LogDebug($"[Installer] Elapsed install time for {action.App.Name}: {stopwatch.ElapsedMilliseconds} ms");
             AllowedCommandsService.Instance.EndInstall(action.App.Id);
         }
+    }
+
+    private async Task<InstallResult> FinalizeInstallResultAsync(
+        AppItem app,
+        string currentPlatform,
+        string installMethod,
+        long elapsedMs,
+        InstallResult result)
+    {
+        await RecordInstallHistoryAsync(app, currentPlatform, installMethod, result, elapsedMs);
+        return result;
+    }
+
+    private async Task RecordInstallHistoryAsync(
+        AppItem app,
+        string currentPlatform,
+        string installMethod,
+        InstallResult result,
+        long elapsedMs)
+    {
+        if (_historyService is null || result.Skipped)
+        {
+            return;
+        }
+
+        await _historyService.RecordInstallAsync(new InstallRecord
+        {
+            AppId = app.Id,
+            AppName = app.Name,
+            Version = app.Version,
+            Platform = currentPlatform,
+            InstallMethod = string.IsNullOrWhiteSpace(installMethod) ? "manual" : installMethod,
+            Success = result.Success,
+            ErrorMessage = result.Success ? string.Empty : result.Message,
+            InstalledAt = DateTime.UtcNow,
+            ElapsedMs = elapsedMs
+        });
     }
 
     private async Task<DownloadOutcome> DownloadInstallerAsync(
@@ -847,6 +1024,21 @@ public sealed class InstallerService
         return !string.IsNullOrWhiteSpace(definition.InstallerUrl) ||
                !string.IsNullOrWhiteSpace(definition.InstallerUrl32) ||
                !string.IsNullOrWhiteSpace(definition.InstallerUrl64);
+    }
+
+    private static string DetermineInstallMethod(string? command, string? installerPath)
+    {
+        if (!string.IsNullOrWhiteSpace(installerPath))
+        {
+            return "direct";
+        }
+
+        if (IsWingetCommand(command ?? string.Empty))
+        {
+            return "winget";
+        }
+
+        return "manual";
     }
 
     private static string NormalizeWindowsCommand(string command, bool useSilent)

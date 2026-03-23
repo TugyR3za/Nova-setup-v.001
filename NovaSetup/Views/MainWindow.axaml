@@ -27,7 +27,7 @@
         <converters:LogLevelToBrushConverter x:Key="LogLevelToBrushConverter" />
     </Window.Resources>
 
-    <Grid RowDefinitions="Auto,*"
+    <Grid RowDefinitions="Auto,Auto,*"
           RowSpacing="8">
         <Border Grid.Row="0"
                 IsVisible="{Binding IsUpdateAvailable}"
@@ -57,6 +57,19 @@
         </Border>
 
         <Border Grid.Row="1"
+                IsVisible="{Binding IsDependencyInfoVisible}"
+                Background="{DynamicResource AccentSoftBrush}"
+                BorderBrush="{DynamicResource AccentBrush}"
+                BorderThickness="1"
+                CornerRadius="16"
+                Padding="14,8"
+                Margin="10,0,10,0">
+            <TextBlock Text="{Binding DependencyInfoText}"
+                       VerticalAlignment="Center"
+                       TextWrapping="Wrap" />
+        </Border>
+
+        <Border Grid.Row="2"
                 Margin="10"
                 Classes="shellPanel"
                 Padding="8"
@@ -470,185 +483,60 @@
                             </Grid>
                         </StackPanel>
                     </ScrollViewer>
-                    <ScrollViewer IsVisible="{Binding IsSummaryScreenVisible}"
-                                  VerticalScrollBarVisibility="Auto"
-                                  HorizontalScrollBarVisibility="Disabled">
-                        <StackPanel Spacing="12" Margin="0,0,6,0">
-                            <Border Classes="card" Padding="18">
-                                <StackPanel Spacing="4">
-                                    <TextBlock Text="Setup complete"
-                                               FontSize="38"
-                                               FontWeight="Bold" />
-                                    <TextBlock Text="{Binding InstallSummaryText}"
-                                               FontSize="16"
-                                               Foreground="{DynamicResource TextMutedBrush}" />
-                                </StackPanel>
-                            </Border>
+                    <StackPanel IsVisible="{Binding IsHistorySelected}"
+                                Spacing="12">
+                        <Border Classes="card"
+                                IsVisible="{Binding HasInstallResults}"
+                                Padding="18">
+                            <StackPanel Spacing="8">
+                                <TextBlock Text="Latest install summary"
+                                           FontSize="24"
+                                           FontWeight="Bold" />
+                                <TextBlock Text="{Binding InstallSummaryText}"
+                                           Foreground="{DynamicResource TextMutedBrush}"
+                                           TextWrapping="Wrap" />
 
-                            <Grid ColumnDefinitions="1.6*,1*" ColumnSpacing="10">
-                                <Border Grid.Column="0" Classes="card">
-                                    <StackPanel Spacing="10">
-                                        <TextBlock Text="Installed summary" FontSize="18" FontWeight="SemiBold" />
-                                        <Grid ColumnDefinitions="1*,1*,1*,1*" ColumnSpacing="8">
-                                            <Border Background="{DynamicResource SuccessSurfaceBrush}" CornerRadius="10" Padding="10">
-                                                <TextBlock Text="{Binding InstalledResults.Count, StringFormat='Installed {0}'}"
-                                                           Foreground="{DynamicResource SuccessBrush}" />
-                                            </Border>
-                                            <Border Grid.Column="1" Background="{DynamicResource DangerSurfaceBrush}" CornerRadius="10" Padding="10">
-                                                <TextBlock Text="{Binding FailedResults.Count, StringFormat='Failed {0}'}"
-                                                           Foreground="{DynamicResource DangerBrush}" />
-                                            </Border>
-                                            <Border Grid.Column="2" Background="{DynamicResource WarningSurfaceBrush}" CornerRadius="10" Padding="10">
-                                                <TextBlock Text="{Binding SkippedResults.Count, StringFormat='Skipped {0}'}"
-                                                           Foreground="{DynamicResource WarningBrush}" />
-                                            </Border>
-                                            <Border Grid.Column="3" Background="{DynamicResource InfoSurfaceBrush}" CornerRadius="10" Padding="10">
-                                                <TextBlock Text="{Binding RestartRequiredResults.Count, StringFormat='Restart {0}'}"
-                                                           Foreground="{DynamicResource AccentBrush}" />
-                                            </Border>
-                                        </Grid>
-                                    </StackPanel>
-                                </Border>
-
-                                <Border Grid.Column="1" Classes="card">
+                                <Border IsVisible="{Binding IsRestartSectionVisible}"
+                                        Background="{DynamicResource WarningSurfaceBrush}"
+                                        BorderBrush="{DynamicResource WarningBrush}"
+                                        BorderThickness="1"
+                                        CornerRadius="12"
+                                        Padding="12">
                                     <StackPanel Spacing="8">
-                                        <TextBlock Text="Next steps" FontSize="18" FontWeight="SemiBold" />
-                                        <TextBlock Text="- Launch installed apps and sign in if needed."
-                                                   Foreground="{DynamicResource TextMutedBrush}" />
-                                        <TextBlock Text="- Check drivers if hardware tools were installed."
-                                                   Foreground="{DynamicResource TextMutedBrush}" />
-                                        <TextBlock Text="- Keep this profile as your default setup list."
-                                                   Foreground="{DynamicResource TextMutedBrush}" />
-                                        <TextBlock Text="{Binding Settings.SelfDeleteAfterInstall, StringFormat='Self-delete setting: {0}'}"
-                                                   Foreground="{DynamicResource TextMutedBrush}" />
+                                        <TextBlock Text="Restart Recommended"
+                                                   FontSize="18"
+                                                   FontWeight="SemiBold"
+                                                   Foreground="{DynamicResource WarningBrush}" />
+                                        <TextBlock Text="{Binding RestartStatusText}"
+                                                   Foreground="{DynamicResource WarningMessageBrush}"
+                                                   TextWrapping="Wrap" />
+
+                                        <StackPanel Orientation="Horizontal"
+                                                    Spacing="8"
+                                                    IsVisible="{Binding ShowPrimaryRestartActions}">
+                                            <Button Classes="primary"
+                                                    Content="Restart Now"
+                                                    Command="{Binding RequestRestartNowCommand}" />
+                                            <Button Content="Skip / Restart Later"
+                                                    Command="{Binding RestartLaterCommand}" />
+                                        </StackPanel>
+
+                                        <StackPanel Orientation="Horizontal"
+                                                    Spacing="8"
+                                                    IsVisible="{Binding IsRestartConfirmationVisible}">
+                                            <Button Classes="primary"
+                                                    Content="Confirm Restart"
+                                                    Command="{Binding ConfirmRestartNowCommand}" />
+                                            <Button Content="Cancel"
+                                                    Command="{Binding CancelRestartCommand}" />
+                                        </StackPanel>
                                     </StackPanel>
                                 </Border>
-                            </Grid>
+                            </StackPanel>
+                        </Border>
 
-                            <Border Classes="card"
-                                    IsVisible="{Binding IsRestartSectionVisible}"
-                                    Background="{DynamicResource WarningSurfaceBrush}"
-                                    BorderBrush="{DynamicResource WarningBrush}">
-                                <StackPanel Spacing="8">
-                                    <TextBlock Text="Restart Recommended"
-                                               FontSize="18"
-                                               FontWeight="SemiBold"
-                                               Foreground="{DynamicResource WarningBrush}" />
-                                    <TextBlock Text="{Binding RestartStatusText}"
-                                               Foreground="{DynamicResource WarningMessageBrush}"
-                                               TextWrapping="Wrap" />
-
-                                    <StackPanel Orientation="Horizontal"
-                                                Spacing="8"
-                                                IsVisible="{Binding ShowPrimaryRestartActions}">
-                                        <Button Classes="primary"
-                                                Content="Restart Now"
-                                                Command="{Binding RequestRestartNowCommand}" />
-                                        <Button Content="Skip / Restart Later"
-                                                Command="{Binding RestartLaterCommand}" />
-                                    </StackPanel>
-
-                                    <StackPanel Orientation="Horizontal"
-                                                Spacing="8"
-                                                IsVisible="{Binding IsRestartConfirmationVisible}">
-                                        <Button Classes="primary"
-                                                Content="Confirm Restart"
-                                                Command="{Binding ConfirmRestartNowCommand}" />
-                                        <Button Content="Cancel"
-                                                Command="{Binding CancelRestartCommand}" />
-                                    </StackPanel>
-                                </StackPanel>
-                            </Border>
-
-                            <Grid ColumnDefinitions="Auto,Auto,Auto,*" ColumnSpacing="10">
-                                <Button Grid.Column="0"
-                                        Content="Save Default List"
-                                        Command="{Binding SaveListCommand}" />
-                                <Button Grid.Column="1"
-                                        Content="Export Report (PDF)"
-                                        Command="{Binding ExportReportCommand}" />
-                                <Button Grid.Column="2"
-                                        Content="Open Log File"
-                                        Command="{Binding OpenLogFileCommand}" />
-                            </Grid>
-
-                            <Border Classes="card" IsVisible="{Binding HasInstalledResults}">
-                                <StackPanel Spacing="6">
-                                    <TextBlock Text="{Binding InstalledResults.Count, StringFormat='Installed Apps ({0})'}"
-                                               FontWeight="SemiBold"
-                                               Foreground="{DynamicResource SuccessBrush}" />
-                                    <ItemsControl ItemsSource="{Binding InstalledResults}">
-                                        <ItemsControl.ItemTemplate>
-                                            <DataTemplate>
-                                                <TextBlock Text="{Binding AppName}" />
-                                            </DataTemplate>
-                                        </ItemsControl.ItemTemplate>
-                                    </ItemsControl>
-                                </StackPanel>
-                            </Border>
-
-                            <Border Classes="card" IsVisible="{Binding HasFailedResults}">
-                                <StackPanel Spacing="6">
-                                    <TextBlock Text="{Binding FailedResults.Count, StringFormat='Failed Apps ({0})'}"
-                                               FontWeight="SemiBold"
-                                               Foreground="{DynamicResource DangerBrush}" />
-                                    <ItemsControl ItemsSource="{Binding FailedResults}">
-                                        <ItemsControl.ItemTemplate>
-                                            <DataTemplate>
-                                                <TextBlock Text="{Binding AppName, StringFormat='- {0}'}" />
-                                            </DataTemplate>
-                                        </ItemsControl.ItemTemplate>
-                                    </ItemsControl>
-                                </StackPanel>
-                            </Border>
-
-                            <Border Classes="card" IsVisible="{Binding HasSkippedResults}">
-                                <StackPanel Spacing="6">
-                                    <TextBlock Text="{Binding SkippedResults.Count, StringFormat='Skipped Apps ({0})'}"
-                                               FontWeight="SemiBold"
-                                               Foreground="{DynamicResource WarningBrush}" />
-                                    <ItemsControl ItemsSource="{Binding SkippedResults}">
-                                        <ItemsControl.ItemTemplate>
-                                            <DataTemplate>
-                                                <TextBlock Text="{Binding AppName, StringFormat='- {0}'}" />
-                                            </DataTemplate>
-                                        </ItemsControl.ItemTemplate>
-                                    </ItemsControl>
-                                </StackPanel>
-                            </Border>
-
-                            <Border Classes="card" IsVisible="{Binding HasRestartRequiredResults}">
-                                <StackPanel Spacing="6">
-                                    <TextBlock Text="{Binding RestartRequiredResults.Count, StringFormat='Apps Requiring Restart ({0})'}"
-                                               FontWeight="SemiBold"
-                                               Foreground="{DynamicResource AccentBrush}" />
-                                    <ItemsControl ItemsSource="{Binding RestartRequiredResults}">
-                                        <ItemsControl.ItemTemplate>
-                                            <DataTemplate>
-                                                <TextBlock Text="{Binding AppName, StringFormat='- {0}'}" />
-                                            </DataTemplate>
-                                        </ItemsControl.ItemTemplate>
-                                    </ItemsControl>
-                                </StackPanel>
-                            </Border>
-                        </StackPanel>
-                    </ScrollViewer>
-
-                    <Border IsVisible="{Binding IsHistoryEmptyScreenVisible}"
-                            Classes="card"
-                            Padding="20">
-                        <StackPanel Spacing="10">
-                            <TextBlock Text="History"
-                                       FontSize="34"
-                                       FontWeight="Bold" />
-                            <TextBlock Text="No install history yet. Run an install and the summary will appear here."
-                                       Foreground="{DynamicResource TextMutedBrush}"
-                                       TextWrapping="Wrap" />
-                            <Button Content="Back to Apps"
-                                    Command="{Binding NavigateAppsCommand}"
-                                    HorizontalAlignment="Left" />
-                        </StackPanel>
-                    </Border>
+                        <views:HistoryView DataContext="{Binding HistoryViewModel}" />
+                    </StackPanel>
 
                     <ScrollViewer IsVisible="{Binding IsLogsScreenVisible}"
                                   VerticalScrollBarVisibility="Auto"
