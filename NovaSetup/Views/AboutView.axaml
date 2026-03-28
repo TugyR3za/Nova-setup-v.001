@@ -58,6 +58,11 @@
                   Content="Check for Updates"
                   HorizontalAlignment="Left" />
 
+          <Button Classes="ghost compact"
+                  Command="{Binding #Root.HelpCommand}"
+                  Content="Help Center"
+                  HorizontalAlignment="Left" />
+
           <Border Classes="metaChip"
                   IsVisible="{Binding #Root.IsUpdateStatusVisible}">
             <TextBlock Text="{Binding #Root.UpdateStatusText}"

@@ -37,6 +37,7 @@ public sealed class InstallerService
         string downloadLocationMode = AppSettings.DownloadSystemDefault,
         string customDownloadFolder = "",
         IEnumerable<AppItem>? catalogApps = null,
+        bool allowUpgradeForInstalledApps = false,
         CancellationToken cancellationToken = default)
     {
         var source = selectedApps?.ToList() ?? new List<AppItem>();
@@ -82,7 +83,13 @@ public sealed class InstallerService
             _loggingService?.LogInfo($"[DependencyResolver] Install order resolved: {orderText}");
         }
 
-        var plan = PrepareInstallPlan(installQueueIds, allAppsById, currentPlatform, silentInstallEnabled, results);
+        var plan = PrepareInstallPlan(
+            installQueueIds,
+            allAppsById,
+            currentPlatform,
+            silentInstallEnabled,
+            allowUpgradeForInstalledApps,
+            results);
         if (plan.Count == 0)
         {
             _loggingService?.LogInfo("No install actions generated.");
@@ -127,6 +134,7 @@ public sealed class InstallerService
         IReadOnlyDictionary<string, AppItem> allAppsById,
         string currentPlatform,
         bool silentInstallEnabled,
+        bool allowUpgradeForInstalledApps,
         List<InstallResult> results)
     {
         var plan = new List<InstallAction>();
@@ -170,7 +178,7 @@ public sealed class InstallerService
                 continue;
             }
 
-            if (IsCurrentlyInstalled(app, currentPlatform))
+            if (!allowUpgradeForInstalledApps && IsCurrentlyInstalled(app, currentPlatform))
             {
                 _loggingService?.LogInfo($"Skipping {app.Name}: already installed on this PC.");
                 results.Add(CreateSkippedResult(app, "Already installed on this PC."));

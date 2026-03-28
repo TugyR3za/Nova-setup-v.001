@@ -3,20 +3,65 @@
              x:Class="NovaSetup.Views.Controls.BottomBarControl"
              x:CompileBindings="False"
              x:Name="Root">
-  <Border Background="{DynamicResource InputBrush}"
-          BorderBrush="{DynamicResource CardBorderBrush}"
-          BorderThickness="1"
-          CornerRadius="14"
-          Padding="12">
+  <Border Background="{DynamicResource PanelBrush}"
+          BorderBrush="#0DFFFFFF"
+          BorderThickness="0,1,0,0"
+          CornerRadius="0,0,12,12"
+          Margin="-12,0,-12,-12"
+          BoxShadow="0 -4 12 0 #66000000"
+          Padding="24,16">
     <Grid ColumnDefinitions="*,Auto,Auto"
           ColumnSpacing="10">
-      <TextBlock Text="{Binding #Root.FooterText}"
-                 Foreground="{DynamicResource TextMutedBrush}"
-                 VerticalAlignment="Center"
-                 TextWrapping="Wrap" />
+      <StackPanel Orientation="Horizontal" Spacing="12" VerticalAlignment="Center" IsVisible="{Binding #Root.SelectedAppsCount}">
+        <Border Background="{DynamicResource CardBrush}"
+                BorderBrush="{DynamicResource CardBorderBrush}"
+                BorderThickness="1"
+                CornerRadius="8"
+                Padding="12,6"
+                BoxShadow="0 2 8 0 #0A000000">
+          <Grid ColumnDefinitions="Auto,*">
+            <Path Data="{DynamicResource IconAppsGeometry}" Fill="{DynamicResource AccentBrush}" Width="14" Height="14" VerticalAlignment="Center" Margin="0,0,8,0" />
+            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="4">
+              <TextBlock Text="{Binding #Root.SelectedAppsCount}" FontWeight="Bold" FontSize="14" />
+              <TextBlock Text="Apps" Foreground="{DynamicResource TextMutedBrush}" FontSize="12" VerticalAlignment="Bottom" Margin="0,0,0,1" />
+            </StackPanel>
+          </Grid>
+        </Border>
+
+        <Border Background="{DynamicResource CardBrush}"
+                BorderBrush="{DynamicResource CardBorderBrush}"
+                BorderThickness="1"
+                CornerRadius="8"
+                Padding="12,6"
+                BoxShadow="0 2 8 0 #0A000000">
+          <Grid ColumnDefinitions="Auto,*">
+            <Path Data="{DynamicResource IconHistoryGeometry}" Fill="{DynamicResource WarningBrush}" Width="14" Height="14" VerticalAlignment="Center" Margin="0,0,8,0" />
+            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="4">
+              <TextBlock Text="{Binding #Root.SelectedAppsSizeMB}" FontWeight="Bold" FontSize="14" />
+              <TextBlock Text="MB" Foreground="{DynamicResource TextMutedBrush}" FontSize="12" VerticalAlignment="Bottom" Margin="0,0,0,1" />
+            </StackPanel>
+          </Grid>
+        </Border>
+
+        <Border Background="{DynamicResource CardBrush}"
+                BorderBrush="{DynamicResource CardBorderBrush}"
+                BorderThickness="1"
+                CornerRadius="8"
+                Padding="12,6"
+                BoxShadow="0 2 8 0 #0A000000">
+          <Grid ColumnDefinitions="Auto,*">
+            <Path Data="{DynamicResource IconRefreshGeometry}" Fill="{DynamicResource SuccessBrush}" Width="14" Height="14" VerticalAlignment="Center" Margin="0,0,8,0" />
+            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="4">
+              <TextBlock Text="~" Foreground="{DynamicResource TextMutedBrush}" FontSize="14" />
+              <TextBlock Text="{Binding #Root.SelectedAppsTimeMins}" FontWeight="Bold" FontSize="14" />
+              <TextBlock Text="Mins" Foreground="{DynamicResource TextMutedBrush}" FontSize="12" VerticalAlignment="Bottom" Margin="0,0,0,1" />
+            </StackPanel>
+          </Grid>
+        </Border>
+      </StackPanel>
 
       <Button Grid.Column="1"
-              Classes="ghost"
+              Classes="outline"
               Content="Save List"
               Command="{Binding #Root.SaveListCommand}"
               Padding="22,9" />

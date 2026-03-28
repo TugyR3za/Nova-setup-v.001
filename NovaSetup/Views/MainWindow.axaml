@@ -14,7 +14,7 @@
         x:CompileBindings="False"
         Title="NovaSetup"
         Icon="avares://NovaSetup/Assets/nova_logo.ico"
-        RequestedThemeVariant="Default"
+        TransparencyLevelHint="Mica, AcrylicBlur"
         Background="{DynamicResource ShellBackgroundBrush}"
         Foreground="{DynamicResource TextPrimaryBrush}"
         MinWidth="1120"
@@ -81,20 +81,19 @@
                                      IsDashboardUnselected="{Binding IsDashboardUnselected}"
                                      IsAppsSelected="{Binding IsAppsSelected}"
                                      IsAppsUnselected="{Binding IsAppsUnselected}"
-                                     IsMyListsSelected="{Binding IsMyListsSelected}"
-                                     IsMyListsUnselected="{Binding IsMyListsUnselected}"
-                                     IsHistorySelected="{Binding IsHistorySelected}"
-                                     IsHistoryUnselected="{Binding IsHistoryUnselected}"
-                                     IsLogsSelected="{Binding IsLogsSelected}"
-                                     IsLogsUnselected="{Binding IsLogsUnselected}"
-                                     IsAboutSelected="{Binding IsAboutSelected}"
-                                     IsAboutUnselected="{Binding IsAboutUnselected}"
+
+                                     IsUpdatesSelected="{Binding IsUpdatesSelected}"
+                                     IsUpdatesUnselected="{Binding IsUpdatesUnselected}"
+                                     HasUpdatesAvailable="{Binding HasUpdatesAvailable}"
+                                     UpdateAvailableCount="{Binding UpdateAvailableCount}"
+                                     HelpCommand="{Binding HelpCommand}"
                                      NavigateDashboardCommand="{Binding NavigateDashboardCommand}"
                                      NavigateAppsCommand="{Binding NavigateAppsCommand}"
-                                     NavigateMyListsCommand="{Binding NavigateMyListsCommand}"
-                                     NavigateHistoryCommand="{Binding NavigateHistoryCommand}"
-                                     NavigateLogsCommand="{Binding NavigateLogsCommand}"
+
+                                     NavigateUpdatesCommand="{Binding NavigateUpdatesCommand}"
+
                                      NavigateAboutCommand="{Binding NavigateAboutCommand}"
+                                     NavigateHistoryCommand="{Binding NavigateHistoryCommand}"
                                      ToggleAccountMenuCommand="{Binding ToggleAccountMenuCommand}"
                                      OpenAccountProfileCommand="{Binding OpenAccountProfileCommand}"
                                      OpenAccountSettingsCommand="{Binding OpenAccountSettingsCommand}"
@@ -111,75 +110,12 @@
                         <controls:HeaderControl Grid.Row="0"
                                                 Title="{Binding HomeTitle}"
                                                 Subtitle="{Binding HomeSubtitle}"
-                                                ProfileName="{Binding CurrentProfileName}"
-                                                SelectedCount="{Binding SelectedCount}"
-                                                RecommendedCount="{Binding RecommendedCount}"
-                                                HasRecommendedApps="{Binding HasRecommendedApps}"
-                                                ShowRecommendedFilterCommand="{Binding ShowRecommendedFilterCommand}"
                                                 UpdateAvailableCount="{Binding UpdateAvailableCount}"
                                                 HasUpdatesAvailable="{Binding HasUpdatesAvailable}"
-                                                CurrentPlatform="{Binding CurrentPlatform}"
+                                                OpenUpdatesCommand="{Binding NavigateUpdatesCommand}"
                                                 RefreshCatalogCommand="{Binding RefreshCatalogCommand}"
-                                                ShowUpdatesFilterCommand="{Binding ShowUpdatesFilterCommand}"
                                                 HelpCommand="{Binding ShowHelpCommand}" />
 
-                        <Border Grid.Row="1"
-                                Classes="card"
-                                Padding="12">
-                            <StackPanel Spacing="10">
-                                <Grid ColumnDefinitions="Auto,Auto,Auto,*,Auto"
-                                      ColumnSpacing="8">
-                                    <Button Grid.Column="0"
-                                            Classes="ghost compact"
-                                            Content="Save Profile"
-                                            Command="{Binding SaveProfileCommand}" />
-                                    <Button Grid.Column="1"
-                                            Classes="ghost compact"
-                                            Content="Load Profile"
-                                            Command="{Binding LoadProfileCommand}" />
-                                    <Button Grid.Column="2"
-                                            Classes="ghost compact"
-                                            Content="Export Profile"
-                                            Command="{Binding ExportProfileCommand}" />
-
-                                    <TextBlock Grid.Column="4"
-                                               Text="{Binding CurrentProfileName, StringFormat='Active profile: {0}'}"
-                                               VerticalAlignment="Center"
-                                               Foreground="{DynamicResource TextMutedBrush}"
-                                               TextWrapping="Wrap" />
-                                </Grid>
-
-                                <Grid IsVisible="{Binding IsSaveProfilePanelOpen}"
-                                      ColumnDefinitions="1.2*,2*,Auto,Auto"
-                                      ColumnSpacing="10">
-                                    <StackPanel Grid.Column="0"
-                                                Spacing="4">
-                                        <TextBlock Text="Profile name" />
-                                        <TextBox Watermark="My Setup"
-                                                 Text="{Binding PendingProfileName, Mode=TwoWay}" />
-                                    </StackPanel>
-
-                                    <StackPanel Grid.Column="1"
-                                                Spacing="4">
-                                        <TextBlock Text="Description" />
-                                        <TextBox Watermark="Optional description"
-                                                 Text="{Binding PendingProfileDescription, Mode=TwoWay}" />
-                                    </StackPanel>
-
-                                    <Button Grid.Column="2"
-                                            Classes="compact"
-                                            Content="Save"
-                                            Command="{Binding ConfirmSaveProfileCommand}"
-                                            VerticalAlignment="Bottom" />
-
-                                    <Button Grid.Column="3"
-                                            Classes="ghost compact"
-                                            Content="Cancel"
-                                            Command="{Binding CancelSaveProfileCommand}"
-                                            VerticalAlignment="Bottom" />
-                                </Grid>
-                            </StackPanel>
-                        </Border>
 
                         <Border Grid.Row="2"
                                 Classes="card"
@@ -327,21 +263,10 @@
                                 <Grid ColumnDefinitions="1*,1*" ColumnSpacing="12">
                                     <Border Grid.Column="0" Classes="card">
                                         <StackPanel Spacing="10">
-                                            <TextBlock Text="Recent installs"
-                                                       FontSize="18"
-                                                       FontWeight="SemiBold" />
-                                            <TextBlock Text="{Binding InstallSummaryText}"
-                                                       IsVisible="{Binding HasInstallResults}"
-                                                       Foreground="{DynamicResource TextMutedBrush}"
-                                                       TextWrapping="Wrap" />
-                                            <TextBlock Text="No install history yet. Run an install and the summary screen will appear here."
-                                                       IsVisible="{Binding IsHistoryEmptyScreenVisible}"
-                                                       Foreground="{DynamicResource TextMutedBrush}"
-                                                       TextWrapping="Wrap" />
-                                            <Button Classes="ghost compact"
-                                                    Content="Open History"
-                                                    Command="{Binding NavigateHistoryCommand}"
-                                                    HorizontalAlignment="Left" />
+                                            <TextBlock Text="Recent installs" FontSize="18" FontWeight="SemiBold" />
+                                            <TextBlock Text="{Binding InstallSummaryText}" IsVisible="{Binding HasInstallResults}" Foreground="{DynamicResource TextMutedBrush}" TextWrapping="Wrap" />
+                                            <TextBlock Text="No install history yet. Run an install and the summary screen will appear here." IsVisible="{Binding IsHistoryEmptyScreenVisible}" Foreground="{DynamicResource TextMutedBrush}" TextWrapping="Wrap" />
+                                            <Button Classes="ghost compact" Content="Open Downloads" Command="{Binding NavigateHistoryCommand}" HorizontalAlignment="Left" />
                                         </StackPanel>
                                     </Border>
 
@@ -380,15 +305,27 @@
                                                    IsRecommendedFilter="{Binding IsRecommendedFilter, Mode=TwoWay}"
                                                    IsDevToolsFilter="{Binding IsDevToolsFilter, Mode=TwoWay}"
                                                    IsUtilitiesFilter="{Binding IsUtilitiesFilter, Mode=TwoWay}"
-                                                   IsUpdatesFilter="{Binding IsUpdatesFilter, Mode=TwoWay}" />
+                                                   IsUpdatesFilter="{Binding IsUpdatesFilter, Mode=TwoWay}"
+                                                   IsGridViewActive="{Binding IsGridViewActive, Mode=TwoWay}"
+                                                   RefreshCatalogCommand="{Binding RefreshCatalogCommand}"
+                                                   ToggleViewModeCommand="{Binding ToggleViewModeCommand}" />
 
                                 <controls:AppListControl Grid.Row="1"
+                                                         IsVisible="{Binding IsListViewActive}"
+                                                         Items="{Binding VisibleApps}"
+                                                         OpenPublisherCommand="{Binding OpenPublisherCommand}"
+                                                         ShowAppDetailsCommand="{Binding ShowAppDetailsCommand}" />
+
+                                <controls:AppGridControl Grid.Row="1"
+                                                         IsVisible="{Binding IsGridViewActive}"
                                                          Items="{Binding VisibleApps}"
                                                          OpenPublisherCommand="{Binding OpenPublisherCommand}"
                                                          ShowAppDetailsCommand="{Binding ShowAppDetailsCommand}" />
 
                                 <controls:BottomBarControl Grid.Row="2"
-                                                           FooterText="{Binding SelectedFooterText}"
+                                                           SelectedAppsCount="{Binding SelectedAppsCount}"
+                                                           SelectedAppsSizeMB="{Binding SelectedAppsSizeMB}"
+                                                           SelectedAppsTimeMins="{Binding SelectedAppsTimeMins}"
                                                            SaveListCommand="{Binding SaveListCommand}"
                                                            InstallSelectedCommand="{Binding InstallCommand}" />
                             </Grid>
@@ -538,6 +475,11 @@
                         <views:HistoryView DataContext="{Binding HistoryViewModel}" />
                     </StackPanel>
 
+                    <Border IsVisible="{Binding IsUpdatesScreenVisible}"
+                            Background="Transparent">
+                        <views:UpdatesView DataContext="{Binding UpdatesViewModel}" />
+                    </Border>
+
                     <ScrollViewer IsVisible="{Binding IsLogsScreenVisible}"
                                   VerticalScrollBarVisibility="Auto"
                                   HorizontalScrollBarVisibility="Disabled">
@@ -592,6 +534,7 @@
                                      GitHubUrl="{Binding AboutGitHubUrl}"
                                      OpenGitHubCommand="{Binding OpenAboutGitHubCommand}"
                                      CheckForUpdatesCommand="{Binding ManualCheckForUpdatesCommand}"
+                                     HelpCommand="{Binding HelpCommand}"
                                      UpdateStatusText="{Binding AboutUpdateStatusText}"
                                      IsUpdateStatusVisible="{Binding IsAboutUpdateStatusVisible}" />
 
@@ -697,265 +640,6 @@
                                     </ListBox>
                                 </Border>
                             </Grid>
-                        </Grid>
-                    </Border>
-
-                    <Border IsVisible="{Binding IsSettingsPanelOpen}"
-                            Classes="card"
-                            Width="370"
-                            MaxHeight="700"
-                            HorizontalAlignment="Left"
-                            VerticalAlignment="Top"
-                            Margin="10,10,0,0"
-                            Padding="14"
-                            Background="{DynamicResource ElevatedCardBrush}"
-                            BorderBrush="{DynamicResource CardBorderBrush}">
-                        <Grid RowDefinitions="Auto,*" RowSpacing="12">
-                            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
-                                <StackPanel Spacing="2">
-                                    <TextBlock Text="Preferences"
-                                               FontSize="20"
-                                               FontWeight="SemiBold" />
-                                    <TextBlock Text="Persistent app behavior, downloads, and advanced options."
-                                               Foreground="{DynamicResource TextMutedBrush}"
-                                               TextWrapping="Wrap" />
-                                </StackPanel>
-                                <Button Grid.Column="1"
-                                        Classes="closeIcon"
-                                        Command="{Binding ToggleSettingsPanelCommand}">
-                                    <Viewbox Width="14"
-                                             Height="14">
-                                        <Path Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
-                                              Data="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z" />
-                                    </Viewbox>
-                                </Button>
-                            </Grid>
-
-                            <ScrollViewer Grid.Row="1"
-                                          VerticalScrollBarVisibility="Auto"
-                                          HorizontalScrollBarVisibility="Disabled">
-                                <StackPanel Spacing="14">
-                                    <StackPanel Spacing="8">
-                                        <TextBlock Text="Installation"
-                                                   FontSize="16"
-                                                   FontWeight="SemiBold" />
-
-                                        <StackPanel Spacing="2">
-                                            <CheckBox IsChecked="{Binding Settings.SilentInstall}"
-                                                      Content="Silent installation" />
-                                            <TextBlock Text="Install apps without showing installer windows when possible."
-                                                       FontSize="12"
-                                                       Foreground="{DynamicResource TextMutedBrush}"
-                                                       TextWrapping="Wrap" />
-                                        </StackPanel>
-
-                                        <StackPanel Spacing="2">
-                                            <CheckBox IsChecked="{Binding Settings.ParallelInstall}"
-                                                      Content="Install apps simultaneously" />
-                                            <TextBlock Text="Install multiple apps at the same time to speed up setup."
-                                                       FontSize="12"
-                                                       Foreground="{DynamicResource TextMutedBrush}"
-                                                       TextWrapping="Wrap" />
-                                        </StackPanel>
-
-                                        <StackPanel Spacing="2">
-                                            <CheckBox IsChecked="{Binding Settings.SelfDeleteAfterInstall}"
-                                                      Content="Self-delete after install" />
-                                            <TextBlock Text="Remove NovaSetup after installation finishes."
-                                                       FontSize="12"
-                                                       Foreground="{DynamicResource TextMutedBrush}"
-                                                       TextWrapping="Wrap" />
-                                        </StackPanel>
-
-                                        <StackPanel Spacing="4">
-                                            <TextBlock Text="Restart computer if required" />
-                                            <ComboBox ItemsSource="{Binding RestartBehaviorOptions}"
-                                                      SelectedItem="{Binding SelectedRestartBehaviorOption}">
-                                                <ComboBox.ItemTemplate>
-                                                    <DataTemplate>
-                                                        <TextBlock Text="{Binding Label}" />
-                                                    </DataTemplate>
-                                                </ComboBox.ItemTemplate>
-                                            </ComboBox>
-                                            <TextBlock Text="Choose what NovaSetup should do if installed apps require a restart."
-                                                       FontSize="12"
-                                                       Foreground="{DynamicResource TextMutedBrush}"
-                                                       TextWrapping="Wrap" />
-                                        </StackPanel>
-                                    </StackPanel>
-
-                                    <StackPanel Spacing="8">
-                                        <TextBlock Text="App List"
-                                                   FontSize="16"
-                                                   FontWeight="SemiBold" />
-
-                                        <StackPanel Spacing="2">
-                                            <CheckBox IsChecked="{Binding Settings.OsSupportedApps}"
-                                                      Content="OS supported apps" />
-                                            <TextBlock Text="When enabled, only apps supported on this operating system will be shown."
-                                                       FontSize="12"
-                                                       Foreground="{DynamicResource TextMutedBrush}"
-                                                       TextWrapping="Wrap" />
-                                        </StackPanel>
-
-                                        <StackPanel Spacing="2">
-                                            <CheckBox IsChecked="{Binding Settings.ShowAlreadyInstalledApps}"
-                                                      Content="Show already installed apps" />
-                                            <TextBlock Text="Show apps already installed on this computer."
-                                                       FontSize="12"
-                                                       Foreground="{DynamicResource TextMutedBrush}"
-                                                       TextWrapping="Wrap" />
-                                        </StackPanel>
-
-                                        <StackPanel Spacing="2">
-                                            <CheckBox IsChecked="{Binding Settings.AutoDetectInstalledAppsOnStartup}"
-                                                      Content="Scan PC for installed apps on startup" />
-                                            <TextBlock Text="Automatically detect installed apps when NovaSetup starts."
-                                                       FontSize="12"
-                                                       Foreground="{DynamicResource TextMutedBrush}"
-                                                       TextWrapping="Wrap" />
-                                        </StackPanel>
-                                    </StackPanel>
-
-                                    <StackPanel Spacing="8">
-                                        <TextBlock Text="Downloads"
-                                                   FontSize="16"
-                                                   FontWeight="SemiBold" />
-
-                                        <StackPanel Spacing="4">
-                                            <TextBlock Text="Download location" />
-                                            <ComboBox ItemsSource="{Binding DownloadLocationOptions}"
-                                                      SelectedItem="{Binding SelectedDownloadLocationOption}">
-                                                <ComboBox.ItemTemplate>
-                                                    <DataTemplate>
-                                                        <TextBlock Text="{Binding Label}" />
-                                                    </DataTemplate>
-                                                </ComboBox.ItemTemplate>
-                                            </ComboBox>
-                                            <TextBlock Text="Choose where installers are downloaded before installation."
-                                                       FontSize="12"
-                                                       Foreground="{DynamicResource TextMutedBrush}"
-                                                       TextWrapping="Wrap" />
-                                        </StackPanel>
-
-                                        <StackPanel Spacing="4"
-                                                    IsVisible="{Binding IsCustomDownloadFolderVisible}">
-                                            <TextBlock Text="Custom download folder" />
-                                            <TextBox Watermark="Used only for Custom folder mode"
-                                                     Text="{Binding Settings.CustomDownloadFolder}" />
-                                            <TextBlock Text="Used only when Download location is set to Custom folder."
-                                                       FontSize="12"
-                                                       Foreground="{DynamicResource TextMutedBrush}"
-                                                       TextWrapping="Wrap" />
-                                        </StackPanel>
-
-                                        <StackPanel Spacing="2">
-                                            <CheckBox IsChecked="{Binding Settings.KeepInstallersAfterInstall}"
-                                                      Content="Keep installers after install" />
-                                            <TextBlock Text="Keep downloaded installers after installation finishes."
-                                                       FontSize="12"
-                                                       Foreground="{DynamicResource TextMutedBrush}"
-                                                       TextWrapping="Wrap" />
-                                        </StackPanel>
-                                    </StackPanel>
-
-                                    <StackPanel Spacing="8">
-                                        <TextBlock Text="System"
-                                                   FontSize="16"
-                                                   FontWeight="SemiBold" />
-
-                                        <StackPanel Spacing="2">
-                                            <CheckBox IsChecked="{Binding Settings.LaunchNovaAtStartup}"
-                                                      Content="Launch Nova at startup" />
-                                            <TextBlock Text="Open NovaSetup automatically when the system starts."
-                                                       FontSize="12"
-                                                       Foreground="{DynamicResource TextMutedBrush}"
-                                                       TextWrapping="Wrap" />
-                                        </StackPanel>
-
-                                        <StackPanel Spacing="2">
-                                            <CheckBox IsChecked="{Binding Settings.CheckForUpdatesAutomatically}"
-                                                      Content="Automatically check for updates" />
-                                            <TextBlock Text="Check for a newer Nova release on startup and show a banner when one is available."
-                                                       FontSize="12"
-                                                       Foreground="{DynamicResource TextMutedBrush}"
-                                                       TextWrapping="Wrap" />
-                                        </StackPanel>
-
-                                        <StackPanel Spacing="4">
-                                            <TextBlock Text="Theme" />
-                                            <ComboBox ItemsSource="{Binding ThemeOptions}"
-                                                      SelectedItem="{Binding SelectedThemeOption}">
-                                                <ComboBox.ItemTemplate>
-                                                    <DataTemplate>
-                                                        <TextBlock Text="{Binding Label}" />
-                                                    </DataTemplate>
-                                                </ComboBox.ItemTemplate>
-                                            </ComboBox>
-                                            <TextBlock Text="Choose the appearance theme for NovaSetup."
-                                                       FontSize="12"
-                                                       Foreground="{DynamicResource TextMutedBrush}"
-                                                       TextWrapping="Wrap" />
-                                        </StackPanel>
-
-                                        <StackPanel Spacing="4">
-                                            <TextBlock Text="Language" />
-                                            <ComboBox ItemsSource="{Binding LanguageOptions}"
-                                                      SelectedItem="{Binding SelectedLanguageOption}">
-                                                <ComboBox.ItemTemplate>
-                                                    <DataTemplate>
-                                                        <TextBlock Text="{Binding Label}" />
-                                                    </DataTemplate>
-                                                </ComboBox.ItemTemplate>
-                                            </ComboBox>
-                                            <TextBlock Text="Choose the display language for NovaSetup."
-                                                       FontSize="12"
-                                                       Foreground="{DynamicResource TextMutedBrush}"
-                                                       TextWrapping="Wrap" />
-                                        </StackPanel>
-                                    </StackPanel>
-
-                                    <StackPanel Spacing="8">
-                                        <TextBlock Text="Data"
-                                                   FontSize="16"
-                                                   FontWeight="SemiBold" />
-
-                                        <StackPanel Spacing="2">
-                                            <CheckBox IsChecked="{Binding Settings.SaveProfilesAutomatically}"
-                                                      Content="Save profiles automatically" />
-                                            <TextBlock Text="Automatically save changes to your NovaSetup lists and profiles."
-                                                       FontSize="12"
-                                                       Foreground="{DynamicResource TextMutedBrush}"
-                                                       TextWrapping="Wrap" />
-                                        </StackPanel>
-                                    </StackPanel>
-
-                                    <StackPanel Spacing="8">
-                                        <TextBlock Text="Advanced"
-                                                   FontSize="16"
-                                                   FontWeight="SemiBold" />
-
-                                        <StackPanel Spacing="2">
-                                            <CheckBox IsChecked="{Binding Settings.DeveloperMode}"
-                                                      Content="Developer mode" />
-                                            <TextBlock Text="Show install logs and extra debug information."
-                                                       FontSize="12"
-                                                       Foreground="{DynamicResource TextMutedBrush}"
-                                                       TextWrapping="Wrap" />
-                                        </StackPanel>
-
-                                        <StackPanel Spacing="4">
-                                            <Button Content="Reset Nova settings"
-                                                    Command="{Binding ResetSettingsCommand}"
-                                                    HorizontalAlignment="Left" />
-                                            <TextBlock Text="Restore all NovaSetup settings to their default values."
-                                                       FontSize="12"
-                                                       Foreground="{DynamicResource TextMutedBrush}"
-                                                       TextWrapping="Wrap" />
-                                        </StackPanel>
-                                    </StackPanel>
-                                </StackPanel>
-                            </ScrollViewer>
                         </Grid>
                     </Border>
 
@@ -1108,6 +792,285 @@
             </Border>
         </Grid>
         </Border>
+                    <Grid Classes="settingsOverlay" Classes.isOpen="{Binding IsSettingsPanelOpen}" Grid.RowSpan="3" ZIndex="100">
+                        <Grid.Styles>
+                            <!-- The semi-transparent backdrop and overall HitTest rules -->
+                            <Style Selector="Grid.settingsOverlay">
+                                <Setter Property="IsHitTestVisible" Value="False" />
+                                <Setter Property="Opacity" Value="0" />
+                                <Setter Property="Transitions">
+                                    <Transitions>
+                                        <DoubleTransition Property="Opacity" Duration="0:0:0.2" Easing="SineEaseInOut" />
+                                    </Transitions>
+                                </Setter>
+                            </Style>
+                            <Style Selector="Grid.settingsOverlay.isOpen">
+                                <Setter Property="IsHitTestVisible" Value="True" />
+                                <Setter Property="Opacity" Value="1" />
+                            </Style>
+
+                            <!-- The inner Card slide & scale animation -->
+                            <Style Selector="Grid.settingsOverlay > Border.card">
+                                <Setter Property="RenderTransform" Value="scale(0.96) translateY(12px)" />
+                                <Setter Property="Transitions">
+                                    <Transitions>
+                                        <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.35" Easing="CubicEaseOut" />
+                                    </Transitions>
+                                </Setter>
+                            </Style>
+                            <Style Selector="Grid.settingsOverlay.isOpen > Border.card">
+                                <Setter Property="RenderTransform" Value="scale(1) translateY(0px)" />
+                            </Style>
+                        </Grid.Styles>
+
+                        <Border Background="#A0000000" CornerRadius="12" />
+                        <Border Classes="card"
+                                Width="680"
+                                Height="580"
+                                CornerRadius="16"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                Padding="18"
+                                Background="{DynamicResource CardBrush}"
+                                BorderBrush="{DynamicResource CardBorderBrush}"
+                                BoxShadow="0 16 64 0 #80000000">
+                            <Grid RowDefinitions="Auto,*" RowSpacing="0">
+                                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10" Margin="0,0,0,16">
+                                    <StackPanel Spacing="2">
+                                        <TextBlock Text="Preferences"
+                                                   FontSize="20"
+                                                   FontWeight="SemiBold" />
+                                        <TextBlock Text="Persistent app behavior, downloads, and advanced options."
+                                                   Foreground="{DynamicResource TextMutedBrush}"
+                                                   TextWrapping="Wrap" />
+                                    </StackPanel>
+                                    <Button Grid.Column="1"
+                                            Classes="closeIcon"
+                                            Command="{Binding ToggleSettingsPanelCommand}"
+                                            VerticalAlignment="Top">
+                                        <Viewbox Width="14"
+                                                 Height="14">
+                                            <Path Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                                                  Data="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z" />
+                                        </Viewbox>
+                                    </Button>
+                                </Grid>
+                                
+                                <Border Grid.Row="0" Height="1" Background="{DynamicResource CardBorderBrush}" Margin="-18,0,-18,0" VerticalAlignment="Bottom" />
+
+                                <ScrollViewer Grid.Row="1"
+                                          VerticalScrollBarVisibility="Auto"
+                                          HorizontalScrollBarVisibility="Disabled">
+                                <Grid ColumnDefinitions="*,*" ColumnSpacing="32" Margin="0,16,0,0">
+                                    
+                                    <!-- Left Column -->
+                                    <StackPanel Spacing="24">
+                                        
+                                        <!-- Installation Group -->
+                                        <StackPanel Spacing="10">
+                                            <TextBlock Text="Installation" FontSize="14" FontWeight="SemiBold" Foreground="{DynamicResource TextSecondaryBrush}" Margin="4,0,0,0" />
+                                            <Border Background="{DynamicResource ShellBackgroundBrush}" CornerRadius="12" BorderBrush="{DynamicResource CardBorderBrush}" BorderThickness="1" Padding="16">
+                                                <StackPanel Spacing="16">
+                                                    <StackPanel Spacing="0">
+                                                        <CheckBox IsChecked="{Binding Settings.SilentInstall}" Content="Silent installation" />
+                                                        <TextBlock Text="Install apps silently when possible." FontSize="12" Foreground="{DynamicResource TextMutedBrush}" TextWrapping="Wrap" Margin="24,2,0,0" />
+                                                    </StackPanel>
+                                                    <Border Height="1" Background="{DynamicResource CardBorderBrush}" Margin="-16,0" />
+                                                    <StackPanel Spacing="0">
+                                                        <CheckBox IsChecked="{Binding Settings.ParallelInstall}" Content="Install apps simultaneously" />
+                                                        <TextBlock Text="Speeds up setup by running installers together." FontSize="12" Foreground="{DynamicResource TextMutedBrush}" TextWrapping="Wrap" Margin="24,2,0,0" />
+                                                    </StackPanel>
+                                                    <Border Height="1" Background="{DynamicResource CardBorderBrush}" Margin="-16,0" />
+                                                    <StackPanel Spacing="0">
+                                                        <CheckBox IsChecked="{Binding Settings.SelfDeleteAfterInstall}" Content="Self-delete after install" />
+                                                        <TextBlock Text="Remove NovaSetup after finishing." FontSize="12" Foreground="{DynamicResource TextMutedBrush}" TextWrapping="Wrap" Margin="24,2,0,0" />
+                                                    </StackPanel>
+                                                    <Border Height="1" Background="{DynamicResource CardBorderBrush}" Margin="-16,0" />
+                                                    <StackPanel Spacing="6" Margin="0,4,0,0">
+                                                        <TextBlock Text="Restart behavior" FontWeight="Medium" />
+                                                        <ComboBox ItemsSource="{Binding RestartBehaviorOptions}" SelectedItem="{Binding SelectedRestartBehaviorOption}" HorizontalAlignment="Stretch">
+                                                            <ComboBox.ItemTemplate>
+                                                                <DataTemplate><TextBlock Text="{Binding Label}" /></DataTemplate>
+                                                            </ComboBox.ItemTemplate>
+                                                        </ComboBox>
+                                                    </StackPanel>
+                                                </StackPanel>
+                                            </Border>
+                                        </StackPanel>
+
+                                        <!-- App List Group -->
+                                        <StackPanel Spacing="10">
+                                            <TextBlock Text="App List" FontSize="14" FontWeight="SemiBold" Foreground="{DynamicResource TextSecondaryBrush}" Margin="4,0,0,0" />
+                                            <Border Background="{DynamicResource ShellBackgroundBrush}" CornerRadius="12" BorderBrush="{DynamicResource CardBorderBrush}" BorderThickness="1" Padding="16">
+                                                <StackPanel Spacing="16">
+                                                    <StackPanel Spacing="0">
+                                                        <CheckBox IsChecked="{Binding Settings.OsSupportedApps}" Content="OS supported apps" />
+                                                        <TextBlock Text="Only show apps compatible with Windows." FontSize="12" Foreground="{DynamicResource TextMutedBrush}" TextWrapping="Wrap" Margin="24,2,0,0" />
+                                                    </StackPanel>
+                                                    <Border Height="1" Background="{DynamicResource CardBorderBrush}" Margin="-16,0" />
+                                                    <StackPanel Spacing="0">
+                                                        <CheckBox IsChecked="{Binding Settings.ShowAlreadyInstalledApps}" Content="Show already installed apps" />
+                                                        <TextBlock Text="Include software you already have." FontSize="12" Foreground="{DynamicResource TextMutedBrush}" TextWrapping="Wrap" Margin="24,2,0,0" />
+                                                    </StackPanel>
+                                                    <Border Height="1" Background="{DynamicResource CardBorderBrush}" Margin="-16,0" />
+                                                    <StackPanel Spacing="0">
+                                                        <CheckBox IsChecked="{Binding Settings.AutoDetectInstalledAppsOnStartup}" Content="Scan PC on startup" />
+                                                        <TextBlock Text="Auto-detect existing apps." FontSize="12" Foreground="{DynamicResource TextMutedBrush}" TextWrapping="Wrap" Margin="24,2,0,0" />
+                                                    </StackPanel>
+                                                </StackPanel>
+                                            </Border>
+                                        </StackPanel>
+
+                                        <!-- Downloads Group -->
+                                        <StackPanel Spacing="10">
+                                            <TextBlock Text="Downloads" FontSize="14" FontWeight="SemiBold" Foreground="{DynamicResource TextSecondaryBrush}" Margin="4,0,0,0" />
+                                            <Border Background="{DynamicResource ShellBackgroundBrush}" CornerRadius="12" BorderBrush="{DynamicResource CardBorderBrush}" BorderThickness="1" Padding="16">
+                                                <StackPanel Spacing="16">
+                                                    <StackPanel Spacing="6">
+                                                        <TextBlock Text="Download location" FontWeight="Medium" />
+                                                        <ComboBox ItemsSource="{Binding DownloadLocationOptions}" SelectedItem="{Binding SelectedDownloadLocationOption}" HorizontalAlignment="Stretch">
+                                                            <ComboBox.ItemTemplate>
+                                                                <DataTemplate><TextBlock Text="{Binding Label}" /></DataTemplate>
+                                                            </ComboBox.ItemTemplate>
+                                                        </ComboBox>
+                                                    </StackPanel>
+                                                    <StackPanel Spacing="6" IsVisible="{Binding IsCustomDownloadFolderVisible}">
+                                                        <TextBlock Text="Custom folder path" FontWeight="Medium" />
+                                                        <TextBox Watermark="e.g. C:\Downloads" Text="{Binding Settings.CustomDownloadFolder}" />
+                                                    </StackPanel>
+                                                    <Border Height="1" Background="{DynamicResource CardBorderBrush}" Margin="-16,0" />
+                                                    <StackPanel Spacing="0">
+                                                        <CheckBox IsChecked="{Binding Settings.KeepInstallersAfterInstall}" Content="Keep installer files" />
+                                                        <TextBlock Text="Don't delete installers from disk." FontSize="12" Foreground="{DynamicResource TextMutedBrush}" TextWrapping="Wrap" Margin="24,2,0,0" />
+                                                    </StackPanel>
+                                                </StackPanel>
+                                            </Border>
+                                        </StackPanel>
+                                    </StackPanel>
+
+                                    <!-- Right Column -->
+                                    <StackPanel Grid.Column="1" Spacing="24">
+                                        
+                                        <!-- System Group -->
+                                        <StackPanel Spacing="10">
+                                            <TextBlock Text="System" FontSize="14" FontWeight="SemiBold" Foreground="{DynamicResource TextSecondaryBrush}" Margin="4,0,0,0" />
+                                            <Border Background="{DynamicResource ShellBackgroundBrush}" CornerRadius="12" BorderBrush="{DynamicResource CardBorderBrush}" BorderThickness="1" Padding="16">
+                                                <StackPanel Spacing="16">
+                                                    <StackPanel Spacing="0">
+                                                        <CheckBox IsChecked="{Binding Settings.LaunchNovaAtStartup}" Content="Launch at startup" />
+                                                        <TextBlock Text="Open NovaSetup automatically." FontSize="12" Foreground="{DynamicResource TextMutedBrush}" TextWrapping="Wrap" Margin="24,2,0,0" />
+                                                    </StackPanel>
+                                                    <Border Height="1" Background="{DynamicResource CardBorderBrush}" Margin="-16,0" />
+                                                    <StackPanel Spacing="0">
+                                                        <CheckBox IsChecked="{Binding Settings.CheckForUpdatesAutomatically}" Content="Check for updates" />
+                                                        <TextBlock Text="Show a banner when updates exist." FontSize="12" Foreground="{DynamicResource TextMutedBrush}" TextWrapping="Wrap" Margin="24,2,0,0" />
+                                                    </StackPanel>
+                                                    <Border Height="1" Background="{DynamicResource CardBorderBrush}" Margin="-16,0" />
+                                                    <StackPanel Spacing="10">
+                                                        <TextBlock Text="Scheduled Updates" FontWeight="Medium" />
+                                                        <StackPanel Spacing="0">
+                                                            <CheckBox IsChecked="{Binding Settings.ScheduledUpdatesEnabled}" Content="Enable scheduled updates" />
+                                                            <TextBlock Text="Register a Windows Task Scheduler task to update apps on a schedule." FontSize="12" Foreground="{DynamicResource TextMutedBrush}" TextWrapping="Wrap" Margin="24,2,0,0" />
+                                                        </StackPanel>
+                                                        <StackPanel Spacing="12" Margin="24,4,0,0" IsEnabled="{Binding AreScheduledUpdateControlsEnabled}">
+                                                            <StackPanel Spacing="6">
+                                                                <TextBlock Text="Frequency" FontWeight="Medium" />
+                                                                <ComboBox ItemsSource="{Binding ScheduledUpdateFrequencyOptions}" SelectedItem="{Binding SelectedScheduledUpdateFrequencyOption}" HorizontalAlignment="Stretch">
+                                                                    <ComboBox.ItemTemplate>
+                                                                        <DataTemplate><TextBlock Text="{Binding Label}" /></DataTemplate>
+                                                                    </ComboBox.ItemTemplate>
+                                                                </ComboBox>
+                                                            </StackPanel>
+                                                            <StackPanel Spacing="6">
+                                                                <TextBlock Text="Run at hour" FontWeight="Medium" />
+                                                                <ComboBox ItemsSource="{Binding ScheduledUpdateHourOptions}" SelectedItem="{Binding SelectedScheduledUpdateHourOption}" HorizontalAlignment="Stretch">
+                                                                    <ComboBox.ItemTemplate>
+                                                                        <DataTemplate><TextBlock Text="{Binding Label}" /></DataTemplate>
+                                                                    </ComboBox.ItemTemplate>
+                                                                </ComboBox>
+                                                            </StackPanel>
+                                                            <StackPanel Spacing="6" IsVisible="{Binding IsScheduledUpdateWeeklyVisible}">
+                                                                <TextBlock Text="Run on" FontWeight="Medium" />
+                                                                <ComboBox ItemsSource="{Binding ScheduledUpdateDayOptions}" SelectedItem="{Binding SelectedScheduledUpdateDayOption}" HorizontalAlignment="Stretch">
+                                                                    <ComboBox.ItemTemplate>
+                                                                        <DataTemplate><TextBlock Text="{Binding Label}" /></DataTemplate>
+                                                                    </ComboBox.ItemTemplate>
+                                                                </ComboBox>
+                                                            </StackPanel>
+                                                            <StackPanel Spacing="0">
+                                                                <CheckBox IsChecked="{Binding Settings.RunMissedUpdatesASAP}" Content="Run missed updates as soon as possible" />
+                                                                <TextBlock Text="If the PC was off at the scheduled time, run the task on the next opportunity." FontSize="12" Foreground="{DynamicResource TextMutedBrush}" TextWrapping="Wrap" Margin="24,2,0,0" />
+                                                            </StackPanel>
+                                                            <TextBlock Text="{Binding ScheduledUpdatesLastRunText, StringFormat=Last run: {0}}" FontSize="12" Foreground="{DynamicResource TextMutedBrush}" />
+                                                            <TextBlock Text="{Binding ScheduledUpdatesNextRunText, StringFormat=Next scheduled run: {0}}" FontSize="12" Foreground="{DynamicResource TextMutedBrush}" TextWrapping="Wrap" />
+                                                            <TextBlock Text="{Binding ScheduledUpdateTaskSchedulerStatusText, StringFormat=Task Scheduler status: {0}}" FontSize="12" Foreground="{DynamicResource TextMutedBrush}" TextWrapping="Wrap" />
+                                                            <Button Content="Run Now" Command="{Binding RunScheduledUpdatesNowCommand}" HorizontalAlignment="Left" />
+                                                        </StackPanel>
+                                                    </StackPanel>
+                                                    <Border Height="1" Background="{DynamicResource CardBorderBrush}" Margin="-16,0" />
+                                                    <StackPanel Spacing="6">
+                                                        <TextBlock Text="Appearance" FontWeight="Medium" />
+                                                        <ComboBox ItemsSource="{Binding ThemeOptions}" SelectedItem="{Binding SelectedThemeOption}" HorizontalAlignment="Stretch">
+                                                            <ComboBox.ItemTemplate>
+                                                                <DataTemplate><TextBlock Text="{Binding Label}" /></DataTemplate>
+                                                            </ComboBox.ItemTemplate>
+                                                        </ComboBox>
+                                                    </StackPanel>
+                                                    <StackPanel Spacing="6">
+                                                        <TextBlock Text="Language" FontWeight="Medium" />
+                                                        <ComboBox ItemsSource="{Binding LanguageOptions}" SelectedItem="{Binding SelectedLanguageOption}" HorizontalAlignment="Stretch">
+                                                            <ComboBox.ItemTemplate>
+                                                                <DataTemplate><TextBlock Text="{Binding Label}" /></DataTemplate>
+                                                            </ComboBox.ItemTemplate>
+                                                        </ComboBox>
+                                                    </StackPanel>
+                                                </StackPanel>
+                                            </Border>
+                                        </StackPanel>
+
+                                        <!-- Data Group -->
+                                        <StackPanel Spacing="10">
+                                            <TextBlock Text="Data" FontSize="14" FontWeight="SemiBold" Foreground="{DynamicResource TextSecondaryBrush}" Margin="4,0,0,0" />
+                                            <Border Background="{DynamicResource ShellBackgroundBrush}" CornerRadius="12" BorderBrush="{DynamicResource CardBorderBrush}" BorderThickness="1" Padding="16">
+                                                <StackPanel Spacing="0">
+                                                    <CheckBox IsChecked="{Binding Settings.SaveProfilesAutomatically}" Content="Auto-save profiles" />
+                                                    <TextBlock Text="Keep your NovaSetup lists saved." FontSize="12" Foreground="{DynamicResource TextMutedBrush}" TextWrapping="Wrap" Margin="24,2,0,0" />
+                                                </StackPanel>
+                                            </Border>
+                                        </StackPanel>
+
+                                        <!-- Advanced Group -->
+                                        <StackPanel Spacing="10">
+                                            <TextBlock Text="Advanced" FontSize="14" FontWeight="SemiBold" Foreground="{DynamicResource TextSecondaryBrush}" Margin="4,0,0,0" />
+                                            <Border Background="{DynamicResource ShellBackgroundBrush}" CornerRadius="12" BorderBrush="{DynamicResource CardBorderBrush}" BorderThickness="1" Padding="16">
+                                                <StackPanel Spacing="16">
+                                                    <StackPanel Spacing="0">
+                                                        <CheckBox IsChecked="{Binding Settings.DeveloperMode}" Content="Developer mode" />
+                                                        <TextBlock Text="Show logs and extra debug info." FontSize="12" Foreground="{DynamicResource TextMutedBrush}" TextWrapping="Wrap" Margin="24,2,0,0" />
+                                                    </StackPanel>
+                                                    <Border Height="1" Background="{DynamicResource CardBorderBrush}" Margin="-16,0" />
+                                                    <StackPanel Spacing="8">
+                                                        <TextBlock Text="View the application's runtime log file for debugging." FontSize="12" Foreground="{DynamicResource TextMutedBrush}" TextWrapping="Wrap" />
+                                                        <Button Content="Open Logs" Command="{Binding OpenLogsFromSettingsCommand}" HorizontalAlignment="Left" />
+                                                    </StackPanel>
+                                                    <Border Height="1" Background="{DynamicResource CardBorderBrush}" Margin="-16,0" />
+                                                    <StackPanel Spacing="8">
+                                                        <TextBlock Text="Reset NovaSetup settings to default values." FontSize="12" Foreground="{DynamicResource TextMutedBrush}" TextWrapping="Wrap" />
+                                                        <Button Content="Reset Settings" Classes="danger" Command="{Binding ResetSettingsCommand}" HorizontalAlignment="Left" />
+                                                    </StackPanel>
+                                                </StackPanel>
+                                            </Border>
+                                        </StackPanel>
+                                        
+                                    </StackPanel>
+                                </Grid>
+                            </ScrollViewer>
+                            </Grid>
+                        </Border>
+                    </Grid>
+
     </Grid>
 </Window>
+
+
 

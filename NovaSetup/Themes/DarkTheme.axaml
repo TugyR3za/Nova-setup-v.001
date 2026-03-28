@@ -1,36 +1,39 @@
 <ResourceDictionary xmlns="https://github.com/avaloniaui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-  <SolidColorBrush x:Key="ShellBorderBrush" Color="#2B313C" />
-  <SolidColorBrush x:Key="ShellBackgroundBrush" Color="#111315" />
-  <SolidColorBrush x:Key="SidebarBrush" Color="#171A1F" />
-  <SolidColorBrush x:Key="PanelBrush" Color="#171A1F" />
-  <SolidColorBrush x:Key="CardBrush" Color="#1D2128" />
-  <SolidColorBrush x:Key="ElevatedCardBrush" Color="#232833" />
-  <SolidColorBrush x:Key="CardBorderBrush" Color="#2B313C" />
-  <SolidColorBrush x:Key="HoverSurfaceBrush" Color="#262C37" />
-  <SolidColorBrush x:Key="PressedSurfaceBrush" Color="#2E3441" />
-  <SolidColorBrush x:Key="InputBrush" Color="#171A1F" />
-  <SolidColorBrush x:Key="InputBorderBrush" Color="#2B313C" />
-  <SolidColorBrush x:Key="TextPrimaryBrush" Color="#F5F7FA" />
-  <SolidColorBrush x:Key="TextSecondaryBrush" Color="#B5BEC9" />
-  <SolidColorBrush x:Key="TextMutedBrush" Color="#8A94A3" />
-  <SolidColorBrush x:Key="TextDisabledBrush" Color="#687180" />
-  <SolidColorBrush x:Key="AccentBrush" Color="#4F7CFF" />
-  <SolidColorBrush x:Key="AccentHoverBrush" Color="#628BFF" />
-  <SolidColorBrush x:Key="AccentPressedBrush" Color="#3E69E8" />
-  <SolidColorBrush x:Key="FocusBrush" Color="#7EA2FF" />
-  <SolidColorBrush x:Key="AccentSoftBrush" Color="#1F2C47" />
-  <SolidColorBrush x:Key="SuccessBrush" Color="#3FAE6B" />
-  <SolidColorBrush x:Key="WarningBrush" Color="#D6A34A" />
-  <SolidColorBrush x:Key="DangerBrush" Color="#D05C5C" />
-  <SolidColorBrush x:Key="InfoBrush" Color="#5CA9FF" />
-  <SolidColorBrush x:Key="SuccessSurfaceBrush" Color="#18241D" />
-  <SolidColorBrush x:Key="WarningSurfaceBrush" Color="#2A2317" />
-  <SolidColorBrush x:Key="DangerSurfaceBrush" Color="#281B1B" />
-  <SolidColorBrush x:Key="InfoSurfaceBrush" Color="#1A2534" />
-  <SolidColorBrush x:Key="WarningMessageBrush" Color="#E5C387" />
-  <SolidColorBrush x:Key="BrandTileBrush" Color="#1A2231" />
-  <SolidColorBrush x:Key="AppIconBackgroundBrush" Color="#293650" />
-  <SolidColorBrush x:Key="RecommendedBadgeBrush" Color="#243A63" />
-  <SolidColorBrush x:Key="LinkBrush" Color="#7EA2FF" />
+  <SolidColorBrush x:Key="ShellBorderBrush" Color="#15FFFFFF" />
+  <SolidColorBrush x:Key="ShellBackgroundBrush" Color="Transparent" />
+  <SolidColorBrush x:Key="SidebarBrush" Color="#33000000" />
+  <SolidColorBrush x:Key="PanelBrush" Color="Transparent" />
+  <SolidColorBrush x:Key="CardBrush" Color="#4D1C1C1E" />
+  <SolidColorBrush x:Key="ElevatedCardBrush" Color="#662C2C2E" />
+  <SolidColorBrush x:Key="CardBorderBrush" Color="#0DFFFFFF" />
+  <SolidColorBrush x:Key="HoverSurfaceBrush" Color="#26FFFFFF" />
+  <SolidColorBrush x:Key="PressedSurfaceBrush" Color="#12FFFFFF" />
+  <SolidColorBrush x:Key="InputBrush" Color="#4D1C1C1E" />
+  <SolidColorBrush x:Key="InputBorderBrush" Color="#1EFFFFFF" />
+  <SolidColorBrush x:Key="TextPrimaryBrush" Color="#FFFFFF" />
+  <SolidColorBrush x:Key="TextSecondaryBrush" Color="#EBEBF5" />
+  <SolidColorBrush x:Key="TextMutedBrush" Color="#8E8E93" />
+  <SolidColorBrush x:Key="TextDisabledBrush" Color="#3A3A3C" />
+  <SolidColorBrush x:Key="AccentBrush" Color="#0A84FF" />
+  <SolidColorBrush x:Key="AccentHoverBrush" Color="#409CFF" />
+  <SolidColorBrush x:Key="AccentPressedBrush" Color="#0060DF" />
+  <SolidColorBrush x:Key="FocusBrush" Color="#660A84FF" />
+  <SolidColorBrush x:Key="AccentSoftBrush" Color="#330A84FF" />
+  <SolidColorBrush x:Key="SuccessBrush" Color="#32D74B" />
+  <SolidColorBrush x:Key="WarningBrush" Color="#FF9F0A" />
+  <SolidColorBrush x:Key="DangerBrush" Color="#FF453A" />
+  <SolidColorBrush x:Key="InfoBrush" Color="#5E5CE6" />
+  <SolidColorBrush x:Key="SuccessSurfaceBrush" Color="#3332D74B" />
+  <SolidColorBrush x:Key="WarningSurfaceBrush" Color="#33FF9F0A" />
+  <SolidColorBrush x:Key="DangerSurfaceBrush" Color="#33FF453A" />
+  <SolidColorBrush x:Key="InfoSurfaceBrush" Color="#335E5CE6" />
+  <SolidColorBrush x:Key="WarningMessageBrush" Color="#FFD60A" />
+  <SolidColorBrush x:Key="BrandTileBrush" Color="#330A84FF" />
+  <LinearGradientBrush x:Key="AppIconBackgroundBrush" StartPoint="0%,0%" EndPoint="0%,100%">
+    <GradientStop Offset="0" Color="#14FFFFFF"/>
+    <GradientStop Offset="1" Color="Transparent"/>
+  </LinearGradientBrush>
+  <SolidColorBrush x:Key="RecommendedBadgeBrush" Color="#330A84FF" />
+  <SolidColorBrush x:Key="LinkBrush" Color="#0A84FF" />
 </ResourceDictionary>

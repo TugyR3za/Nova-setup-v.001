@@ -21,6 +21,7 @@ public sealed class MainWindowViewModel : ObservableObject
     private const string SectionApps = "Apps";
     private const string SectionDrivers = "Drivers";
     private const string SectionMyLists = "My Lists";
+    private const string SectionUpdates = "Updates";
     private const string SectionHistory = "History";
     private const string SectionLogs = "Logs";
     private const string SectionAbout = "About";
@@ -42,7 +43,10 @@ public sealed class MainWindowViewModel : ObservableObject
     private readonly SettingsService _settingsService;
     private readonly ProfileService _profileService;
     private readonly DependencyResolverService _dependencyResolverService;
+    private readonly AppUpdateService _appUpdateService;
+    private ScheduledUpdateService? _scheduledUpdateService;
 
+    private bool _isGridViewActive;
     private readonly ObservableCollection<AppItem> _apps = new();
     private readonly ObservableCollection<AppItem> _visibleApps = new();
     private readonly ObservableCollection<NovaProfile> _savedProfiles = new();
@@ -71,6 +75,7 @@ public sealed class MainWindowViewModel : ObservableObject
     private readonly RelayCommand _dismissUpdateCommand;
     private readonly RelayCommand _downloadUpdateCommand;
     private readonly AsyncRelayCommand _manualCheckForUpdatesCommand;
+    private readonly AsyncRelayCommand _runScheduledUpdatesNowCommand;
     private readonly AsyncRelayCommand _clearLogsCommand;
     private readonly AsyncRelayCommand _copyLogsCommand;
     private readonly AsyncRelayCommand _copySelectedLogCommand;
@@ -89,13 +94,16 @@ public sealed class MainWindowViewModel : ObservableObject
     private readonly RelayCommand _navigateAppsCommand;
     private readonly RelayCommand _navigateDriversCommand;
     private readonly RelayCommand _navigateMyListsCommand;
+    private readonly RelayCommand _navigateUpdatesCommand;
     private readonly RelayCommand _navigateHistoryCommand;
     private readonly RelayCommand _navigateLogsCommand;
+    private readonly RelayCommand _openLogsFromSettingsCommand;
     private readonly RelayCommand _navigateAboutCommand;
     private readonly RelayCommand _requestRestartNowCommand;
     private readonly AsyncRelayCommand _confirmRestartNowCommand;
     private readonly RelayCommand _cancelRestartCommand;
     private readonly RelayCommand _restartLaterCommand;
+    private readonly RelayCommand _toggleViewModeCommand;
     private readonly AsyncRelayCommand _resetSettingsCommand;
 
     private bool _isInitialized;
@@ -185,6 +193,23 @@ public sealed class MainWindowViewModel : ObservableObject
         new(LogFilterDebug, "Debug")
     ];
 
+    private static readonly IReadOnlyList<SettingChoice> ScheduledUpdateFrequencyChoices =
+    [
+        new(AppSettings.ScheduledFrequencyDaily, "Daily"),
+        new(AppSettings.ScheduledFrequencyWeekly, "Weekly"),
+        new(AppSettings.ScheduledFrequencyMonthly, "Monthly")
+    ];
+
+    private static readonly IReadOnlyList<SettingChoice> ScheduledUpdateHourChoices =
+        Enumerable.Range(0, 24)
+            .Select(hour => new SettingChoice(hour.ToString(), $"{hour:00}:00"))
+            .ToList();
+
+    private static readonly IReadOnlyList<SettingChoice> ScheduledUpdateDayChoices =
+        Enum.GetValues<DayOfWeek>()
+            .Select(day => new SettingChoice(day.ToString(), day.ToString()))
+            .ToList();
+
     public MainWindowViewModel(
         PlatformService platformService,
         CatalogService catalogService,
@@ -207,14 +232,17 @@ public sealed class MainWindowViewModel : ObservableObject
         _settingsService = settingsService;
         _profileService = profileService;
         _dependencyResolverService = new DependencyResolverService(loggingService);
+        _appUpdateService = new AppUpdateService(loggingService);
 
         Settings = new AppSettings();
         HistoryViewModel = new HistoryViewModel(historyService, loggingService);
+        UpdatesViewModel = new UpdatesViewModel(UpdateAllAppsAsync, CheckForAppUpdatesAsync, UpdateSingleAppAsync);
         Settings.PropertyChanged += HandleSettingsChanged;
         LoggingService.DeveloperModeAccessor = () => Settings.DeveloperMode;
         _selectionService.SettingsAccessor = () => Settings;
 
         _installCommand = new AsyncRelayCommand(InstallSelectedAsync, CanInstall);
+        _toggleViewModeCommand = new RelayCommand(_ => ToggleViewMode());
         _saveListCommand = new RelayCommand(_ => SaveCurrentList());
         _saveProfileCommand = new RelayCommand(_ => BeginSaveProfile(), _ => !IsInstalling && _isInitialized);
         _confirmSaveProfileCommand = new AsyncRelayCommand(ConfirmSaveProfileAsync, () => !IsInstalling && IsSaveProfilePanelOpen);
@@ -231,6 +259,7 @@ public sealed class MainWindowViewModel : ObservableObject
         _dismissUpdateCommand = new RelayCommand(_ => DismissUpdateBanner(), _ => IsUpdateAvailable);
         _downloadUpdateCommand = new RelayCommand(_ => DownloadUpdate(), _ => IsUpdateAvailable && !string.IsNullOrWhiteSpace(UpdateDownloadUrl));
         _manualCheckForUpdatesCommand = new AsyncRelayCommand(() => CheckForUpdatesAsync(forceManualCheck: true), () => !IsInstalling);
+        _runScheduledUpdatesNowCommand = new AsyncRelayCommand(RunScheduledUpdatesNowAsync, CanRunScheduledUpdatesNow);
         _clearLogsCommand = new AsyncRelayCommand(ClearLogsAsync, () => IsDeveloperModeEnabled);
         _copyLogsCommand = new AsyncRelayCommand(CopyLogsAsync, () => IsDeveloperModeEnabled && FilteredLiveLogs.Count > 0);
         _copySelectedLogCommand = new AsyncRelayCommand(CopySelectedLogAsync, () => IsDeveloperModeEnabled && SelectedLiveLogEntry is not null);
@@ -249,9 +278,11 @@ public sealed class MainWindowViewModel : ObservableObject
         _navigateAppsCommand = new RelayCommand(_ => NavigateTo(SectionApps), _ => !IsInstalling);
         _navigateDriversCommand = new RelayCommand(_ => NavigateToDriversFilter(), _ => !IsInstalling);
         _navigateMyListsCommand = new RelayCommand(_ => NavigateTo(SectionMyLists), _ => !IsInstalling);
+        _navigateUpdatesCommand = new RelayCommand(_ => NavigateTo(SectionUpdates), _ => !IsInstalling);
         _navigateHistoryCommand = new RelayCommand(_ => NavigateTo(SectionHistory), _ => !IsInstalling);
         _navigateLogsCommand = new RelayCommand(_ => NavigateTo(SectionLogs), _ => !IsInstalling);
         _navigateAboutCommand = new RelayCommand(_ => NavigateTo(SectionAbout), _ => !IsInstalling);
+        _openLogsFromSettingsCommand = new RelayCommand(_ => { IsSettingsPanelOpen = false; NavigateTo(SectionLogs); }, _ => !IsInstalling);
         _requestRestartNowCommand = new RelayCommand(_ => RequestRestartNow(), _ => CanShowRestartActions());
         _confirmRestartNowCommand = new AsyncRelayCommand(ConfirmRestartNowAsync, CanConfirmRestartNow);
         _cancelRestartCommand = new RelayCommand(_ => CancelRestartNow(), _ => IsRestartConfirmationVisible);
@@ -265,6 +296,8 @@ public sealed class MainWindowViewModel : ObservableObject
     public AppSettings Settings { get; }
 
     public HistoryViewModel HistoryViewModel { get; }
+
+    public UpdatesViewModel UpdatesViewModel { get; }
 
     public string CurrentPlatform
     {
@@ -302,7 +335,13 @@ public sealed class MainWindowViewModel : ObservableObject
 
     public bool HasUnsupportedSelectedApps => UnsupportedSelectedCount > 0;
 
-    public string SelectedFooterText => $"Visible apps: {VisibleAppCount} • Selected apps: {SelectedCount} • Download size: {SelectedCount * 30} MB";
+    public string SelectedFooterText => SelectedCount > 0 
+        ? $"{SelectedCount} apps selected  •  {SelectedCount * 30} MB"
+        : "0 apps selected";
+
+    public int SelectedAppsCount => SelectedCount;
+    public int SelectedAppsSizeMB => SelectedCount * 30;
+    public int SelectedAppsTimeMins => SelectedCount * 2;
 
     public string RecommendedAppsSummary => HasRecommendedApps
         ? string.Join(" • ", _apps.Where(app => app.IsRecommended).Take(4).Select(app => app.Name))
@@ -355,6 +394,8 @@ public sealed class MainWindowViewModel : ObservableObject
         SectionDashboard => "Dashboard",
         SectionDrivers => "Drivers and accessories",
         SectionMyLists => "My list",
+        SectionUpdates => "Available Updates",
+        SectionHistory => "Downloads",
         _ => "Choose what to install"
     };
 
@@ -363,6 +404,8 @@ public sealed class MainWindowViewModel : ObservableObject
         SectionDashboard => "Review apps, drivers, and setup choices from one place.",
         SectionDrivers => "Focused view for drivers, GPU tools, and accessory software.",
         SectionMyLists => "Only selected apps are shown here so you can review your list quickly.",
+        SectionUpdates => "Review installed software that has a newer version available in the catalog.",
+        SectionHistory => "View the history of installed applications on this machine.",
         _ => "Pick apps, drivers, and packs, then press Install"
     };
 
@@ -476,6 +519,9 @@ public sealed class MainWindowViewModel : ObservableObject
     public bool IsMyListsSelected => string.Equals(_currentSection, SectionMyLists, StringComparison.Ordinal);
     public bool IsMyListsUnselected => !IsMyListsSelected;
 
+    public bool IsUpdatesSelected => string.Equals(_currentSection, SectionUpdates, StringComparison.Ordinal);
+    public bool IsUpdatesUnselected => !IsUpdatesSelected;
+
     public bool IsHistorySelected => string.Equals(_currentSection, SectionHistory, StringComparison.Ordinal);
     public bool IsHistoryUnselected => !IsHistorySelected;
 
@@ -485,7 +531,30 @@ public sealed class MainWindowViewModel : ObservableObject
     public bool IsAboutSelected => string.Equals(_currentSection, SectionAbout, StringComparison.Ordinal);
     public bool IsAboutUnselected => !IsAboutSelected;
 
-    public bool IsHomeScreenVisible => !IsInstalling && !IsHistorySelected && !IsLogsSelected && !IsAboutSelected;
+    public bool IsHomeScreenVisible => !IsInstalling && !IsUpdatesSelected && !IsHistorySelected && !IsLogsSelected && !IsAboutSelected;
+
+    public bool IsListViewActive => !_isGridViewActive;
+
+    public bool IsGridViewActive
+    {
+        get => _isGridViewActive;
+        set
+        {
+            if (_isGridViewActive != value)
+            {
+                _isGridViewActive = value;
+                OnPropertyChanged(nameof(IsGridViewActive));
+                OnPropertyChanged(nameof(IsListViewActive));
+            }
+        }
+    }
+
+    public System.Windows.Input.ICommand ToggleViewModeCommand => _toggleViewModeCommand;
+
+    private void ToggleViewMode()
+    {
+        IsGridViewActive = !IsGridViewActive;
+    }
 
     public bool IsInstallScreenVisible => IsInstalling;
 
@@ -497,7 +566,9 @@ public sealed class MainWindowViewModel : ObservableObject
 
     public bool IsAboutScreenVisible => !IsInstalling && IsAboutSelected;
 
-    public bool IsSelectionPhase => !IsHistorySelected && !IsLogsSelected && !IsAboutSelected;
+    public bool IsUpdatesScreenVisible => !IsInstalling && IsUpdatesSelected;
+
+    public bool IsSelectionPhase => !IsUpdatesSelected && !IsHistorySelected && !IsLogsSelected && !IsAboutSelected;
 
     public bool IsSettingsPanelOpen
     {
@@ -535,6 +606,12 @@ public sealed class MainWindowViewModel : ObservableObject
     public IReadOnlyList<SettingChoice> LanguageOptions => LanguageChoices;
 
     public IReadOnlyList<SettingChoice> LogLevelFilterOptions => LogLevelFilterChoices;
+
+    public IReadOnlyList<SettingChoice> ScheduledUpdateFrequencyOptions => ScheduledUpdateFrequencyChoices;
+
+    public IReadOnlyList<SettingChoice> ScheduledUpdateHourOptions => ScheduledUpdateHourChoices;
+
+    public IReadOnlyList<SettingChoice> ScheduledUpdateDayOptions => ScheduledUpdateDayChoices;
 
     public SettingChoice? SelectedRestartBehaviorOption
     {
@@ -596,6 +673,97 @@ public sealed class MainWindowViewModel : ObservableObject
             OnPropertyChanged();
         }
     }
+
+    public SettingChoice? SelectedScheduledUpdateFrequencyOption
+    {
+        get => ScheduledUpdateFrequencyChoices.FirstOrDefault(
+                   choice => string.Equals(choice.Value, Settings.ScheduledUpdateFrequency, StringComparison.OrdinalIgnoreCase))
+               ?? ScheduledUpdateFrequencyChoices[1];
+        set
+        {
+            if (value is null ||
+                string.Equals(value.Value, Settings.ScheduledUpdateFrequency, StringComparison.OrdinalIgnoreCase))
+            {
+                return;
+            }
+
+            Settings.ScheduledUpdateFrequency = value.Value;
+            OnPropertyChanged();
+            OnPropertyChanged(nameof(IsScheduledUpdateWeeklyVisible));
+            OnPropertyChanged(nameof(ScheduledUpdatesNextRunText));
+        }
+    }
+
+    public SettingChoice? SelectedScheduledUpdateHourOption
+    {
+        get => ScheduledUpdateHourChoices.FirstOrDefault(choice => choice.Value == Settings.ScheduledUpdateHour.ToString())
+               ?? ScheduledUpdateHourChoices[Math.Clamp(Settings.ScheduledUpdateHour, 0, 23)];
+        set
+        {
+            if (value is null || !int.TryParse(value.Value, out var hour) || hour == Settings.ScheduledUpdateHour)
+            {
+                return;
+            }
+
+            Settings.ScheduledUpdateHour = hour;
+            OnPropertyChanged();
+            OnPropertyChanged(nameof(ScheduledUpdatesNextRunText));
+        }
+    }
+
+    public SettingChoice? SelectedScheduledUpdateDayOption
+    {
+        get => ScheduledUpdateDayChoices.FirstOrDefault(
+                   choice => string.Equals(choice.Value, Settings.ScheduledUpdateDay.ToString(), StringComparison.Ordinal))
+               ?? ScheduledUpdateDayChoices[(int)Settings.ScheduledUpdateDay];
+        set
+        {
+            if (value is null ||
+                !Enum.TryParse<DayOfWeek>(value.Value, ignoreCase: true, out var day) ||
+                day == Settings.ScheduledUpdateDay)
+            {
+                return;
+            }
+
+            Settings.ScheduledUpdateDay = day;
+            OnPropertyChanged();
+            OnPropertyChanged(nameof(ScheduledUpdatesNextRunText));
+        }
+    }
+
+    public bool AreScheduledUpdateControlsEnabled => Settings.ScheduledUpdatesEnabled;
+
+    public bool IsScheduledUpdateWeeklyVisible => string.Equals(
+        Settings.ScheduledUpdateFrequency,
+        AppSettings.ScheduledFrequencyWeekly,
+        StringComparison.OrdinalIgnoreCase);
+
+    public string ScheduledUpdatesLastRunText => Settings.LastScheduledUpdateRun == DateTime.MinValue
+        ? "Never"
+        : FormatScheduledTimestamp(Settings.LastScheduledUpdateRun);
+
+    public string ScheduledUpdatesNextRunText
+    {
+        get
+        {
+            if (!Settings.ScheduledUpdatesEnabled)
+            {
+                return "Disabled";
+            }
+
+            var nextRun = _scheduledUpdateService?.NextScheduledRun ??
+                          ScheduledUpdateService.CalculateNextScheduledRun(Settings);
+            if (nextRun == DateTime.MinValue)
+            {
+                return "Not scheduled";
+            }
+
+            return FormatScheduledTimestamp(nextRun);
+        }
+    }
+
+    public string ScheduledUpdateTaskSchedulerStatusText =>
+        _scheduledUpdateService?.IsTaskRegistered == true ? "Registered" : "Not registered";
 
     public string SearchText
     {
@@ -926,6 +1094,8 @@ public sealed class MainWindowViewModel : ObservableObject
 
     public ICommand ManualCheckForUpdatesCommand => _manualCheckForUpdatesCommand;
 
+    public ICommand RunScheduledUpdatesNowCommand => _runScheduledUpdatesNowCommand;
+
     public ICommand ClearLogsCommand => _clearLogsCommand;
 
     public ICommand CopyLogsCommand => _copyLogsCommand;
@@ -962,11 +1132,18 @@ public sealed class MainWindowViewModel : ObservableObject
 
     public ICommand NavigateMyListsCommand => _navigateMyListsCommand;
 
+    public ICommand NavigateUpdatesCommand => _navigateUpdatesCommand;
+
     public ICommand NavigateHistoryCommand => _navigateHistoryCommand;
 
     public ICommand NavigateLogsCommand => _navigateLogsCommand;
+    public ICommand OpenLogsFromSettingsCommand => _openLogsFromSettingsCommand;
 
     public ICommand NavigateAboutCommand => _navigateAboutCommand;
+
+    public ICommand UpdateAllCommand => UpdatesViewModel.UpdateAllCommand;
+
+    public ICommand CheckForAppUpdatesCommand => UpdatesViewModel.CheckNowCommand;
 
     public ICommand RequestRestartNowCommand => _requestRestartNowCommand;
 
@@ -987,6 +1164,19 @@ public sealed class MainWindowViewModel : ObservableObject
     {
         ArgumentNullException.ThrowIfNull(updateStatusAsync);
         return InitializeCoreAsync(updateStatusAsync, runDetectionInBackground: false);
+    }
+
+    public void AttachScheduledUpdateService(ScheduledUpdateService scheduledUpdateService)
+    {
+        _scheduledUpdateService = scheduledUpdateService ?? throw new ArgumentNullException(nameof(scheduledUpdateService));
+        OnPropertyChanged(nameof(ScheduledUpdatesNextRunText));
+        OnPropertyChanged(nameof(ScheduledUpdateTaskSchedulerStatusText));
+        UpdateCommandStates();
+    }
+
+    public List<AppItem> CreateScheduledUpdateSnapshot()
+    {
+        return _apps.Select(CloneAppForBackgroundWork).ToList();
     }
 
     private async Task InitializeCoreAsync(
@@ -1084,6 +1274,9 @@ public sealed class MainWindowViewModel : ObservableObject
         {
             OnPropertyChanged(nameof(VisibleAppCount));
             OnPropertyChanged(nameof(SelectedFooterText));
+            OnPropertyChanged(nameof(SelectedAppsCount));
+            OnPropertyChanged(nameof(SelectedAppsSizeMB));
+            OnPropertyChanged(nameof(SelectedAppsTimeMins));
         };
         _savedProfiles.CollectionChanged += (_, _) =>
         {
@@ -1141,6 +1334,36 @@ public sealed class MainWindowViewModel : ObservableObject
             case nameof(AppSettings.Language):
                 OnPropertyChanged(nameof(SelectedLanguageOption));
                 break;
+            case nameof(AppSettings.ScheduledUpdatesEnabled):
+                OnPropertyChanged(nameof(AreScheduledUpdateControlsEnabled));
+                OnPropertyChanged(nameof(ScheduledUpdatesNextRunText));
+                OnPropertyChanged(nameof(ScheduledUpdateTaskSchedulerStatusText));
+                _runScheduledUpdatesNowCommand.RaiseCanExecuteChanged();
+                break;
+            case nameof(AppSettings.ScheduledUpdateFrequency):
+                OnPropertyChanged(nameof(SelectedScheduledUpdateFrequencyOption));
+                OnPropertyChanged(nameof(IsScheduledUpdateWeeklyVisible));
+                OnPropertyChanged(nameof(ScheduledUpdatesNextRunText));
+                OnPropertyChanged(nameof(ScheduledUpdateTaskSchedulerStatusText));
+                break;
+            case nameof(AppSettings.ScheduledUpdateHour):
+                OnPropertyChanged(nameof(SelectedScheduledUpdateHourOption));
+                OnPropertyChanged(nameof(ScheduledUpdatesNextRunText));
+                OnPropertyChanged(nameof(ScheduledUpdateTaskSchedulerStatusText));
+                break;
+            case nameof(AppSettings.ScheduledUpdateDay):
+                OnPropertyChanged(nameof(SelectedScheduledUpdateDayOption));
+                OnPropertyChanged(nameof(ScheduledUpdatesNextRunText));
+                OnPropertyChanged(nameof(ScheduledUpdateTaskSchedulerStatusText));
+                break;
+            case nameof(AppSettings.RunMissedUpdatesASAP):
+                OnPropertyChanged(nameof(ScheduledUpdatesNextRunText));
+                OnPropertyChanged(nameof(ScheduledUpdateTaskSchedulerStatusText));
+                break;
+            case nameof(AppSettings.LastScheduledUpdateRun):
+                OnPropertyChanged(nameof(ScheduledUpdatesLastRunText));
+                OnPropertyChanged(nameof(ScheduledUpdatesNextRunText));
+                break;
             case nameof(AppSettings.DeveloperMode):
                 OnPropertyChanged(nameof(IsDeveloperModeEnabled));
                 NotifyScreenStateChanged();
@@ -1157,10 +1380,18 @@ public sealed class MainWindowViewModel : ObservableObject
             return;
         }
 
-        LogSettingChanged(e.PropertyName);
-        ScheduleSettingsSave();
+        var skipDeferredPersistence = string.Equals(
+            e.PropertyName,
+            nameof(AppSettings.LastScheduledUpdateRun),
+            StringComparison.Ordinal);
 
-        if (Settings.SaveProfilesAutomatically)
+        if (!skipDeferredPersistence)
+        {
+            LogSettingChanged(e.PropertyName);
+            ScheduleSettingsSave();
+        }
+
+        if (!skipDeferredPersistence && Settings.SaveProfilesAutomatically)
         {
             SaveCurrentList(showStatusMessage: false);
             _ = _selectionService.SaveAutoProfileAsync(GetSelectedAppIds());
@@ -1246,8 +1477,16 @@ public sealed class MainWindowViewModel : ObservableObject
         OnPropertyChanged(nameof(SelectedDownloadLocationOption));
         OnPropertyChanged(nameof(SelectedThemeOption));
         OnPropertyChanged(nameof(SelectedLanguageOption));
+        OnPropertyChanged(nameof(SelectedScheduledUpdateFrequencyOption));
+        OnPropertyChanged(nameof(SelectedScheduledUpdateHourOption));
+        OnPropertyChanged(nameof(SelectedScheduledUpdateDayOption));
         OnPropertyChanged(nameof(IsCustomDownloadFolderVisible));
         OnPropertyChanged(nameof(IsDeveloperModeEnabled));
+        OnPropertyChanged(nameof(AreScheduledUpdateControlsEnabled));
+        OnPropertyChanged(nameof(IsScheduledUpdateWeeklyVisible));
+        OnPropertyChanged(nameof(ScheduledUpdatesLastRunText));
+        OnPropertyChanged(nameof(ScheduledUpdatesNextRunText));
+        OnPropertyChanged(nameof(ScheduledUpdateTaskSchedulerStatusText));
     }
 
     private void ApplyTheme()
@@ -1390,6 +1629,9 @@ public sealed class MainWindowViewModel : ObservableObject
 
         OnPropertyChanged(nameof(VisibleAppCount));
         OnPropertyChanged(nameof(SelectedFooterText));
+        OnPropertyChanged(nameof(SelectedAppsCount));
+        OnPropertyChanged(nameof(SelectedAppsSizeMB));
+        OnPropertyChanged(nameof(SelectedAppsTimeMins));
     }
 
     private void SetCategoryFilter(string filter)
@@ -1481,6 +1723,7 @@ public sealed class MainWindowViewModel : ObservableObject
     {
         OnPropertyChanged(nameof(IsHomeScreenVisible));
         OnPropertyChanged(nameof(IsInstallScreenVisible));
+        OnPropertyChanged(nameof(IsUpdatesScreenVisible));
         OnPropertyChanged(nameof(IsSummaryScreenVisible));
         OnPropertyChanged(nameof(IsHistoryEmptyScreenVisible));
         OnPropertyChanged(nameof(IsLogsScreenVisible));
@@ -1500,6 +1743,8 @@ public sealed class MainWindowViewModel : ObservableObject
         OnPropertyChanged(nameof(IsDriversUnselected));
         OnPropertyChanged(nameof(IsMyListsSelected));
         OnPropertyChanged(nameof(IsMyListsUnselected));
+        OnPropertyChanged(nameof(IsUpdatesSelected));
+        OnPropertyChanged(nameof(IsUpdatesUnselected));
         OnPropertyChanged(nameof(IsHistorySelected));
         OnPropertyChanged(nameof(IsHistoryUnselected));
         OnPropertyChanged(nameof(IsLogsSelected));
@@ -1536,6 +1781,10 @@ public sealed class MainWindowViewModel : ObservableObject
         else if (section == SectionAbout)
         {
             StatusText = $"About page selected. Running {AboutVersionText}.";
+        }
+        else if (section == SectionUpdates)
+        {
+            StatusText = UpdatesViewModel.SummaryText;
         }
 
         NotifyNavigationStateChanged();
@@ -1662,6 +1911,7 @@ public sealed class MainWindowViewModel : ObservableObject
         ApplyVisibilityFilter();
         NotifyAppSummaryStateChanged();
         UpdateCommandStates();
+        _ = RefreshAvailableAppUpdatesAsync(rerunInstalledDetection: false, updateStatusText: false);
 
         if (Settings.SaveProfilesAutomatically)
         {
@@ -1690,6 +1940,8 @@ public sealed class MainWindowViewModel : ObservableObject
                 NotifyAppSummaryStateChanged();
                 StatusText = BuildLoadedStatusText(detectionPending: false);
             });
+
+            await RefreshAvailableAppUpdatesAsync(rerunInstalledDetection: false, updateStatusText: false);
         }
         catch (Exception ex)
         {
@@ -2134,15 +2386,170 @@ public sealed class MainWindowViewModel : ObservableObject
                 return;
             }
 
-            if (forceManualCheck)
+        if (forceManualCheck)
+        {
+            AboutUpdateStatusText = "Nova is up to date";
+            if (string.IsNullOrWhiteSpace(result.LatestVersion))
             {
-                AboutUpdateStatusText = "Nova is up to date";
-                if (string.IsNullOrWhiteSpace(result.LatestVersion))
-                {
-                    AboutRemoteVersionText = "Latest available: Unknown";
-                }
+                AboutRemoteVersionText = "Latest available: Unknown";
             }
-        });
+        }
+    });
+}
+
+    private async Task CheckForAppUpdatesAsync()
+    {
+        UpdatesViewModel.IsBusy = true;
+        try
+        {
+            await RefreshAvailableAppUpdatesAsync(rerunInstalledDetection: true, updateStatusText: true);
+        }
+        finally
+        {
+            UpdatesViewModel.IsBusy = false;
+        }
+    }
+
+    private bool CanRunScheduledUpdatesNow()
+    {
+        return !IsInstalling &&
+               Settings.ScheduledUpdatesEnabled &&
+               _scheduledUpdateService is not null;
+    }
+
+    private async Task RunScheduledUpdatesNowAsync()
+    {
+        if (_scheduledUpdateService is null)
+        {
+            return;
+        }
+
+        StatusText = "Running scheduled updates now...";
+        try
+        {
+            await _scheduledUpdateService.RunScheduledUpdateAsync();
+            StatusText = "Scheduled update run finished.";
+        }
+        catch (Exception ex)
+        {
+            StatusText = "Scheduled update run failed.";
+            _loggingService.LogError($"Scheduled update run failed: {ex.Message}");
+        }
+        finally
+        {
+            OnPropertyChanged(nameof(ScheduledUpdatesLastRunText));
+            OnPropertyChanged(nameof(ScheduledUpdatesNextRunText));
+            OnPropertyChanged(nameof(ScheduledUpdateTaskSchedulerStatusText));
+        }
+    }
+
+    private async Task UpdateAllAppsAsync()
+    {
+        if (!UpdatesViewModel.HasUpdates)
+        {
+            return;
+        }
+
+        UpdatesViewModel.IsBusy = true;
+        try
+        {
+            await _appUpdateService.UpdateAllAsync(UpdatesViewModel.AvailableUpdates.ToList(), _installerService);
+            await HistoryViewModel.RefreshAsync();
+            await RefreshAvailableAppUpdatesAsync(rerunInstalledDetection: true, updateStatusText: true);
+        }
+        finally
+        {
+            UpdatesViewModel.IsBusy = false;
+        }
+    }
+
+    private async Task UpdateSingleAppAsync(AppItem app)
+    {
+        if (app is null)
+        {
+            return;
+        }
+
+        UpdatesViewModel.IsBusy = true;
+        try
+        {
+            await _appUpdateService.UpdateAppAsync(app, _installerService);
+            await HistoryViewModel.RefreshAsync();
+            await RefreshAvailableAppUpdatesAsync(rerunInstalledDetection: true, updateStatusText: true);
+        }
+        finally
+        {
+            UpdatesViewModel.IsBusy = false;
+        }
+    }
+
+    private async Task RefreshAvailableAppUpdatesAsync(bool rerunInstalledDetection, bool updateStatusText)
+    {
+        if (string.Equals(_currentPlatformId, PlatformService.Unknown, StringComparison.Ordinal))
+        {
+            return;
+        }
+
+        try
+        {
+            if (rerunInstalledDetection)
+            {
+                var installedSnapshot = _apps.ToList();
+                var installedApps = await Task.Run(() =>
+                    _detectionService.DetectInstalledAppStates(installedSnapshot, _currentPlatformId));
+
+                await Dispatcher.UIThread.InvokeAsync(() =>
+                {
+                    ApplyInstalledAppResults(installedApps);
+                    ApplyVisibilityFilter();
+                    NotifyAppSummaryStateChanged();
+                    NotifyAppDetailsStateChanged();
+                });
+            }
+
+            var latestVersions = await Task.Run(() =>
+                _appUpdateService.ResolveLatestCatalogVersions(_apps.ToList(), _currentPlatformId));
+
+            await Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                ApplyResolvedCatalogVersions(latestVersions);
+                RefreshAllAppVisualStates();
+
+                var availableUpdates = _appUpdateService.GetAppsWithUpdates(_apps.ToList());
+                UpdatesViewModel.SetAvailableUpdates(availableUpdates);
+                NotifyAppSummaryStateChanged();
+                NotifyAppDetailsStateChanged();
+                UpdateCommandStates();
+
+                if (updateStatusText)
+                {
+                    StatusText = UpdatesViewModel.SummaryText;
+                }
+            });
+        }
+        catch (Exception ex)
+        {
+            _loggingService.LogError($"App update check failed: {ex.Message}");
+        }
+    }
+
+    private void ApplyResolvedCatalogVersions(IReadOnlyDictionary<string, string> latestVersions)
+    {
+        if (latestVersions is null || latestVersions.Count == 0)
+        {
+            return;
+        }
+
+        foreach (var app in _apps)
+        {
+            if (!latestVersions.TryGetValue(app.Id, out var latestVersion) ||
+                string.IsNullOrWhiteSpace(latestVersion))
+            {
+                continue;
+            }
+
+            app.Version = latestVersion;
+        }
     }
 
     private void DismissUpdateBanner()
@@ -2517,6 +2924,7 @@ public sealed class MainWindowViewModel : ObservableObject
         NotifyAppSummaryStateChanged();
         NotifyAppDetailsStateChanged();
         UpdateCommandStates();
+        await RefreshAvailableAppUpdatesAsync(rerunInstalledDetection: false, updateStatusText: false);
 
         StatusText = $"{BuildLoadedStatusText(detectionPending: false)} Refreshed current catalog and app state.";
         _loggingService.LogInfo("Manual refresh completed.");
@@ -2854,6 +3262,7 @@ public sealed class MainWindowViewModel : ObservableObject
 
         ApplyInstalledAppResults(installedApps);
         NotifyAppSummaryStateChanged();
+        await RefreshAvailableAppUpdatesAsync(rerunInstalledDetection: false, updateStatusText: false);
     }
 
     private void ReplaceCatalogApps(
@@ -3093,6 +3502,85 @@ public sealed class MainWindowViewModel : ObservableObject
         }
     }
 
+    private static string FormatScheduledTimestamp(DateTime value)
+    {
+        if (value == DateTime.MinValue)
+        {
+            return "Never";
+        }
+
+        var localValue = value.Kind switch
+        {
+            DateTimeKind.Utc => value.ToLocalTime(),
+            DateTimeKind.Unspecified => DateTime.SpecifyKind(value, DateTimeKind.Utc).ToLocalTime(),
+            _ => value
+        };
+
+        return localValue.ToString("MMM d, yyyy h:mm tt");
+    }
+
+    private static AppItem CloneAppForBackgroundWork(AppItem source)
+    {
+        return new AppItem
+        {
+            Id = source.Id,
+            Name = source.Name,
+            Category = source.Category,
+            PublisherName = source.PublisherName,
+            HomepageUrl = source.HomepageUrl,
+            Description = source.Description,
+            IconPath = source.IconPath,
+            WingetId = source.WingetId,
+            Version = source.Version,
+            InstalledVersion = source.InstalledVersion,
+            License = source.License,
+            ReleaseNotesUrl = source.ReleaseNotesUrl,
+            Tags = source.Tags.ToList(),
+            Dependencies = source.Dependencies.ToList(),
+            SupportedPlatforms = new PlatformSupport
+            {
+                Windows = source.SupportedPlatforms.Windows,
+                Linux = source.SupportedPlatforms.Linux
+            },
+            WindowsInstall = CloneInstallDefinition(source.WindowsInstall),
+            LinuxInstall = CloneInstallDefinition(source.LinuxInstall),
+            IsSupportedOnCurrentPlatform = source.IsSupportedOnCurrentPlatform,
+            SupportsSilentInstall = source.SupportsSilentInstall,
+            IsInstalled = source.IsInstalled,
+            IsHidden = source.IsHidden
+        };
+    }
+
+    private static InstallDefinition? CloneInstallDefinition(InstallDefinition? source)
+    {
+        if (source is null)
+        {
+            return null;
+        }
+
+        return new InstallDefinition
+        {
+            InstallerUrl = source.InstallerUrl,
+            InstallerUrl32 = source.InstallerUrl32,
+            InstallerUrl64 = source.InstallerUrl64,
+            InstallerFileName = source.InstallerFileName,
+            Sha256 = source.Sha256,
+            Sha25632 = source.Sha25632,
+            Sha25664 = source.Sha25664,
+            Command = source.Command,
+            SilentCommand = source.SilentCommand,
+            Arguments = source.Arguments,
+            SilentArguments = source.SilentArguments,
+            Architecture = source.Architecture,
+            RequiresRestart = source.RequiresRestart,
+            RequiresElevation = source.RequiresElevation,
+            NeedsManualInstall = source.NeedsManualInstall,
+            VerificationTimeoutSeconds = source.VerificationTimeoutSeconds,
+            DetectDisplayNameContains = source.DetectDisplayNameContains,
+            DetectExecutable = source.DetectExecutable
+        };
+    }
+
     private void UpdateCommandStates()
     {
         _installCommand.RaiseCanExecuteChanged();
@@ -3109,6 +3597,7 @@ public sealed class MainWindowViewModel : ObservableObject
         _dismissUpdateCommand.RaiseCanExecuteChanged();
         _downloadUpdateCommand.RaiseCanExecuteChanged();
         _manualCheckForUpdatesCommand.RaiseCanExecuteChanged();
+        _runScheduledUpdatesNowCommand.RaiseCanExecuteChanged();
         _clearLogsCommand.RaiseCanExecuteChanged();
         _copyLogsCommand.RaiseCanExecuteChanged();
         _copySelectedLogCommand.RaiseCanExecuteChanged();
@@ -3118,6 +3607,7 @@ public sealed class MainWindowViewModel : ObservableObject
         _navigateAppsCommand.RaiseCanExecuteChanged();
         _navigateDriversCommand.RaiseCanExecuteChanged();
         _navigateMyListsCommand.RaiseCanExecuteChanged();
+        _navigateUpdatesCommand.RaiseCanExecuteChanged();
         _navigateHistoryCommand.RaiseCanExecuteChanged();
         _navigateLogsCommand.RaiseCanExecuteChanged();
         _navigateAboutCommand.RaiseCanExecuteChanged();
@@ -3135,6 +3625,9 @@ public sealed class MainWindowViewModel : ObservableObject
     {
         OnPropertyChanged(nameof(SelectedCount));
         OnPropertyChanged(nameof(SelectedFooterText));
+        OnPropertyChanged(nameof(SelectedAppsCount));
+        OnPropertyChanged(nameof(SelectedAppsSizeMB));
+        OnPropertyChanged(nameof(SelectedAppsTimeMins));
         OnPropertyChanged(nameof(RecommendedCount));
         OnPropertyChanged(nameof(HasRecommendedApps));
         OnPropertyChanged(nameof(UpdateAvailableCount));

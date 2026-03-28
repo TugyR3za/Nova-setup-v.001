@@ -21,29 +21,17 @@ public partial class SidebarControl : UserControl
     public static readonly StyledProperty<bool> IsAppsUnselectedProperty =
         AvaloniaProperty.Register<SidebarControl, bool>(nameof(IsAppsUnselected), true);
 
-    public static readonly StyledProperty<bool> IsMyListsSelectedProperty =
-        AvaloniaProperty.Register<SidebarControl, bool>(nameof(IsMyListsSelected));
+    public static readonly StyledProperty<bool> IsUpdatesSelectedProperty =
+        AvaloniaProperty.Register<SidebarControl, bool>(nameof(IsUpdatesSelected));
 
-    public static readonly StyledProperty<bool> IsMyListsUnselectedProperty =
-        AvaloniaProperty.Register<SidebarControl, bool>(nameof(IsMyListsUnselected), true);
+    public static readonly StyledProperty<bool> IsUpdatesUnselectedProperty =
+        AvaloniaProperty.Register<SidebarControl, bool>(nameof(IsUpdatesUnselected), true);
 
-    public static readonly StyledProperty<bool> IsHistorySelectedProperty =
-        AvaloniaProperty.Register<SidebarControl, bool>(nameof(IsHistorySelected));
+    public static readonly StyledProperty<bool> HasUpdatesAvailableProperty =
+        AvaloniaProperty.Register<SidebarControl, bool>(nameof(HasUpdatesAvailable));
 
-    public static readonly StyledProperty<bool> IsHistoryUnselectedProperty =
-        AvaloniaProperty.Register<SidebarControl, bool>(nameof(IsHistoryUnselected), true);
-
-    public static readonly StyledProperty<bool> IsLogsSelectedProperty =
-        AvaloniaProperty.Register<SidebarControl, bool>(nameof(IsLogsSelected));
-
-    public static readonly StyledProperty<bool> IsLogsUnselectedProperty =
-        AvaloniaProperty.Register<SidebarControl, bool>(nameof(IsLogsUnselected), true);
-
-    public static readonly StyledProperty<bool> IsAboutSelectedProperty =
-        AvaloniaProperty.Register<SidebarControl, bool>(nameof(IsAboutSelected));
-
-    public static readonly StyledProperty<bool> IsAboutUnselectedProperty =
-        AvaloniaProperty.Register<SidebarControl, bool>(nameof(IsAboutUnselected), true);
+    public static readonly StyledProperty<int> UpdateAvailableCountProperty =
+        AvaloniaProperty.Register<SidebarControl, int>(nameof(UpdateAvailableCount));
 
     public static readonly StyledProperty<ICommand?> NavigateDashboardCommandProperty =
         AvaloniaProperty.Register<SidebarControl, ICommand?>(nameof(NavigateDashboardCommand));
@@ -51,17 +39,17 @@ public partial class SidebarControl : UserControl
     public static readonly StyledProperty<ICommand?> NavigateAppsCommandProperty =
         AvaloniaProperty.Register<SidebarControl, ICommand?>(nameof(NavigateAppsCommand));
 
-    public static readonly StyledProperty<ICommand?> NavigateMyListsCommandProperty =
-        AvaloniaProperty.Register<SidebarControl, ICommand?>(nameof(NavigateMyListsCommand));
+    public static readonly StyledProperty<ICommand?> NavigateUpdatesCommandProperty =
+        AvaloniaProperty.Register<SidebarControl, ICommand?>(nameof(NavigateUpdatesCommand));
+
+    public static readonly StyledProperty<ICommand?> NavigateAboutCommandProperty =
+        AvaloniaProperty.Register<SidebarControl, ICommand?>(nameof(NavigateAboutCommand));
 
     public static readonly StyledProperty<ICommand?> NavigateHistoryCommandProperty =
         AvaloniaProperty.Register<SidebarControl, ICommand?>(nameof(NavigateHistoryCommand));
 
-    public static readonly StyledProperty<ICommand?> NavigateLogsCommandProperty =
-        AvaloniaProperty.Register<SidebarControl, ICommand?>(nameof(NavigateLogsCommand));
-
-    public static readonly StyledProperty<ICommand?> NavigateAboutCommandProperty =
-        AvaloniaProperty.Register<SidebarControl, ICommand?>(nameof(NavigateAboutCommand));
+    public static readonly StyledProperty<ICommand?> HelpCommandProperty =
+        AvaloniaProperty.Register<SidebarControl, ICommand?>(nameof(HelpCommand));
 
     public static readonly StyledProperty<ICommand?> ToggleAccountMenuCommandProperty =
         AvaloniaProperty.Register<SidebarControl, ICommand?>(nameof(ToggleAccountMenuCommand));
@@ -112,52 +100,28 @@ public partial class SidebarControl : UserControl
         set => SetValue(IsAppsUnselectedProperty, value);
     }
 
-    public bool IsMyListsSelected
+    public bool IsUpdatesSelected
     {
-        get => GetValue(IsMyListsSelectedProperty);
-        set => SetValue(IsMyListsSelectedProperty, value);
+        get => GetValue(IsUpdatesSelectedProperty);
+        set => SetValue(IsUpdatesSelectedProperty, value);
     }
 
-    public bool IsMyListsUnselected
+    public bool IsUpdatesUnselected
     {
-        get => GetValue(IsMyListsUnselectedProperty);
-        set => SetValue(IsMyListsUnselectedProperty, value);
+        get => GetValue(IsUpdatesUnselectedProperty);
+        set => SetValue(IsUpdatesUnselectedProperty, value);
     }
 
-    public bool IsHistorySelected
+    public bool HasUpdatesAvailable
     {
-        get => GetValue(IsHistorySelectedProperty);
-        set => SetValue(IsHistorySelectedProperty, value);
+        get => GetValue(HasUpdatesAvailableProperty);
+        set => SetValue(HasUpdatesAvailableProperty, value);
     }
 
-    public bool IsHistoryUnselected
+    public int UpdateAvailableCount
     {
-        get => GetValue(IsHistoryUnselectedProperty);
-        set => SetValue(IsHistoryUnselectedProperty, value);
-    }
-
-    public bool IsLogsSelected
-    {
-        get => GetValue(IsLogsSelectedProperty);
-        set => SetValue(IsLogsSelectedProperty, value);
-    }
-
-    public bool IsLogsUnselected
-    {
-        get => GetValue(IsLogsUnselectedProperty);
-        set => SetValue(IsLogsUnselectedProperty, value);
-    }
-
-    public bool IsAboutSelected
-    {
-        get => GetValue(IsAboutSelectedProperty);
-        set => SetValue(IsAboutSelectedProperty, value);
-    }
-
-    public bool IsAboutUnselected
-    {
-        get => GetValue(IsAboutUnselectedProperty);
-        set => SetValue(IsAboutUnselectedProperty, value);
+        get => GetValue(UpdateAvailableCountProperty);
+        set => SetValue(UpdateAvailableCountProperty, value);
     }
 
     public ICommand? NavigateDashboardCommand
@@ -172,10 +136,16 @@ public partial class SidebarControl : UserControl
         set => SetValue(NavigateAppsCommandProperty, value);
     }
 
-    public ICommand? NavigateMyListsCommand
+    public ICommand? NavigateUpdatesCommand
     {
-        get => GetValue(NavigateMyListsCommandProperty);
-        set => SetValue(NavigateMyListsCommandProperty, value);
+        get => GetValue(NavigateUpdatesCommandProperty);
+        set => SetValue(NavigateUpdatesCommandProperty, value);
+    }
+
+    public ICommand? NavigateAboutCommand
+    {
+        get => GetValue(NavigateAboutCommandProperty);
+        set => SetValue(NavigateAboutCommandProperty, value);
     }
 
     public ICommand? NavigateHistoryCommand
@@ -184,16 +154,10 @@ public partial class SidebarControl : UserControl
         set => SetValue(NavigateHistoryCommandProperty, value);
     }
 
-    public ICommand? NavigateLogsCommand
+    public ICommand? HelpCommand
     {
-        get => GetValue(NavigateLogsCommandProperty);
-        set => SetValue(NavigateLogsCommandProperty, value);
-    }
-
-    public ICommand? NavigateAboutCommand
-    {
-        get => GetValue(NavigateAboutCommandProperty);
-        set => SetValue(NavigateAboutCommandProperty, value);
+        get => GetValue(HelpCommandProperty);
+        set => SetValue(HelpCommandProperty, value);
     }
 
     public ICommand? ToggleAccountMenuCommand

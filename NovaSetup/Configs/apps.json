@@ -50,7 +50,7 @@
     "Name": "Google Chrome",
     "Category": "Browsers",
     "PublisherName": "Google",
-    "Version": "146.0.7680.154",
+    "Version": "146.0.7680.76",
     "License": "Freeware",
     "ReleaseNotesUrl": "https://chromereleases.googleblog.com/2026/03/stable-channel-update-for-desktop_12.html",
     "Tags": [
@@ -401,6 +401,82 @@
       "RequiresRestart": false,
       "NeedsManualInstall": false,
       "DetectExecutable": "htop"
+    },
+    "SupportsSilentInstall": true
+  },
+  {
+    "Id": "vlc",
+    "Name": "VLC media player",
+    "Category": "Media",
+    "PublisherName": "VideoLAN",
+    "Version": "3.0.23",
+    "License": "GNU General Public License v2.0",
+    "ReleaseNotesUrl": "https://www.videolan.org/developers/vlc-branch/NEWS",
+    "Tags": [
+      "media",
+      "video",
+      "audio",
+      "player"
+    ],
+    "HomepageUrl": "https://www.videolan.org/vlc/",
+    "Description": "Open-source media player for video, audio, and streaming playback.",
+    "IconPath": "",
+    "SupportedPlatforms": {
+      "Windows": true,
+      "Linux": true
+    },
+    "WindowsInstall": {
+      "Command": "winget install --id VideoLAN.VLC -e --accept-source-agreements --accept-package-agreements",
+      "SilentCommand": "winget install --id VideoLAN.VLC -e --silent --accept-source-agreements --accept-package-agreements",
+      "RequiresRestart": false,
+      "NeedsManualInstall": false,
+      "DetectDisplayNameContains": "VLC media player",
+      "DetectExecutable": "vlc"
+    },
+    "LinuxInstall": {
+      "Command": "sudo apt-get install -y vlc",
+      "SilentCommand": "sudo apt-get install -y vlc",
+      "RequiresRestart": false,
+      "NeedsManualInstall": false,
+      "DetectExecutable": "vlc"
+    },
+    "SupportsSilentInstall": true
+  },
+  {
+    "Id": "7zip",
+    "Name": "7-Zip",
+    "Category": "Utilities",
+    "PublisherName": "Igor Pavlov",
+    "Version": "25.01",
+    "License": "GNU LGPL",
+    "ReleaseNotesUrl": "https://www.7-zip.org/history.txt",
+    "Tags": [
+      "archive",
+      "compression",
+      "zip",
+      "utility"
+    ],
+    "HomepageUrl": "https://www.7-zip.org/",
+    "Description": "File archiver with high compression ratio.",
+    "IconPath": "",
+    "SupportedPlatforms": {
+      "Windows": true,
+      "Linux": true
+    },
+    "WindowsInstall": {
+      "Command": "winget install --id 7zip.7zip -e --accept-source-agreements --accept-package-agreements",
+      "SilentCommand": "winget install --id 7zip.7zip -e --silent --accept-source-agreements --accept-package-agreements",
+      "RequiresRestart": false,
+      "NeedsManualInstall": false,
+      "DetectDisplayNameContains": "7-Zip",
+      "DetectExecutable": "7zFM"
+    },
+    "LinuxInstall": {
+      "Command": "sudo apt-get install -y p7zip-full",
+      "SilentCommand": "sudo apt-get install -y p7zip-full",
+      "RequiresRestart": false,
+      "NeedsManualInstall": false,
+      "DetectExecutable": "7z"
     },
     "SupportsSilentInstall": true
   },

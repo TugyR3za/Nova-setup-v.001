@@ -47,6 +47,17 @@ public partial class FilterBarControl : UserControl
             nameof(IsUpdatesFilter),
             defaultBindingMode: BindingMode.TwoWay);
 
+    public static readonly StyledProperty<bool> IsGridViewActiveProperty =
+        AvaloniaProperty.Register<FilterBarControl, bool>(
+            nameof(IsGridViewActive),
+            defaultBindingMode: BindingMode.TwoWay);
+
+    public static readonly StyledProperty<System.Windows.Input.ICommand?> ToggleViewModeCommandProperty =
+        AvaloniaProperty.Register<FilterBarControl, System.Windows.Input.ICommand?>(nameof(ToggleViewModeCommand));
+
+    public static readonly StyledProperty<System.Windows.Input.ICommand?> RefreshCatalogCommandProperty =
+        AvaloniaProperty.Register<FilterBarControl, System.Windows.Input.ICommand?>(nameof(RefreshCatalogCommand));
+
     public FilterBarControl()
     {
         InitializeComponent();
@@ -98,5 +109,23 @@ public partial class FilterBarControl : UserControl
     {
         get => GetValue(IsUpdatesFilterProperty);
         set => SetValue(IsUpdatesFilterProperty, value);
+    }
+
+    public bool IsGridViewActive
+    {
+        get => GetValue(IsGridViewActiveProperty);
+        set => SetValue(IsGridViewActiveProperty, value);
+    }
+
+    public System.Windows.Input.ICommand? ToggleViewModeCommand
+    {
+        get => GetValue(ToggleViewModeCommandProperty);
+        set => SetValue(ToggleViewModeCommandProperty, value);
+    }
+
+    public System.Windows.Input.ICommand? RefreshCatalogCommand
+    {
+        get => GetValue(RefreshCatalogCommandProperty);
+        set => SetValue(RefreshCatalogCommandProperty, value);
     }
 }

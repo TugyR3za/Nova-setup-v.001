@@ -10,6 +10,7 @@
   </UserControl.Resources>
 
   <Border Classes="rowCard"
+          Classes.selected="{Binding #Root.Item.IsSelected}"
           Opacity="{Binding #Root.Item.RowOpacity}">
     <Grid ColumnDefinitions="36,*,84,140,52"
           ColumnSpacing="8">
@@ -24,8 +25,9 @@
             ColumnSpacing="10">
         <Border Width="32"
                 Height="32"
-                CornerRadius="16"
+                CornerRadius="10"
                 Background="{DynamicResource AppIconBackgroundBrush}"
+                BoxShadow="inset 0 1 0 0 #26FFFFFF"
                 VerticalAlignment="Center">
           <TextBlock Text="{Binding #Root.Item.IconGlyph}"
                      HorizontalAlignment="Center"
@@ -42,8 +44,6 @@
                        FontWeight="SemiBold" />
             <Border IsVisible="{Binding #Root.Item.IsRecommended}"
                     Background="{DynamicResource RecommendedBadgeBrush}"
-                    BorderBrush="{DynamicResource AccentBrush}"
-                    BorderThickness="1"
                     CornerRadius="7"
                     Padding="6,2">
               <TextBlock Text="Recommended"
@@ -55,11 +55,13 @@
                       Spacing="8">
             <TextBlock Text="{Binding #Root.Item.Category}"
                        Foreground="{DynamicResource TextMutedBrush}"
+                       Opacity="0.5"
                        FontSize="12" />
             <Button Classes="link"
                     Content="{Binding #Root.Item.PublisherName}"
                     Command="{Binding #Root.OpenPublisherCommand}"
-                    CommandParameter="{Binding #Root.Item}" />
+                    CommandParameter="{Binding #Root.Item}"
+                    Opacity="0.75" />
           </StackPanel>
         </StackPanel>
       </Grid>
@@ -67,14 +69,15 @@
       <TextBlock Grid.Column="2"
                  Text="~ 20 MB"
                  VerticalAlignment="Center"
-                 Foreground="{DynamicResource TextMutedBrush}" />
+                 Foreground="{DynamicResource TextMutedBrush}"
+                 Opacity="0.5" />
 
       <controls:StatusPillControl Grid.Column="3"
                                   Text="{Binding #Root.Item.StatusBadge}"
                                   Tone="{Binding #Root.Item.StatusBadge, Converter={StaticResource StatusTextToToneConverter}}" />
 
       <Button Grid.Column="4"
-              Classes="ghost compact"
+              Classes="ghost compact detailsBtn"
               Width="46"
               HorizontalAlignment="Left"
               Command="{Binding #Root.ShowAppDetailsCommand}"

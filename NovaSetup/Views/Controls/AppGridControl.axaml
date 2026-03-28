@@ -1,0 +1,25 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="clr-namespace:NovaSetup.Views.Controls"
+             x:Class="NovaSetup.Views.Controls.AppGridControl"
+             x:CompileBindings="False"
+             x:Name="Root">
+    <ScrollViewer VerticalScrollBarVisibility="Auto"
+                  HorizontalScrollBarVisibility="Disabled"
+                  Margin="0,8,0,0">
+      <ItemsControl ItemsSource="{Binding #Root.Items}">
+        <ItemsControl.ItemsPanel>
+          <ItemsPanelTemplate>
+            <WrapPanel Orientation="Horizontal" />
+          </ItemsPanelTemplate>
+        </ItemsControl.ItemsPanel>
+        <ItemsControl.ItemTemplate>
+          <DataTemplate>
+            <controls:AppTileControl Item="{Binding .}"
+                                     OpenPublisherCommand="{Binding #Root.OpenPublisherCommand}"
+                                     ShowAppDetailsCommand="{Binding #Root.ShowAppDetailsCommand}" />
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ItemsControl>
+    </ScrollViewer>
+</UserControl>

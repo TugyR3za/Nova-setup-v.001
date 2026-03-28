@@ -8,27 +8,58 @@
   <Style Selector="Border.shellPanel">
     <Setter Property="BorderBrush" Value="{DynamicResource ShellBorderBrush}" />
     <Setter Property="BorderThickness" Value="1" />
-    <Setter Property="CornerRadius" Value="24" />
-    <Setter Property="BoxShadow" Value="0 4 16 0 rgba(0, 0, 0, 0.08)" />
+    <Setter Property="CornerRadius" Value="16" />
+    <Setter Property="BoxShadow" Value="0 8 32 0 rgba(0, 0, 0, 0.15)" />
   </Style>
 
   <Style Selector="Border.card">
     <Setter Property="Background" Value="{DynamicResource CardBrush}" />
     <Setter Property="BorderBrush" Value="{DynamicResource CardBorderBrush}" />
     <Setter Property="BorderThickness" Value="1" />
-    <Setter Property="CornerRadius" Value="18" />
+    <Setter Property="CornerRadius" Value="12" />
     <Setter Property="Padding" Value="12" />
-    <Setter Property="BoxShadow" Value="0 2 8 0 rgba(0, 0, 0, 0.08)" />
+    <Setter Property="BoxShadow" Value="0 4 16 0 rgba(0, 0, 0, 0.1)" />
   </Style>
 
   <Style Selector="Border.rowCard">
     <Setter Property="Background" Value="{DynamicResource ElevatedCardBrush}" />
-    <Setter Property="BorderBrush" Value="{DynamicResource CardBorderBrush}" />
-    <Setter Property="BorderThickness" Value="1" />
-    <Setter Property="CornerRadius" Value="14" />
+    <Setter Property="CornerRadius" Value="8" />
     <Setter Property="Padding" Value="8" />
     <Setter Property="Margin" Value="0,0,0,6" />
-    <Setter Property="BoxShadow" Value="0 1 4 0 rgba(0, 0, 0, 0.05)" />
+    <Setter Property="BoxShadow" Value="inset 0 1 0 0 #0DFFFFFF, 0 2 4 0 #59000000" />
+    <Setter Property="BorderBrush" Value="Transparent" />
+    <Setter Property="BorderThickness" Value="3,0,0,0" />
+    <Setter Property="Transitions">
+      <Transitions>
+        <BrushTransition Property="Background" Duration="0:0:0.15" />
+      </Transitions>
+    </Setter>
+  </Style>
+
+  <Style Selector="Border.rowCard:pointerover">
+    <Setter Property="Background" Value="{DynamicResource HoverSurfaceBrush}" />
+  </Style>
+
+  <Style Selector="Border.rowCard.selected">
+    <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}" />
+    <Setter Property="Background" Value="#0F3B82F6" />
+  </Style>
+
+  <Style Selector="Border.rowCard Button.detailsBtn">
+    <Setter Property="Opacity" Value="0" />
+    <Setter Property="Transitions">
+      <Transitions>
+        <DoubleTransition Property="Opacity" Duration="0:0:0.15" />
+      </Transitions>
+    </Setter>
+  </Style>
+
+  <Style Selector="Border.rowCard:pointerover Button.detailsBtn">
+    <Setter Property="Opacity" Value="1" />
+  </Style>
+
+  <Style Selector="Border.rowCard.selected Button.detailsBtn">
+    <Setter Property="Opacity" Value="1" />
   </Style>
 
   <Style Selector="Border.metaChip">
@@ -86,6 +117,13 @@
     <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
     <Setter Property="CornerRadius" Value="12" />
     <Setter Property="Padding" Value="12,8" />
+    <Setter Property="RenderTransform" Value="scale(1)" />
+    <Setter Property="Transitions">
+      <Transitions>
+        <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.1" Easing="SineEaseInOut" />
+        <BrushTransition Property="Background" Duration="0:0:0.15" />
+      </Transitions>
+    </Setter>
   </Style>
 
   <Style Selector="Button:pointerover">
@@ -94,6 +132,7 @@
 
   <Style Selector="Button:pressed">
     <Setter Property="Background" Value="{DynamicResource PressedSurfaceBrush}" />
+    <Setter Property="RenderTransform" Value="scale(0.96)" />
   </Style>
 
   <Style Selector="Button:disabled">
@@ -102,12 +141,11 @@
 
   <Style Selector="Button.primary">
     <Setter Property="Background" Value="{DynamicResource AccentBrush}" />
-    <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}" />
     <Setter Property="Foreground" Value="#FFFFFF" />
-    <Setter Property="FontWeight" Value="SemiBold" />
-    <Setter Property="Padding" Value="18,9" />
+    <Setter Property="FontWeight" Value="Bold" />
+    <Setter Property="Padding" Value="20,10" />
     <Setter Property="FontSize" Value="15" />
-    <Setter Property="CornerRadius" Value="12" />
+    <Setter Property="CornerRadius" Value="10" />
   </Style>
 
   <Style Selector="Button.primary:pointerover">
@@ -123,6 +161,17 @@
   <Style Selector="Button.ghost">
     <Setter Property="Background" Value="{DynamicResource InputBrush}" />
     <Setter Property="BorderBrush" Value="{DynamicResource InputBorderBrush}" />
+  </Style>
+
+  <Style Selector="Button.outline">
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="BorderBrush" Value="#1EFFFFFF" /> <!-- 12% White -->
+    <Setter Property="BorderThickness" Value="1" />
+  </Style>
+
+  <Style Selector="Button.outline:pointerover">
+    <Setter Property="Background" Value="{DynamicResource CardBrush}" />
+    <Setter Property="BorderBrush" Value="#26FFFFFF" />
   </Style>
 
   <Style Selector="Button.icon">
@@ -183,12 +232,12 @@
     <Setter Property="CornerRadius" Value="7" />
   </Style>
 
-  <Style Selector="Button.accountArrow:pointerover">
-    <Setter Property="Background" Value="{DynamicResource HoverSurfaceBrush}" />
+  <Style Selector="Button.accountArrow:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="Transparent" />
   </Style>
 
-  <Style Selector="Button.accountArrow:pressed">
-    <Setter Property="Background" Value="{DynamicResource PressedSurfaceBrush}" />
+  <Style Selector="Button.accountArrow:pressed /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="Transparent" />
   </Style>
 
   <Style Selector="Border.accountMenuPopup">
@@ -241,9 +290,8 @@
   </Style>
 
   <Style Selector="Button.navActive">
-    <Setter Property="Background" Value="{DynamicResource AccentSoftBrush}" />
-    <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}" />
-    <Setter Property="BorderThickness" Value="1.2" />
+    <Setter Property="Background" Value="{DynamicResource HoverSurfaceBrush}" />
+    <Setter Property="BorderThickness" Value="0" />
     <Setter Property="FontWeight" Value="SemiBold" />
   </Style>
 
@@ -266,6 +314,34 @@
     <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}" />
     <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
     <Setter Property="BorderThickness" Value="1.5" />
+  </Style>
+
+  <!-- Modern Segmented Control Radio Buttons -->
+  <Style Selector="RadioButton.segmented">
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="BorderBrush" Value="Transparent" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="Foreground" Value="{DynamicResource TextMutedBrush}" />
+    <Setter Property="CornerRadius" Value="8" />
+    <Setter Property="Padding" Value="14,6" />
+    <Setter Property="FontSize" Value="13" />
+    <Setter Property="FontWeight" Value="SemiBold" />
+    <Setter Property="Transitions">
+      <Transitions>
+        <BrushTransition Property="Background" Duration="0:0:0.15" />
+        <BrushTransition Property="Foreground" Duration="0:0:0.15" />
+      </Transitions>
+    </Setter>
+  </Style>
+
+  <Style Selector="RadioButton.segmented:pointerover">
+    <Setter Property="Background" Value="{DynamicResource HoverSurfaceBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+  </Style>
+
+  <Style Selector="RadioButton.segmented:checked">
+    <Setter Property="Background" Value="{DynamicResource HoverSurfaceBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
   </Style>
 
   <Style Selector="CheckBox">

@@ -12,6 +12,7 @@ public class AppItem : ObservableObject
     private string _homepageUrl = string.Empty;
     private string _description = string.Empty;
     private string _iconPath = string.Empty;
+    private string _wingetId = string.Empty;
     private string _version = string.Empty;
     private string _installedVersion = string.Empty;
     private string _license = string.Empty;
@@ -86,17 +87,35 @@ public class AppItem : ObservableObject
         set => SetProperty(ref _iconPath, value);
     }
 
+    public string WingetId
+    {
+        get => _wingetId;
+        set => SetProperty(ref _wingetId, value);
+    }
+
     public string Version
     {
         get => _version;
-        set => SetProperty(ref _version, value);
+        set
+        {
+            if (SetProperty(ref _version, value))
+            {
+                OnPropertyChanged(nameof(HasUpdateAvailable));
+            }
+        }
     }
 
     [JsonIgnore]
     public string InstalledVersion
     {
         get => _installedVersion;
-        set => SetProperty(ref _installedVersion, value);
+        set
+        {
+            if (SetProperty(ref _installedVersion, value))
+            {
+                OnPropertyChanged(nameof(HasUpdateAvailable));
+            }
+        }
     }
 
     public string License
@@ -150,7 +169,13 @@ public class AppItem : ObservableObject
     public bool IsInstalled
     {
         get => _isInstalled;
-        set => SetProperty(ref _isInstalled, value);
+        set
+        {
+            if (SetProperty(ref _isInstalled, value))
+            {
+                OnPropertyChanged(nameof(HasUpdateAvailable));
+            }
+        }
     }
 
     public bool IsSupportedOnCurrentPlatform
@@ -235,9 +260,38 @@ public class AppItem : ObservableObject
     [JsonIgnore]
     public bool HasUpdateAvailable =>
         IsInstalled &&
-        !string.IsNullOrEmpty(Version) &&
-        !string.IsNullOrEmpty(InstalledVersion) &&
-        Version != InstalledVersion;
+        IsCatalogVersionNewer(Version, InstalledVersion);
+
+    private static bool IsCatalogVersionNewer(string catalogVersionText, string installedVersionText)
+    {
+        if (string.IsNullOrWhiteSpace(catalogVersionText) || string.IsNullOrWhiteSpace(installedVersionText))
+        {
+            return false;
+        }
+
+        if (System.Version.TryParse(catalogVersionText.Trim(), out var catalogVersion) &&
+            catalogVersion is not null &&
+            System.Version.TryParse(installedVersionText.Trim(), out var installedVersion) &&
+            installedVersion is not null)
+        {
+            if (catalogVersion.Major != installedVersion.Major)
+            {
+                return catalogVersion.Major > installedVersion.Major;
+            }
+
+            if (catalogVersion.Minor != installedVersion.Minor)
+            {
+                return catalogVersion.Minor > installedVersion.Minor;
+            }
+
+            return false;
+        }
+
+        return !string.Equals(
+            catalogVersionText.Trim(),
+            installedVersionText.Trim(),
+            StringComparison.OrdinalIgnoreCase);
+    }
 }
 
 public class InstallDefinition

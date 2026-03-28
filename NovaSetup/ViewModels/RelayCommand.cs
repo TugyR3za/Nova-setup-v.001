@@ -64,6 +64,10 @@ public sealed class AsyncRelayCommand : ICommand
         {
             await _executeAsync();
         }
+        catch
+        {
+            // Prevent unhandled exceptions in async void from crashing the app.
+        }
         finally
         {
             _isExecuting = false;

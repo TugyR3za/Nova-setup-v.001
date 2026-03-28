@@ -7,30 +7,30 @@
   <UserControl.Styles>
     <Style Selector="Border.statusPill">
       <Setter Property="Background" Value="{DynamicResource ElevatedCardBrush}" />
-      <Setter Property="BorderBrush" Value="{DynamicResource InputBorderBrush}" />
-      <Setter Property="BorderThickness" Value="1" />
-      <Setter Property="CornerRadius" Value="8" />
-      <Setter Property="Padding" Value="8,3" />
+      <Setter Property="BorderThickness" Value="0" />
+      <Setter Property="CornerRadius" Value="20" />
+      <Setter Property="Padding" Value="10,4" />
     </Style>
     <Style Selector="Border.statusPill.success">
       <Setter Property="Background" Value="{DynamicResource SuccessSurfaceBrush}" />
-      <Setter Property="BorderBrush" Value="{DynamicResource SuccessBrush}" />
+      <Setter Property="BoxShadow" Value="0 0 10 0 #4032D74B" />
     </Style>
     <Style Selector="Border.statusPill.info">
       <Setter Property="Background" Value="{DynamicResource InfoSurfaceBrush}" />
-      <Setter Property="BorderBrush" Value="{DynamicResource InfoBrush}" />
+      <Setter Property="BoxShadow" Value="0 0 10 0 #405E5CE6" />
     </Style>
     <Style Selector="Border.statusPill.warning">
       <Setter Property="Background" Value="{DynamicResource WarningSurfaceBrush}" />
-      <Setter Property="BorderBrush" Value="{DynamicResource WarningBrush}" />
+      <Setter Property="BoxShadow" Value="0 0 10 0 #40FF9F0A" />
     </Style>
     <Style Selector="Border.statusPill.error">
       <Setter Property="Background" Value="{DynamicResource DangerSurfaceBrush}" />
-      <Setter Property="BorderBrush" Value="{DynamicResource DangerBrush}" />
+      <Setter Property="BoxShadow" Value="0 0 10 0 #40FF453A" />
     </Style>
     <Style Selector="TextBlock.statusPillLabel">
       <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
-      <Setter Property="FontSize" Value="12" />
+      <Setter Property="FontSize" Value="11" />
+      <Setter Property="FontWeight" Value="SemiBold" />
     </Style>
     <Style Selector="TextBlock.statusPillLabel.success">
       <Setter Property="Foreground" Value="{DynamicResource SuccessBrush}" />

@@ -7,12 +7,16 @@ using NovaSetup.ViewModels;
 using NovaSetup.Views;
 using System;
 using System.Diagnostics;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace NovaSetup;
 
 public partial class App : Application
 {
+    private ScheduledUpdateService? _scheduledUpdateService;
+    private CancellationTokenSource? _scheduledUpdateServiceCts;
+
     public override void Initialize()
     {
         AvaloniaXamlLoader.Load(this);
@@ -22,6 +26,8 @@ public partial class App : Application
     {
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
+            desktop.Exit += HandleDesktopExit;
+
             var loggingService = new LoggingService();
             var platformService = new PlatformService();
             var settingsService = new SettingsService(loggingService);
@@ -49,16 +55,26 @@ public partial class App : Application
             desktop.MainWindow = splashScreen;
             splashScreen.Show();
 
-            _ = StartDesktopAsync(desktop, splashScreen, mainWindowViewModel, loggingService);
+            _ = StartDesktopAsync(
+                desktop,
+                splashScreen,
+                mainWindowViewModel,
+                settingsService,
+                detectionService,
+                installerService,
+                loggingService);
         }
 
         base.OnFrameworkInitializationCompleted();
     }
 
-    private static async Task StartDesktopAsync(
+    private async Task StartDesktopAsync(
         IClassicDesktopStyleApplicationLifetime desktop,
         SplashScreen splashScreen,
         MainWindowViewModel mainWindowViewModel,
+        SettingsService settingsService,
+        DetectionService detectionService,
+        InstallerService installerService,
         LoggingService loggingService)
     {
         var startupTimer = Stopwatch.StartNew();
@@ -79,7 +95,14 @@ public partial class App : Application
             loggingService.LogError($"Startup preload failed: {ex.Message}");
         }
 
-        var remainingDelay = TimeSpan.FromMilliseconds(1200) - startupTimer.Elapsed;
+        InitializeScheduledUpdates(
+            mainWindowViewModel,
+            settingsService,
+            detectionService,
+            installerService,
+            loggingService);
+
+        var remainingDelay = TimeSpan.FromMilliseconds(400) - startupTimer.Elapsed;
         if (remainingDelay > TimeSpan.Zero)
         {
             await Task.Delay(remainingDelay);
@@ -91,5 +114,46 @@ public partial class App : Application
             mainWindow.Show();
             splashScreen.Close();
         });
+    }
+
+    private void InitializeScheduledUpdates(
+        MainWindowViewModel mainWindowViewModel,
+        SettingsService settingsService,
+        DetectionService detectionService,
+        InstallerService installerService,
+        LoggingService loggingService)
+    {
+        _scheduledUpdateService?.Stop();
+        _scheduledUpdateServiceCts?.Cancel();
+        _scheduledUpdateServiceCts?.Dispose();
+        _scheduledUpdateServiceCts = new CancellationTokenSource();
+
+        var appUpdateService = new AppUpdateService(loggingService);
+        var taskSchedulerService = new TaskSchedulerService(loggingService);
+        _scheduledUpdateService = new ScheduledUpdateService(
+            mainWindowViewModel.Settings,
+            appUpdateService,
+            settingsService,
+            detectionService,
+            installerService,
+            taskSchedulerService,
+            async () => await Dispatcher.UIThread.InvokeAsync(mainWindowViewModel.CreateScheduledUpdateSnapshot),
+            loggingService);
+
+        mainWindowViewModel.AttachScheduledUpdateService(_scheduledUpdateService);
+        _ = _scheduledUpdateService.StartAsync(_scheduledUpdateServiceCts.Token);
+    }
+
+    private void HandleDesktopExit(object? sender, ControlledApplicationLifetimeExitEventArgs e)
+    {
+        _scheduledUpdateService?.Stop();
+        _scheduledUpdateService = null;
+
+        if (_scheduledUpdateServiceCts is not null)
+        {
+            _scheduledUpdateServiceCts.Cancel();
+            _scheduledUpdateServiceCts.Dispose();
+            _scheduledUpdateServiceCts = null;
+        }
     }
 }

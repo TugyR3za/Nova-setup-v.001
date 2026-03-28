@@ -30,161 +30,76 @@
         </StackPanel>
       </Grid>
 
-      <ScrollViewer Grid.Row="1"
-                    VerticalScrollBarVisibility="Auto"
-                    HorizontalScrollBarVisibility="Disabled">
-        <StackPanel Spacing="6">
-          <Button Classes="nav navActive"
-                  IsVisible="{Binding #Root.IsDashboardSelected}"
-                  Command="{Binding #Root.NavigateDashboardCommand}">
-            <Grid ColumnDefinitions="18,*" ColumnSpacing="10">
-              <Path Data="{DynamicResource IconDashboardGeometry}"
-                    Fill="{DynamicResource TextPrimaryBrush}"
-                    Width="16"
-                    Height="16"
-                    VerticalAlignment="Center" />
-              <TextBlock Grid.Column="1" Text="Dashboard" VerticalAlignment="Center" />
-            </Grid>
-          </Button>
-          <Button Classes="nav"
-                  IsVisible="{Binding #Root.IsDashboardUnselected}"
-                  Command="{Binding #Root.NavigateDashboardCommand}">
-            <Grid ColumnDefinitions="18,*" ColumnSpacing="10">
-              <Path Data="{DynamicResource IconDashboardGeometry}"
-                    Fill="{DynamicResource TextMutedBrush}"
-                    Width="16"
-                    Height="16"
-                    VerticalAlignment="Center" />
-              <TextBlock Grid.Column="1" Text="Dashboard" VerticalAlignment="Center" />
-            </Grid>
-          </Button>
+      <Grid Grid.Row="1">
+        <Grid.RowDefinitions>
+          <RowDefinition Height="*" />
+          <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        
+        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+          <StackPanel Spacing="6">
+            <Button Classes="nav navActive" IsVisible="{Binding #Root.IsDashboardSelected}" Command="{Binding #Root.NavigateDashboardCommand}">
+              <Grid ColumnDefinitions="18,*" ColumnSpacing="10">
+                <Path Data="{DynamicResource IconDashboardGeometry}" Fill="{DynamicResource TextPrimaryBrush}" Width="16" Height="16" VerticalAlignment="Center" />
+                <TextBlock Grid.Column="1" Text="Dashboard" VerticalAlignment="Center" />
+              </Grid>
+            </Button>
+            <Button Classes="nav" IsVisible="{Binding #Root.IsDashboardUnselected}" Command="{Binding #Root.NavigateDashboardCommand}">
+              <Grid ColumnDefinitions="18,*" ColumnSpacing="10">
+                <Path Data="{DynamicResource IconDashboardGeometry}" Fill="{DynamicResource TextMutedBrush}" Width="16" Height="16" VerticalAlignment="Center" />
+                <TextBlock Grid.Column="1" Text="Dashboard" VerticalAlignment="Center" />
+              </Grid>
+            </Button>
 
-          <Button Classes="nav navActive"
-                  IsVisible="{Binding #Root.IsAppsSelected}"
-                  Command="{Binding #Root.NavigateAppsCommand}">
-            <Grid ColumnDefinitions="18,*" ColumnSpacing="10">
-              <Path Data="{DynamicResource IconAppsGeometry}"
-                    Fill="{DynamicResource TextPrimaryBrush}"
-                    Width="16"
-                    Height="16"
-                    VerticalAlignment="Center" />
-              <TextBlock Grid.Column="1" Text="Apps" VerticalAlignment="Center" />
-            </Grid>
-          </Button>
-          <Button Classes="nav"
-                  IsVisible="{Binding #Root.IsAppsUnselected}"
-                  Command="{Binding #Root.NavigateAppsCommand}">
-            <Grid ColumnDefinitions="18,*" ColumnSpacing="10">
-              <Path Data="{DynamicResource IconAppsGeometry}"
-                    Fill="{DynamicResource TextMutedBrush}"
-                    Width="16"
-                    Height="16"
-                    VerticalAlignment="Center" />
-              <TextBlock Grid.Column="1" Text="Apps" VerticalAlignment="Center" />
-            </Grid>
-          </Button>
+            <Button Classes="nav navActive" IsVisible="{Binding #Root.IsAppsSelected}" Command="{Binding #Root.NavigateAppsCommand}">
+              <Grid ColumnDefinitions="18,*" ColumnSpacing="10">
+                <Path Data="{DynamicResource IconAppsGeometry}" Fill="{DynamicResource TextPrimaryBrush}" Width="16" Height="16" VerticalAlignment="Center" />
+                <TextBlock Grid.Column="1" Text="Apps" VerticalAlignment="Center" />
+              </Grid>
+            </Button>
+            <Button Classes="nav" IsVisible="{Binding #Root.IsAppsUnselected}" Command="{Binding #Root.NavigateAppsCommand}">
+              <Grid ColumnDefinitions="18,*" ColumnSpacing="10">
+                <Path Data="{DynamicResource IconAppsGeometry}" Fill="{DynamicResource TextMutedBrush}" Width="16" Height="16" VerticalAlignment="Center" />
+                <TextBlock Grid.Column="1" Text="Apps" VerticalAlignment="Center" />
+              </Grid>
+            </Button>
 
-          <Button Classes="nav navActive"
-                  IsVisible="{Binding #Root.IsMyListsSelected}"
-                  Command="{Binding #Root.NavigateMyListsCommand}">
-            <Grid ColumnDefinitions="18,*" ColumnSpacing="10">
-              <Path Data="{DynamicResource IconMyListsGeometry}"
-                    Fill="{DynamicResource TextPrimaryBrush}"
-                    Width="16"
-                    Height="16"
-                    VerticalAlignment="Center" />
-              <TextBlock Grid.Column="1" Text="My Lists" VerticalAlignment="Center" />
-            </Grid>
-          </Button>
-          <Button Classes="nav"
-                  IsVisible="{Binding #Root.IsMyListsUnselected}"
-                  Command="{Binding #Root.NavigateMyListsCommand}">
-            <Grid ColumnDefinitions="18,*" ColumnSpacing="10">
-              <Path Data="{DynamicResource IconMyListsGeometry}"
-                    Fill="{DynamicResource TextMutedBrush}"
-                    Width="16"
-                    Height="16"
-                    VerticalAlignment="Center" />
-              <TextBlock Grid.Column="1" Text="My Lists" VerticalAlignment="Center" />
-            </Grid>
-          </Button>
+            <Button Classes="nav navActive" IsVisible="{Binding #Root.IsUpdatesSelected}" Command="{Binding #Root.NavigateUpdatesCommand}">
+              <Grid ColumnDefinitions="18,*,Auto" ColumnSpacing="10">
+                <Path Data="{DynamicResource IconRefreshGeometry}" Fill="{DynamicResource TextPrimaryBrush}" Width="16" Height="16" VerticalAlignment="Center" />
+                <TextBlock Grid.Column="1" Text="Updates" VerticalAlignment="Center" />
+                <Border Grid.Column="2" Background="{DynamicResource AccentBrush}" CornerRadius="12" Padding="6,2" IsVisible="{Binding #Root.HasUpdatesAvailable}">
+                  <TextBlock Text="{Binding #Root.UpdateAvailableCount}" FontSize="11" FontWeight="Bold" Foreground="#FFFFFF" />
+                </Border>
+              </Grid>
+            </Button>
+            <Button Classes="nav" IsVisible="{Binding #Root.IsUpdatesUnselected}" Command="{Binding #Root.NavigateUpdatesCommand}">
+              <Grid ColumnDefinitions="18,*,Auto" ColumnSpacing="10">
+                <Path Data="{DynamicResource IconRefreshGeometry}" Fill="{DynamicResource TextMutedBrush}" Width="16" Height="16" VerticalAlignment="Center" />
+                <TextBlock Grid.Column="1" Text="Updates" VerticalAlignment="Center" />
+                <Border Grid.Column="2" Background="{DynamicResource CardBorderBrush}" CornerRadius="12" Padding="6,2" IsVisible="{Binding #Root.HasUpdatesAvailable}">
+                  <TextBlock Text="{Binding #Root.UpdateAvailableCount}" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}" />
+                </Border>
+              </Grid>
+            </Button>
+          </StackPanel>
+        </ScrollViewer>
 
-          <Button Classes="nav navActive"
-                  IsVisible="{Binding #Root.IsHistorySelected}"
-                  Command="{Binding #Root.NavigateHistoryCommand}">
-            <Grid ColumnDefinitions="18,*" ColumnSpacing="10">
-              <Path Data="{DynamicResource IconHistoryGeometry}"
-                    Fill="{DynamicResource TextPrimaryBrush}"
-                    Width="16"
-                    Height="16"
-                    VerticalAlignment="Center" />
-              <TextBlock Grid.Column="1" Text="History" VerticalAlignment="Center" />
-            </Grid>
+        <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="4" HorizontalAlignment="Center" Margin="0,0,0,8">
+          <Button Classes="ghost compact" Command="{Binding #Root.NavigateAboutCommand}" Padding="8,6">
+            <StackPanel Orientation="Horizontal" Spacing="6">
+              <Path Data="{DynamicResource IconInfoGeometry}" Fill="{DynamicResource TextMutedBrush}" Width="12" Height="12" VerticalAlignment="Center" />
+              <TextBlock Text="About" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center" />
+            </StackPanel>
           </Button>
-          <Button Classes="nav"
-                  IsVisible="{Binding #Root.IsHistoryUnselected}"
-                  Command="{Binding #Root.NavigateHistoryCommand}">
-            <Grid ColumnDefinitions="18,*" ColumnSpacing="10">
-              <Path Data="{DynamicResource IconHistoryGeometry}"
-                    Fill="{DynamicResource TextMutedBrush}"
-                    Width="16"
-                    Height="16"
-                    VerticalAlignment="Center" />
-              <TextBlock Grid.Column="1" Text="History" VerticalAlignment="Center" />
-            </Grid>
-          </Button>
-
-          <Button Classes="nav navActive"
-                  IsVisible="{Binding #Root.IsLogsSelected}"
-                  Command="{Binding #Root.NavigateLogsCommand}">
-            <Grid ColumnDefinitions="18,*" ColumnSpacing="10">
-              <Path Data="{DynamicResource IconLogsGeometry}"
-                    Fill="{DynamicResource TextPrimaryBrush}"
-                    Width="16"
-                    Height="16"
-                    VerticalAlignment="Center" />
-              <TextBlock Grid.Column="1" Text="Logs" VerticalAlignment="Center" />
-            </Grid>
-          </Button>
-          <Button Classes="nav"
-                  IsVisible="{Binding #Root.IsLogsUnselected}"
-                  Command="{Binding #Root.NavigateLogsCommand}">
-            <Grid ColumnDefinitions="18,*" ColumnSpacing="10">
-              <Path Data="{DynamicResource IconLogsGeometry}"
-                    Fill="{DynamicResource TextMutedBrush}"
-                    Width="16"
-                    Height="16"
-                    VerticalAlignment="Center" />
-              <TextBlock Grid.Column="1" Text="Logs" VerticalAlignment="Center" />
-            </Grid>
-          </Button>
-
-          <Button Classes="nav navActive"
-                  IsVisible="{Binding #Root.IsAboutSelected}"
-                  Command="{Binding #Root.NavigateAboutCommand}">
-            <Grid ColumnDefinitions="18,*" ColumnSpacing="10">
-              <Path Data="{DynamicResource IconHelpGeometry}"
-                    Fill="{DynamicResource TextPrimaryBrush}"
-                    Width="16"
-                    Height="16"
-                    VerticalAlignment="Center" />
-              <TextBlock Grid.Column="1" Text="About" VerticalAlignment="Center" />
-            </Grid>
-          </Button>
-          <Button Classes="nav"
-                  IsVisible="{Binding #Root.IsAboutUnselected}"
-                  Command="{Binding #Root.NavigateAboutCommand}">
-            <Grid ColumnDefinitions="18,*" ColumnSpacing="10">
-              <Path Data="{DynamicResource IconHelpGeometry}"
-                    Fill="{DynamicResource TextMutedBrush}"
-                    Width="16"
-                    Height="16"
-                    VerticalAlignment="Center" />
-              <TextBlock Grid.Column="1" Text="About" VerticalAlignment="Center" />
-            </Grid>
+          <Button Classes="ghost compact" Command="{Binding #Root.NavigateHistoryCommand}" Padding="8,6">
+            <StackPanel Orientation="Horizontal" Spacing="6">
+              <Path Data="{DynamicResource IconHistoryGeometry}" Fill="{DynamicResource TextMutedBrush}" Width="12" Height="12" VerticalAlignment="Center" />
+              <TextBlock Text="Downloads" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center" />
+            </StackPanel>
           </Button>
         </StackPanel>
-      </ScrollViewer>
+      </Grid>
 
       <Grid Grid.Row="2">
         <Border Classes="accountPrimary">

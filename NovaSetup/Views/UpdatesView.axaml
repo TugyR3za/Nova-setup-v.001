@@ -1,0 +1,124 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="NovaSetup.Views.UpdatesView"
+             x:CompileBindings="False">
+  <ScrollViewer VerticalScrollBarVisibility="Auto"
+                HorizontalScrollBarVisibility="Disabled">
+    <StackPanel Spacing="12"
+                Margin="0,0,6,0">
+      <Border Classes="card"
+              Padding="18">
+        <StackPanel Spacing="4">
+          <TextBlock Text="Available Updates"
+                     FontSize="34"
+                     FontWeight="Bold" />
+          <TextBlock Text="{Binding SummaryText}"
+                     FontSize="15"
+                     Foreground="{DynamicResource TextMutedBrush}"
+                     TextWrapping="Wrap" />
+        </StackPanel>
+      </Border>
+
+      <Border Classes="card"
+              Padding="16">
+        <Grid ColumnDefinitions="Auto,Auto,*"
+              ColumnSpacing="8">
+          <Button Classes="primary"
+                  Content="Update All"
+                  Command="{Binding UpdateAllCommand}" />
+          <Button Grid.Column="1"
+                  Classes="ghost compact"
+                  Content="Check Now"
+                  Command="{Binding CheckNowCommand}" />
+          <TextBlock Grid.Column="2"
+                     Text="{Binding SummaryText}"
+                     VerticalAlignment="Center"
+                     HorizontalAlignment="Right"
+                     Foreground="{DynamicResource TextMutedBrush}"
+                     TextWrapping="Wrap" />
+        </Grid>
+      </Border>
+
+      <Border Classes="card"
+              Padding="0">
+        <Grid RowDefinitions="Auto,*">
+          <Border Background="{DynamicResource ElevatedCardBrush}"
+                  Padding="16,12">
+            <Grid ColumnDefinitions="2.1*,1.3*,Auto,1.3*,Auto"
+                  ColumnSpacing="12">
+              <TextBlock Text="App"
+                         FontWeight="SemiBold" />
+              <TextBlock Grid.Column="1"
+                         Text="Installed"
+                         FontWeight="SemiBold" />
+              <TextBlock Grid.Column="2"
+                         Text="To"
+                         FontWeight="SemiBold"
+                         HorizontalAlignment="Center" />
+              <TextBlock Grid.Column="3"
+                         Text="Latest"
+                         FontWeight="SemiBold" />
+              <TextBlock Grid.Column="4"
+                         Text="Action"
+                         FontWeight="SemiBold"
+                         HorizontalAlignment="Right" />
+            </Grid>
+          </Border>
+
+          <StackPanel Grid.Row="1"
+                      IsVisible="{Binding HasNoUpdates}"
+                      Margin="16"
+                      Spacing="6">
+            <TextBlock Text="All apps are up to date"
+                       FontSize="16"
+                       FontWeight="SemiBold" />
+            <TextBlock Text="Run Check Now after installing or removing software outside Nova."
+                       Foreground="{DynamicResource TextMutedBrush}"
+                       TextWrapping="Wrap" />
+          </StackPanel>
+
+          <ListBox Grid.Row="1"
+                   ItemsSource="{Binding AvailableUpdates}"
+                   IsVisible="{Binding HasUpdates}"
+                   BorderThickness="0"
+                   Background="Transparent">
+            <ListBox.ItemTemplate>
+              <DataTemplate>
+                <Border Padding="16,12"
+                        BorderBrush="{DynamicResource CardBorderBrush}"
+                        BorderThickness="0,0,0,1">
+                  <Grid ColumnDefinitions="2.1*,1.3*,Auto,1.3*,Auto"
+                        ColumnSpacing="12">
+                    <TextBlock Text="{Binding Name}"
+                               VerticalAlignment="Center"
+                               FontWeight="SemiBold"
+                               TextWrapping="Wrap" />
+                    <TextBlock Grid.Column="1"
+                               Text="{Binding InstalledVersion, StringFormat='v{0}'}"
+                               VerticalAlignment="Center"
+                               Foreground="{DynamicResource TextMutedBrush}" />
+                    <TextBlock Grid.Column="2"
+                               Text="->"
+                               VerticalAlignment="Center"
+                               HorizontalAlignment="Center"
+                               Foreground="{DynamicResource TextMutedBrush}" />
+                    <TextBlock Grid.Column="3"
+                               Text="{Binding Version, StringFormat='v{0}'}"
+                               VerticalAlignment="Center"
+                               Foreground="{DynamicResource SuccessBrush}" />
+                    <Button Grid.Column="4"
+                            Classes="ghost compact"
+                            Content="Update"
+                            Command="{Binding DataContext.UpdateSingleCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                            CommandParameter="{Binding}"
+                            HorizontalAlignment="Right" />
+                  </Grid>
+                </Border>
+              </DataTemplate>
+            </ListBox.ItemTemplate>
+          </ListBox>
+        </Grid>
+      </Border>
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>

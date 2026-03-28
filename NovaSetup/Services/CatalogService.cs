@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using NovaSetup.Models;
 
 namespace NovaSetup.Services;
@@ -7,6 +8,8 @@ public sealed class CatalogService
 {
     private const string RemoteCatalogUrl = "https://raw.githubusercontent.com/TugyR3za/Nova-setup-v.001/main/NovaSetup/Configs/apps.json";
     private static readonly HttpClient _httpClient = new() { Timeout = TimeSpan.FromSeconds(8) };
+    private static readonly Regex WingetIdRegex =
+        new(@"--id\s+(?:""(?<id>[^""]+)""|(?<id>\S+))", RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
     private readonly PlatformService _platformService;
     private readonly LoggingService? _loggingService;
@@ -32,34 +35,16 @@ public sealed class CatalogService
 
     public async Task<List<AppItem>> LoadAppsAsync(string currentPlatform)
     {
-        try
-        {
-            var remoteJson = await _httpClient.GetStringAsync(RemoteCatalogUrl);
-            var remoteApps = ParseAndNormalize(remoteJson, currentPlatform);
-
-            var cacheDirectory = Path.GetDirectoryName(CacheFilePath);
-            if (!string.IsNullOrWhiteSpace(cacheDirectory))
-            {
-                Directory.CreateDirectory(cacheDirectory);
-            }
-
-            await File.WriteAllTextAsync(CacheFilePath, remoteJson);
-            _loggingService?.Info($"Loaded catalog from remote server ({remoteApps.Count} apps).");
-            return remoteApps;
-        }
-        catch (Exception ex)
-        {
-            _loggingService?.Warn($"Remote catalog unavailable: {ex.Message} — falling back to local cache.");
-        }
+        // Try local cache first for instant startup
+        List<AppItem>? localApps = null;
 
         if (File.Exists(CacheFilePath))
         {
             try
             {
                 var cacheJson = await File.ReadAllTextAsync(CacheFilePath);
-                var cachedApps = ParseAndNormalize(cacheJson, currentPlatform);
-                _loggingService?.Info("Loaded catalog from local cache.");
-                return cachedApps;
+                localApps = ParseAndNormalize(cacheJson, currentPlatform);
+                _loggingService?.Info($"Loaded catalog from local cache ({localApps.Count} apps).");
             }
             catch (Exception ex)
             {
@@ -67,34 +52,68 @@ public sealed class CatalogService
             }
         }
 
-        var configPath = ResolveConfigPath("apps.json");
-        if (!File.Exists(configPath))
+        if (localApps is null)
         {
-            _loggingService?.Warn($"apps.json not found: {configPath}");
-            return new List<AppItem>();
-        }
-
-        try
-        {
-            var bundledJson = await File.ReadAllTextAsync(configPath);
-            var bundledApps = ParseAndNormalize(bundledJson, currentPlatform);
-
-            if (File.Exists(CacheFilePath))
+            // No cache — try bundled fallback
+            var configPath = ResolveConfigPath("apps.json");
+            if (File.Exists(configPath))
             {
-                _loggingService?.Info("Loaded catalog from bundled fallback.");
+                try
+                {
+                    var bundledJson = await File.ReadAllTextAsync(configPath);
+                    localApps = ParseAndNormalize(bundledJson, currentPlatform);
+                    _loggingService?.Info($"Loaded catalog from bundled fallback ({localApps.Count} apps).");
+                }
+                catch (Exception ex)
+                {
+                    _loggingService?.Warn($"Bundled apps.json could not be parsed: {ex.Message}");
+                }
             }
-            else
-            {
-                _loggingService?.Info("No cache found — loaded catalog from bundled fallback.");
-            }
+        }
 
-            return bundledApps;
-        }
-        catch (Exception ex)
+        if (localApps is null)
         {
-            _loggingService?.Warn($"Bundled apps.json could not be parsed: {ex.Message}");
-            return new List<AppItem>();
+            // No local source at all — must fetch remote synchronously
+            try
+            {
+                var remoteJson = await _httpClient.GetStringAsync(RemoteCatalogUrl);
+                localApps = ParseAndNormalize(remoteJson, currentPlatform);
+
+                var cacheDirectory = Path.GetDirectoryName(CacheFilePath);
+                if (!string.IsNullOrWhiteSpace(cacheDirectory))
+                    Directory.CreateDirectory(cacheDirectory);
+                await File.WriteAllTextAsync(CacheFilePath, remoteJson);
+
+                _loggingService?.Info($"Loaded catalog from remote server ({localApps.Count} apps).");
+            }
+            catch (Exception ex)
+            {
+                _loggingService?.Warn($"Remote catalog also unavailable: {ex.Message}");
+                return new List<AppItem>();
+            }
         }
+        else
+        {
+            // Fire-and-forget background refresh from remote
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    var remoteJson = await _httpClient.GetStringAsync(RemoteCatalogUrl);
+                    var cacheDirectory = Path.GetDirectoryName(CacheFilePath);
+                    if (!string.IsNullOrWhiteSpace(cacheDirectory))
+                        Directory.CreateDirectory(cacheDirectory);
+                    await File.WriteAllTextAsync(CacheFilePath, remoteJson);
+                    _loggingService?.Info("Background catalog refresh completed.");
+                }
+                catch (Exception ex)
+                {
+                    _loggingService?.Warn($"Background catalog refresh failed: {ex.Message}");
+                }
+            });
+        }
+
+        return localApps;
     }
 
     public IEnumerable<AppItem> FilterSupportedApps(IEnumerable<AppItem> apps)
@@ -111,6 +130,7 @@ public sealed class CatalogService
         app.HomepageUrl ??= string.Empty;
         app.Description ??= string.Empty;
         app.IconPath ??= string.Empty;
+        app.WingetId ??= string.Empty;
         app.Version ??= string.Empty;
         app.License ??= string.Empty;
         app.ReleaseNotesUrl ??= string.Empty;
@@ -118,6 +138,11 @@ public sealed class CatalogService
         app.Dependencies ??= new List<string>();
         app.RecommendationTags ??= new List<string>();
         app.SupportedPlatforms ??= new PlatformSupport();
+
+        if (string.IsNullOrWhiteSpace(app.WingetId))
+        {
+            app.WingetId = ExtractWingetId(app.WindowsInstall);
+        }
     }
 
     private List<AppItem> ParseAndNormalize(string json, string currentPlatform)
@@ -149,5 +174,21 @@ public sealed class CatalogService
         }
 
         return Path.Combine(Directory.GetCurrentDirectory(), "Configs", fileName);
+    }
+
+    private static string ExtractWingetId(InstallDefinition? installDefinition)
+    {
+        var command = string.IsNullOrWhiteSpace(installDefinition?.SilentCommand)
+            ? installDefinition?.Command ?? string.Empty
+            : installDefinition.SilentCommand;
+
+        if (string.IsNullOrWhiteSpace(command) ||
+            command.IndexOf("winget", StringComparison.OrdinalIgnoreCase) < 0)
+        {
+            return string.Empty;
+        }
+
+        var match = WingetIdRegex.Match(command);
+        return match.Success ? match.Groups["id"].Value.Trim() : string.Empty;
     }
 }

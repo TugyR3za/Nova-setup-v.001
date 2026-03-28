@@ -24,6 +24,9 @@ public partial class AboutView : UserControl
     public static readonly StyledProperty<ICommand?> CheckForUpdatesCommandProperty =
         AvaloniaProperty.Register<AboutView, ICommand?>(nameof(CheckForUpdatesCommand));
 
+    public static readonly StyledProperty<ICommand?> HelpCommandProperty =
+        AvaloniaProperty.Register<AboutView, ICommand?>(nameof(HelpCommand));
+
     public static readonly StyledProperty<string?> UpdateStatusTextProperty =
         AvaloniaProperty.Register<AboutView, string?>(nameof(UpdateStatusText));
 
@@ -69,6 +72,12 @@ public partial class AboutView : UserControl
     {
         get => GetValue(CheckForUpdatesCommandProperty);
         set => SetValue(CheckForUpdatesCommandProperty, value);
+    }
+
+    public ICommand? HelpCommand
+    {
+        get => GetValue(HelpCommandProperty);
+        set => SetValue(HelpCommandProperty, value);
     }
 
     public string? UpdateStatusText

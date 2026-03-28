@@ -1,4 +1,6 @@
 using System.Diagnostics;
+using System.Text;
+using System.Text.RegularExpressions;
 using Microsoft.Win32;
 using NovaSetup.Models;
 
@@ -8,6 +10,9 @@ public sealed class DetectionService
 {
     private static readonly string[] KnownGpuVendors = { "NVIDIA", "AMD", "Intel" };
     private static readonly string[] KnownAccessoryVendors = { "Logitech", "Razer", "Corsair", "SteelSeries" };
+    private static readonly Regex WingetListSplitRegex = new(@"\s{2,}", RegexOptions.Compiled);
+    private static readonly Regex AnsiEscapeRegex = new(@"\x1B\[[0-9;]*[A-Za-z]", RegexOptions.Compiled);
+    private const string ChromeClientRegistryKey = @"SOFTWARE\Google\Update\Clients\{8A69D345-D564-463C-AFF1-A69D9E530F96}";
 
     private readonly LoggingService? _loggingService;
 
@@ -71,11 +76,21 @@ public sealed class DetectionService
 
     public HardwareDetectionResult DetectHardware(string currentPlatform)
     {
+        string? gpuVendor = null;
+        string? motherboardVendor = null;
+        IReadOnlyList<string> accessoryVendors = Array.Empty<string>();
+
+        var gpuTask = Task.Run(() => gpuVendor = DetectGpuVendor(currentPlatform));
+        var boardTask = Task.Run(() => motherboardVendor = DetectMotherboardVendor(currentPlatform));
+        var accessoryTask = Task.Run(() => accessoryVendors = DetectAccessoryVendors(currentPlatform));
+
+        Task.WaitAll(gpuTask, boardTask, accessoryTask);
+
         return new HardwareDetectionResult
         {
-            GpuVendor = DetectGpuVendor(currentPlatform),
-            MotherboardVendor = DetectMotherboardVendor(currentPlatform),
-            AccessoryVendors = DetectAccessoryVendors(currentPlatform).ToList()
+            GpuVendor = gpuVendor,
+            MotherboardVendor = motherboardVendor,
+            AccessoryVendors = accessoryVendors.ToList()
         };
     }
 
@@ -129,11 +144,20 @@ public sealed class DetectionService
             return false;
         }
 
-        return currentPlatform switch
+        if (currentPlatform == PlatformService.Windows)
         {
-            PlatformService.Windows => DetectWindowsApp(app, BuildWindowsInstallIndex(new[] { app })) is not null,
-            _ => IsCommandBasedAppInstalled(app, currentPlatform)
-        };
+            var match = DetectWindowsApp(app, BuildWindowsInstallIndex(new[] { app }));
+            app.InstalledVersion = match?.InstalledVersion ?? string.Empty;
+            return match is not null;
+        }
+
+        var isInstalled = IsCommandBasedAppInstalled(app, currentPlatform);
+        if (!isInstalled)
+        {
+            app.InstalledVersion = string.Empty;
+        }
+
+        return isInstalled;
     }
 
     public RecommendationSummary ApplyRecommendations(
@@ -257,7 +281,7 @@ public sealed class DetectionService
         {
             return new WindowsInstallMatch(
                 "Windows registry",
-                ResolveVersionFromUninstallEntry(app, explicitDisplayNameMatch));
+                ResolveDetectedVersion(app, explicitDisplayNameMatch));
         }
 
         var uninstallMatch = FindRegisteredUninstallEntry(app, detectionIndex.UninstallEntries);
@@ -265,24 +289,26 @@ public sealed class DetectionService
         {
             return new WindowsInstallMatch(
                 "Windows registry",
-                ResolveVersionFromUninstallEntry(app, uninstallMatch));
+                ResolveDetectedVersion(app, uninstallMatch));
         }
 
         if (TryGetRegisteredAppPath(app, detectionIndex.AppPathExecutables, out var registeredAppPath))
         {
-            return new WindowsInstallMatch("App Paths", TryGetFileVersion(registeredAppPath));
+            return new WindowsInstallMatch("App Paths", ResolveDetectedVersion(app, executablePath: registeredAppPath));
         }
 
         var executableOnPath = TryGetExecutableOnPath(app, PlatformService.Windows);
         if (!string.IsNullOrWhiteSpace(executableOnPath))
         {
-            return new WindowsInstallMatch("PATH", TryGetFileVersion(executableOnPath));
+            return new WindowsInstallMatch("PATH", ResolveDetectedVersion(app, executablePath: executableOnPath));
         }
 
         var executableInKnownLocation = TryGetExecutableInKnownWindowsLocations(app);
         if (!string.IsNullOrWhiteSpace(executableInKnownLocation))
         {
-            return new WindowsInstallMatch("Known install path", TryGetFileVersion(executableInKnownLocation));
+            return new WindowsInstallMatch(
+                "Known install path",
+                ResolveDetectedVersion(app, executablePath: executableInKnownLocation));
         }
 
         return null;
@@ -785,6 +811,18 @@ public sealed class DetectionService
                          Path.Combine(programFiles, "Git", "bin", "git.exe"),
                          Path.Combine(programFilesX86, "Git", "cmd", "git.exe")
                      },
+                     "vlc" => new[]
+                     {
+                         Path.Combine(programFiles, "VideoLAN", "VLC", "vlc.exe"),
+                         Path.Combine(programFilesX86, "VideoLAN", "VLC", "vlc.exe")
+                     },
+                     "7zip" => new[]
+                     {
+                         Path.Combine(programFiles, "7-Zip", "7zFM.exe"),
+                         Path.Combine(programFiles, "7-Zip", "7z.exe"),
+                         Path.Combine(programFilesX86, "7-Zip", "7zFM.exe"),
+                         Path.Combine(programFilesX86, "7-Zip", "7z.exe")
+                     },
                      "nvidia-app" => new[]
                      {
                          Path.Combine(programFiles, "NVIDIA Corporation", "NVIDIA App", "NVIDIA App.exe"),
@@ -808,14 +846,57 @@ public sealed class DetectionService
         }
     }
 
-    private static string ResolveVersionFromUninstallEntry(AppItem app, WindowsInstalledEntry entry)
+    private string ResolveDetectedVersion(
+        AppItem app,
+        WindowsInstalledEntry? entry = null,
+        string? executablePath = null)
     {
-        if (!string.IsNullOrWhiteSpace(entry.DisplayVersion))
+        if (string.Equals(app.Id, "steam", StringComparison.OrdinalIgnoreCase))
+        {
+            return app.Version?.Trim() ?? string.Empty;
+        }
+
+        var wingetVersion = TryGetWingetInstalledVersion(app);
+        if (!string.IsNullOrWhiteSpace(wingetVersion))
+        {
+            return wingetVersion;
+        }
+
+        if (string.Equals(app.Id, "chrome", StringComparison.OrdinalIgnoreCase))
+        {
+            var chromeVersion = TryGetChromeInstalledVersion();
+            if (!string.IsNullOrWhiteSpace(chromeVersion))
+            {
+                return chromeVersion;
+            }
+        }
+
+        if (string.Equals(app.Id, "discord", StringComparison.OrdinalIgnoreCase))
+        {
+            var discordVersion = TryGetDiscordInstalledVersion();
+            if (!string.IsNullOrWhiteSpace(discordVersion))
+            {
+                return discordVersion;
+            }
+        }
+
+        if (entry is not null && !string.IsNullOrWhiteSpace(entry.DisplayVersion))
         {
             return entry.DisplayVersion.Trim();
         }
 
-        foreach (var candidatePath in GetExecutableProbePathsFromEntry(app, entry))
+        var probePaths = new List<string>();
+        if (entry is not null)
+        {
+            probePaths.AddRange(GetExecutableProbePathsFromEntry(app, entry));
+        }
+
+        if (!string.IsNullOrWhiteSpace(executablePath))
+        {
+            probePaths.Add(executablePath);
+        }
+
+        foreach (var candidatePath in probePaths.Distinct(StringComparer.OrdinalIgnoreCase))
         {
             var detectedVersion = TryGetFileVersion(candidatePath);
             if (!string.IsNullOrWhiteSpace(detectedVersion))
@@ -874,6 +955,204 @@ public sealed class DetectionService
             return !string.IsNullOrWhiteSpace(info.ProductVersion)
                 ? info.ProductVersion.Trim()
                 : info.FileVersion?.Trim() ?? string.Empty;
+        }
+        catch
+        {
+            return string.Empty;
+        }
+    }
+
+    private string TryGetWingetInstalledVersion(AppItem app)
+    {
+        if (!OperatingSystem.IsWindows() || string.IsNullOrWhiteSpace(app.WingetId))
+        {
+            return string.Empty;
+        }
+
+        var wingetPath = ResolveWingetExecutable();
+        if (string.IsNullOrWhiteSpace(wingetPath))
+        {
+            return string.Empty;
+        }
+
+        try
+        {
+            using var process = new Process
+            {
+                StartInfo = new ProcessStartInfo
+                {
+                    FileName = wingetPath,
+                    Arguments =
+                        $"list --id {QuoteArgument(app.WingetId)} --exact --accept-source-agreements --disable-interactivity",
+                    UseShellExecute = false,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    CreateNoWindow = true,
+                    StandardOutputEncoding = Encoding.UTF8,
+                    StandardErrorEncoding = Encoding.UTF8
+                }
+            };
+
+            process.Start();
+            var stdoutTask = process.StandardOutput.ReadToEndAsync();
+            var stderrTask = process.StandardError.ReadToEndAsync();
+
+            if (!process.WaitForExit(10000))
+            {
+                try
+                {
+                    process.Kill(entireProcessTree: true);
+                }
+                catch
+                {
+                    // Best-effort timeout cleanup only.
+                }
+
+                _loggingService?.LogDebug(
+                    $"Winget installed-version lookup timed out for {app.Name} ({app.WingetId}).");
+                return string.Empty;
+            }
+
+            var output = $"{stdoutTask.GetAwaiter().GetResult()}{Environment.NewLine}{stderrTask.GetAwaiter().GetResult()}";
+            var installedVersion = ParseWingetInstalledVersion(output, app.WingetId);
+            if (!string.IsNullOrWhiteSpace(installedVersion))
+            {
+                return installedVersion;
+            }
+        }
+        catch (Exception ex)
+        {
+            _loggingService?.LogDebug(
+                $"Winget installed-version lookup failed for {app.Name} ({app.WingetId}): {ex.Message}");
+        }
+
+        return string.Empty;
+    }
+
+    private static string ParseWingetInstalledVersion(string output, string wingetId)
+    {
+        if (string.IsNullOrWhiteSpace(output) || string.IsNullOrWhiteSpace(wingetId))
+        {
+            return string.Empty;
+        }
+
+        var sanitizedOutput = AnsiEscapeRegex.Replace(output, string.Empty);
+        var lines = sanitizedOutput.Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        foreach (var line in lines)
+        {
+            if (line.StartsWith("Name", StringComparison.OrdinalIgnoreCase) ||
+                line.StartsWith("No installed package", StringComparison.OrdinalIgnoreCase) ||
+                line.All(character => character == '-' || char.IsWhiteSpace(character)))
+            {
+                continue;
+            }
+
+            var columns = WingetListSplitRegex
+                .Split(line)
+                .Where(column => !string.IsNullOrWhiteSpace(column))
+                .ToArray();
+
+            var idIndex = Array.FindIndex(
+                columns,
+                column => string.Equals(column, wingetId, StringComparison.OrdinalIgnoreCase));
+            if (idIndex >= 0 && idIndex + 1 < columns.Length)
+            {
+                return columns[idIndex + 1].Trim();
+            }
+        }
+
+        return string.Empty;
+    }
+
+    private static string ResolveWingetExecutable()
+    {
+        var localAliasPath = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            "Microsoft",
+            "WindowsApps",
+            "winget.exe");
+
+        try
+        {
+            return File.Exists(localAliasPath) ? localAliasPath : "winget.exe";
+        }
+        catch
+        {
+            return "winget.exe";
+        }
+    }
+
+    private static string QuoteArgument(string value)
+    {
+        return $"\"{value.Replace("\"", "\\\"", StringComparison.Ordinal)}\"";
+    }
+
+    private static string TryGetChromeInstalledVersion()
+    {
+        if (!OperatingSystem.IsWindows())
+        {
+            return string.Empty;
+        }
+
+        foreach (var view in new[] { RegistryView.Registry64, RegistryView.Registry32 })
+        {
+            try
+            {
+                using var baseKey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, view);
+                using var chromeKey = baseKey.OpenSubKey(ChromeClientRegistryKey);
+                var version = chromeKey?.GetValue("pv")?.ToString();
+                if (!string.IsNullOrWhiteSpace(version))
+                {
+                    return version.Trim();
+                }
+            }
+            catch
+            {
+                // Ignore per-view failures and keep checking.
+            }
+        }
+
+        return string.Empty;
+    }
+
+    private static string TryGetDiscordInstalledVersion()
+    {
+        try
+        {
+            var discordRoot = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                "Discord");
+
+            if (!Directory.Exists(discordRoot))
+            {
+                return string.Empty;
+            }
+
+            Version? highestVersion = null;
+            var highestVersionText = string.Empty;
+
+            foreach (var directory in Directory.EnumerateDirectories(discordRoot, "app-*"))
+            {
+                var folderName = Path.GetFileName(directory);
+                if (string.IsNullOrWhiteSpace(folderName) || folderName.Length <= 4)
+                {
+                    continue;
+                }
+
+                var versionText = folderName[4..];
+                if (!Version.TryParse(versionText, out var parsedVersion) || parsedVersion is null)
+                {
+                    continue;
+                }
+
+                if (highestVersion is null || parsedVersion > highestVersion)
+                {
+                    highestVersion = parsedVersion;
+                    highestVersionText = versionText;
+                }
+            }
+
+            return highestVersionText;
         }
         catch
         {

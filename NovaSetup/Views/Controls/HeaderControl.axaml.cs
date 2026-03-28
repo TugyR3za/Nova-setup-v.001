@@ -12,26 +12,8 @@ public partial class HeaderControl : UserControl
     public static readonly StyledProperty<string?> SubtitleProperty =
         AvaloniaProperty.Register<HeaderControl, string?>(nameof(Subtitle));
 
-    public static readonly StyledProperty<string?> ProfileNameProperty =
-        AvaloniaProperty.Register<HeaderControl, string?>(nameof(ProfileName));
-
-    public static readonly StyledProperty<int> SelectedCountProperty =
-        AvaloniaProperty.Register<HeaderControl, int>(nameof(SelectedCount));
-
-    public static readonly StyledProperty<int> RecommendedCountProperty =
-        AvaloniaProperty.Register<HeaderControl, int>(nameof(RecommendedCount));
-
-    public static readonly StyledProperty<bool> HasRecommendedAppsProperty =
-        AvaloniaProperty.Register<HeaderControl, bool>(nameof(HasRecommendedApps));
-
-    public static readonly StyledProperty<int> UpdateAvailableCountProperty =
-        AvaloniaProperty.Register<HeaderControl, int>(nameof(UpdateAvailableCount));
-
-    public static readonly StyledProperty<bool> HasUpdatesAvailableProperty =
-        AvaloniaProperty.Register<HeaderControl, bool>(nameof(HasUpdatesAvailable));
-
-    public static readonly StyledProperty<string?> CurrentPlatformProperty =
-        AvaloniaProperty.Register<HeaderControl, string?>(nameof(CurrentPlatform));
+    public static readonly StyledProperty<string?> AppSelectionStatsProperty =
+        AvaloniaProperty.Register<HeaderControl, string?>(nameof(AppSelectionStats));
 
     public static readonly StyledProperty<ICommand?> HelpCommandProperty =
         AvaloniaProperty.Register<HeaderControl, ICommand?>(nameof(HelpCommand));
@@ -39,11 +21,14 @@ public partial class HeaderControl : UserControl
     public static readonly StyledProperty<ICommand?> RefreshCatalogCommandProperty =
         AvaloniaProperty.Register<HeaderControl, ICommand?>(nameof(RefreshCatalogCommand));
 
-    public static readonly StyledProperty<ICommand?> ShowUpdatesFilterCommandProperty =
-        AvaloniaProperty.Register<HeaderControl, ICommand?>(nameof(ShowUpdatesFilterCommand));
+    public static readonly StyledProperty<int> UpdateAvailableCountProperty =
+        AvaloniaProperty.Register<HeaderControl, int>(nameof(UpdateAvailableCount));
 
-    public static readonly StyledProperty<ICommand?> ShowRecommendedFilterCommandProperty =
-        AvaloniaProperty.Register<HeaderControl, ICommand?>(nameof(ShowRecommendedFilterCommand));
+    public static readonly StyledProperty<bool> HasUpdatesAvailableProperty =
+        AvaloniaProperty.Register<HeaderControl, bool>(nameof(HasUpdatesAvailable));
+
+    public static readonly StyledProperty<ICommand?> OpenUpdatesCommandProperty =
+        AvaloniaProperty.Register<HeaderControl, ICommand?>(nameof(OpenUpdatesCommand));
 
     public HeaderControl()
     {
@@ -62,46 +47,10 @@ public partial class HeaderControl : UserControl
         set => SetValue(SubtitleProperty, value);
     }
 
-    public string? ProfileName
+    public string? AppSelectionStats
     {
-        get => GetValue(ProfileNameProperty);
-        set => SetValue(ProfileNameProperty, value);
-    }
-
-    public int SelectedCount
-    {
-        get => GetValue(SelectedCountProperty);
-        set => SetValue(SelectedCountProperty, value);
-    }
-
-    public int RecommendedCount
-    {
-        get => GetValue(RecommendedCountProperty);
-        set => SetValue(RecommendedCountProperty, value);
-    }
-
-    public bool HasRecommendedApps
-    {
-        get => GetValue(HasRecommendedAppsProperty);
-        set => SetValue(HasRecommendedAppsProperty, value);
-    }
-
-    public int UpdateAvailableCount
-    {
-        get => GetValue(UpdateAvailableCountProperty);
-        set => SetValue(UpdateAvailableCountProperty, value);
-    }
-
-    public bool HasUpdatesAvailable
-    {
-        get => GetValue(HasUpdatesAvailableProperty);
-        set => SetValue(HasUpdatesAvailableProperty, value);
-    }
-
-    public string? CurrentPlatform
-    {
-        get => GetValue(CurrentPlatformProperty);
-        set => SetValue(CurrentPlatformProperty, value);
+        get => GetValue(AppSelectionStatsProperty);
+        set => SetValue(AppSelectionStatsProperty, value);
     }
 
     public ICommand? HelpCommand
@@ -116,15 +65,21 @@ public partial class HeaderControl : UserControl
         set => SetValue(RefreshCatalogCommandProperty, value);
     }
 
-    public ICommand? ShowUpdatesFilterCommand
+    public int UpdateAvailableCount
     {
-        get => GetValue(ShowUpdatesFilterCommandProperty);
-        set => SetValue(ShowUpdatesFilterCommandProperty, value);
+        get => GetValue(UpdateAvailableCountProperty);
+        set => SetValue(UpdateAvailableCountProperty, value);
     }
 
-    public ICommand? ShowRecommendedFilterCommand
+    public bool HasUpdatesAvailable
     {
-        get => GetValue(ShowRecommendedFilterCommandProperty);
-        set => SetValue(ShowRecommendedFilterCommandProperty, value);
+        get => GetValue(HasUpdatesAvailableProperty);
+        set => SetValue(HasUpdatesAvailableProperty, value);
+    }
+
+    public ICommand? OpenUpdatesCommand
+    {
+        get => GetValue(OpenUpdatesCommandProperty);
+        set => SetValue(OpenUpdatesCommandProperty, value);
     }
 }

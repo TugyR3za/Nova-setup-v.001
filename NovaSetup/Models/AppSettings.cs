@@ -18,6 +18,10 @@ public sealed class AppSettings : ObservableObject
     public const string LanguageFarsi = "Farsi";
     public const string LanguageTurkish = "Turkish";
 
+    public const string ScheduledFrequencyDaily = "daily";
+    public const string ScheduledFrequencyWeekly = "weekly";
+    public const string ScheduledFrequencyMonthly = "monthly";
+
     private bool _silentInstall = true;
     private bool _osSupportedApps = true;
     private bool _selfDeleteAfterInstall;
@@ -34,6 +38,12 @@ public sealed class AppSettings : ObservableObject
     private string _language = LanguageEnglish;
     private bool _saveProfilesAutomatically = true;
     private bool _developerMode;
+    private bool _scheduledUpdatesEnabled;
+    private string _scheduledUpdateFrequency = ScheduledFrequencyWeekly;
+    private int _scheduledUpdateHour = 3;
+    private DayOfWeek _scheduledUpdateDay = DayOfWeek.Sunday;
+    private DateTime _lastScheduledUpdateRun = DateTime.MinValue;
+    private bool _runMissedUpdatesASAP = true;
 
     public bool SilentInstall
     {
@@ -131,6 +141,42 @@ public sealed class AppSettings : ObservableObject
         set => SetProperty(ref _developerMode, value);
     }
 
+    public bool ScheduledUpdatesEnabled
+    {
+        get => _scheduledUpdatesEnabled;
+        set => SetProperty(ref _scheduledUpdatesEnabled, value);
+    }
+
+    public string ScheduledUpdateFrequency
+    {
+        get => _scheduledUpdateFrequency;
+        set => SetProperty(ref _scheduledUpdateFrequency, NormalizeScheduledUpdateFrequency(value));
+    }
+
+    public int ScheduledUpdateHour
+    {
+        get => _scheduledUpdateHour;
+        set => SetProperty(ref _scheduledUpdateHour, Math.Clamp(value, 0, 23));
+    }
+
+    public DayOfWeek ScheduledUpdateDay
+    {
+        get => _scheduledUpdateDay;
+        set => SetProperty(ref _scheduledUpdateDay, value);
+    }
+
+    public DateTime LastScheduledUpdateRun
+    {
+        get => _lastScheduledUpdateRun;
+        set => SetProperty(ref _lastScheduledUpdateRun, value);
+    }
+
+    public bool RunMissedUpdatesASAP
+    {
+        get => _runMissedUpdatesASAP;
+        set => SetProperty(ref _runMissedUpdatesASAP, value);
+    }
+
     public static AppSettings CreateDefault()
     {
         return new AppSettings();
@@ -155,7 +201,13 @@ public sealed class AppSettings : ObservableObject
             Theme = Theme,
             Language = Language,
             SaveProfilesAutomatically = SaveProfilesAutomatically,
-            DeveloperMode = DeveloperMode
+            DeveloperMode = DeveloperMode,
+            ScheduledUpdatesEnabled = ScheduledUpdatesEnabled,
+            ScheduledUpdateFrequency = ScheduledUpdateFrequency,
+            ScheduledUpdateHour = ScheduledUpdateHour,
+            ScheduledUpdateDay = ScheduledUpdateDay,
+            LastScheduledUpdateRun = LastScheduledUpdateRun,
+            RunMissedUpdatesASAP = RunMissedUpdatesASAP
         };
     }
 
@@ -179,6 +231,12 @@ public sealed class AppSettings : ObservableObject
         Language = source.Language;
         SaveProfilesAutomatically = source.SaveProfilesAutomatically;
         DeveloperMode = source.DeveloperMode;
+        ScheduledUpdatesEnabled = source.ScheduledUpdatesEnabled;
+        ScheduledUpdateFrequency = source.ScheduledUpdateFrequency;
+        ScheduledUpdateHour = source.ScheduledUpdateHour;
+        ScheduledUpdateDay = source.ScheduledUpdateDay;
+        LastScheduledUpdateRun = source.LastScheduledUpdateRun;
+        RunMissedUpdatesASAP = source.RunMissedUpdatesASAP;
     }
 
     private static string NormalizeRestartBehavior(string? value)
@@ -222,6 +280,17 @@ public sealed class AppSettings : ObservableObject
             LanguageFarsi => LanguageFarsi,
             LanguageTurkish => LanguageTurkish,
             _ => LanguageEnglish
+        };
+    }
+
+    private static string NormalizeScheduledUpdateFrequency(string? value)
+    {
+        return value?.Trim().ToLowerInvariant() switch
+        {
+            ScheduledFrequencyDaily => ScheduledFrequencyDaily,
+            ScheduledFrequencyWeekly => ScheduledFrequencyWeekly,
+            ScheduledFrequencyMonthly => ScheduledFrequencyMonthly,
+            _ => ScheduledFrequencyWeekly
         };
     }
 }
