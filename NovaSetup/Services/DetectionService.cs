@@ -15,10 +15,14 @@ public sealed class DetectionService
     private const string ChromeClientRegistryKey = @"SOFTWARE\Google\Update\Clients\{8A69D345-D564-463C-AFF1-A69D9E530F96}";
 
     private readonly LoggingService? _loggingService;
+    private readonly PortableAppService _portableAppService;
+
+    public Func<AppSettings?>? SettingsAccessor { get; set; }
 
     public DetectionService(LoggingService? loggingService = null)
     {
         _loggingService = loggingService;
+        _portableAppService = new PortableAppService(loggingService);
     }
 
     public string? DetectGpuVendor(string currentPlatform)
@@ -117,6 +121,12 @@ public sealed class DetectionService
         return detectedCount;
     }
 
+    public Task<int> DetectInstalledAppsAsync(IList<AppItem> apps)
+    {
+        var currentPlatform = PlatformService.GetCurrentPlatform();
+        return Task.Run(() => DetectInstalledApps(apps, currentPlatform));
+    }
+
     public IReadOnlyDictionary<string, InstalledAppState> DetectInstalledAppStates(IEnumerable<AppItem> apps, string currentPlatform)
     {
         var appList = apps?.ToList() ?? new List<AppItem>();
@@ -146,6 +156,13 @@ public sealed class DetectionService
 
         if (currentPlatform == PlatformService.Windows)
         {
+            if (app.IsPortable)
+            {
+                var portableMatch = DetectPortableWindowsApp(app);
+                app.InstalledVersion = portableMatch?.InstalledVersion ?? string.Empty;
+                return portableMatch is not null;
+            }
+
             var match = DetectWindowsApp(app, BuildWindowsInstallIndex(new[] { app }));
             app.InstalledVersion = match?.InstalledVersion ?? string.Empty;
             return match is not null;
@@ -158,6 +175,64 @@ public sealed class DetectionService
         }
 
         return isInstalled;
+    }
+
+    public string? TryGetInstalledExecutablePath(AppItem app, string currentPlatform)
+    {
+        if (app is null)
+        {
+            return null;
+        }
+
+        if (currentPlatform == PlatformService.Windows)
+        {
+            if (app.IsPortable)
+            {
+                var portableRoot = ResolvePortableInstallRoot(app);
+                if (string.IsNullOrWhiteSpace(portableRoot))
+                {
+                    return null;
+                }
+
+                var portableExecutable = _portableAppService.FindPortableExe(app, portableRoot);
+                if (!string.IsNullOrWhiteSpace(portableExecutable))
+                {
+                    app.PortableInstallPath = portableRoot;
+                }
+
+                return portableExecutable;
+            }
+
+            var detectionIndex = BuildWindowsInstallIndex(new[] { app });
+            var explicitDisplayNameMatch = FindExplicitDisplayNameMatch(app, detectionIndex.UninstallEntries);
+            var explicitMatchPath = TryResolveExecutablePathFromEntry(app, explicitDisplayNameMatch);
+            if (!string.IsNullOrWhiteSpace(explicitMatchPath))
+            {
+                return explicitMatchPath;
+            }
+
+            var uninstallMatch = FindRegisteredUninstallEntry(app, detectionIndex.UninstallEntries);
+            var uninstallMatchPath = TryResolveExecutablePathFromEntry(app, uninstallMatch);
+            if (!string.IsNullOrWhiteSpace(uninstallMatchPath))
+            {
+                return uninstallMatchPath;
+            }
+
+            if (TryGetRegisteredAppPath(app, detectionIndex.AppPathExecutables, out var registeredPath))
+            {
+                return registeredPath;
+            }
+
+            var executableOnPath = TryGetExecutableOnPath(app, currentPlatform);
+            if (!string.IsNullOrWhiteSpace(executableOnPath))
+            {
+                return executableOnPath;
+            }
+
+            return TryGetExecutableInKnownWindowsLocations(app);
+        }
+
+        return TryGetExecutableOnPath(app, currentPlatform);
     }
 
     public RecommendationSummary ApplyRecommendations(
@@ -238,6 +313,22 @@ public sealed class DetectionService
 
         foreach (var app in apps)
         {
+            if (app.IsPortable)
+            {
+                var portableMatch = DetectPortableWindowsApp(app);
+                if (portableMatch is null)
+                {
+                    continue;
+                }
+
+                detectedStates[app.Id] = new InstalledAppState(true, portableMatch.InstalledVersion);
+                var portableVersionSuffix = string.IsNullOrWhiteSpace(portableMatch.InstalledVersion)
+                    ? string.Empty
+                    : $" Version={portableMatch.InstalledVersion}";
+                _loggingService?.LogInfo($"Detected installed app '{app.Name}' via {portableMatch.Source}.{portableVersionSuffix}");
+                continue;
+            }
+
             var detectionMatch = DetectWindowsApp(app, detectionIndex);
             if (detectionMatch is null)
             {
@@ -312,6 +403,31 @@ public sealed class DetectionService
         }
 
         return null;
+    }
+
+    private WindowsInstallMatch? DetectPortableWindowsApp(AppItem app)
+    {
+        if (!OperatingSystem.IsWindows() || !app.IsPortable)
+        {
+            return null;
+        }
+
+        var portableRoot = ResolvePortableInstallRoot(app);
+        if (string.IsNullOrWhiteSpace(portableRoot))
+        {
+            return null;
+        }
+
+        var executablePath = _portableAppService.FindPortableExe(app, portableRoot);
+        if (string.IsNullOrWhiteSpace(executablePath))
+        {
+            return null;
+        }
+
+        app.PortableInstallPath = portableRoot;
+        return new WindowsInstallMatch(
+            "Portable folder",
+            TryGetFileVersion(executablePath));
     }
 
     private static WindowsInstalledEntry? FindExplicitDisplayNameMatch(AppItem app, IEnumerable<WindowsInstalledEntry> uninstallEntries)
@@ -776,6 +892,23 @@ public sealed class DetectionService
         return null;
     }
 
+    private string ResolvePortableInstallRoot(AppItem app)
+    {
+        var configuredPortableFolder = SettingsAccessor?.Invoke()?.DefaultPortableFolder ?? string.Empty;
+        if (string.IsNullOrWhiteSpace(configuredPortableFolder))
+        {
+            return string.Empty;
+        }
+
+        if (!string.IsNullOrWhiteSpace(app.PortableInstallPath) &&
+            Directory.Exists(app.PortableInstallPath))
+        {
+            return app.PortableInstallPath;
+        }
+
+        return Path.Combine(configuredPortableFolder, app.Id);
+    }
+
     private static IEnumerable<string> GetKnownWindowsInstallProbePaths(AppItem app)
     {
         var programFiles = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
@@ -935,6 +1068,32 @@ public sealed class DetectionService
                 yield return Path.Combine(entry.InstallLocation, NormalizeExecutableCandidate(detectExecutable));
             }
         }
+    }
+
+    private static string? TryResolveExecutablePathFromEntry(AppItem app, WindowsInstalledEntry? entry)
+    {
+        if (entry is null)
+        {
+            return null;
+        }
+
+        foreach (var candidatePath in GetExecutableProbePathsFromEntry(app, entry)
+                     .Distinct(StringComparer.OrdinalIgnoreCase))
+        {
+            try
+            {
+                if (File.Exists(candidatePath))
+                {
+                    return candidatePath;
+                }
+            }
+            catch
+            {
+                // Ignore invalid probe paths and continue searching.
+            }
+        }
+
+        return null;
     }
 
     private static string TryGetFileVersion(string? filePath)

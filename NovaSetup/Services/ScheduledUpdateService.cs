@@ -1,7 +1,5 @@
 using System.ComponentModel;
 using System.Threading;
-using Avalonia;
-using Avalonia.Threading;
 using NovaSetup.Models;
 
 namespace NovaSetup.Services;
@@ -16,10 +14,10 @@ public sealed class ScheduledUpdateService
     private readonly AppSettings _settings;
     private readonly AppUpdateService _appUpdateService;
     private readonly SettingsService _settingsService;
-    private readonly DetectionService _detectionService;
-    private readonly InstallerService _installerService;
+    private DetectionService? _detectionService;
+    private InstallerService? _installerService;
     private readonly TaskSchedulerService _taskSchedulerService;
-    private readonly Func<Task<List<AppItem>>> _appSnapshotProviderAsync;
+    private Func<Task<List<AppItem>>>? _appSnapshotProviderAsync;
     private readonly LoggingService? _loggingService;
     private readonly SemaphoreSlim _runGate = new(1, 1);
 
@@ -49,12 +47,35 @@ public sealed class ScheduledUpdateService
         _loggingService = loggingService;
     }
 
+    public ScheduledUpdateService(
+        AppSettings settings,
+        AppUpdateService appUpdateService,
+        SettingsService settingsService,
+        LoggingService? loggingService = null)
+    {
+        _settings = settings ?? throw new ArgumentNullException(nameof(settings));
+        _appUpdateService = appUpdateService ?? throw new ArgumentNullException(nameof(appUpdateService));
+        _settingsService = settingsService ?? throw new ArgumentNullException(nameof(settingsService));
+        _taskSchedulerService = new TaskSchedulerService(loggingService);
+        _loggingService = loggingService;
+    }
+
     public DateTime NextScheduledRun =>
         OperatingSystem.IsWindows()
             ? _taskSchedulerService.GetNextRunTime() ?? DateTime.MinValue
             : CalculateNextScheduledRun(_settings);
 
     public bool IsTaskRegistered => OperatingSystem.IsWindows() && _taskSchedulerService.IsTaskRegistered();
+
+    public void ConfigureRunContext(
+        Func<Task<List<AppItem>>> appSnapshotProviderAsync,
+        DetectionService detectionService,
+        InstallerService installerService)
+    {
+        _appSnapshotProviderAsync = appSnapshotProviderAsync ?? throw new ArgumentNullException(nameof(appSnapshotProviderAsync));
+        _detectionService = detectionService ?? throw new ArgumentNullException(nameof(detectionService));
+        _installerService = installerService ?? throw new ArgumentNullException(nameof(installerService));
+    }
 
     public Task StartAsync(CancellationToken cancellationToken)
     {
@@ -104,7 +125,15 @@ public sealed class ScheduledUpdateService
             cancellationToken.ThrowIfCancellationRequested();
             _loggingService?.LogInfo("[ScheduledUpdates] Starting scheduled update check...");
 
+            if (_appSnapshotProviderAsync is null || _detectionService is null || _installerService is null)
+            {
+                _loggingService?.LogError("[ScheduledUpdates] Scheduled update service is not fully configured.");
+                return;
+            }
+
             var appSnapshot = await _appSnapshotProviderAsync();
+            var appPreferencesService = new AppPreferencesService(_loggingService);
+            await appPreferencesService.ApplyToAppsAsync(appSnapshot);
             if (appSnapshot.Count == 0)
             {
                 _loggingService?.LogInfo("[ScheduledUpdates] All apps are up to date.");
@@ -155,6 +184,13 @@ public sealed class ScheduledUpdateService
             var updatedCount = 0;
             foreach (var app in appsWithUpdates)
             {
+                if (app.UserDisabledAutoUpdate)
+                {
+                    _loggingService?.LogInfo(
+                        $"[ScheduledUpdates] Skipping {app.Name} - auto-update disabled by user preference");
+                    continue;
+                }
+
                 try
                 {
                     await _appUpdateService.UpdateAllAsync([app], _installerService);
@@ -295,16 +331,7 @@ public sealed class ScheduledUpdateService
     private async Task PersistLastRunAsync(CancellationToken cancellationToken)
     {
         var runTimestampUtc = DateTime.UtcNow;
-
-        if (Application.Current is not null)
-        {
-            await Dispatcher.UIThread.InvokeAsync(() => _settings.LastScheduledUpdateRun = runTimestampUtc);
-        }
-        else
-        {
-            _settings.LastScheduledUpdateRun = runTimestampUtc;
-        }
-
+        _settings.LastScheduledUpdateRun = runTimestampUtc;
         await _settingsService.SaveSettingsAsync(_settings, cancellationToken);
     }
 

@@ -41,6 +41,14 @@ public sealed class AllowedCommandsService
         }
     }
 
+    public IReadOnlyCollection<string> GetActiveInstalls()
+    {
+        lock (_lock)
+        {
+            return _inProgress.ToArray();
+        }
+    }
+
     public int ActiveCount
     {
         get

@@ -1,7 +1,13 @@
+using System.IO;
+
 namespace NovaSetup.Models;
 
 public sealed class AppSettings : ObservableObject
 {
+    private static readonly string PortableAppsDefaultPath = Path.Combine(
+        Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
+        "PortableApps");
+
     public const string RestartAskBeforeRestart = "AskBeforeRestart";
     public const string RestartAutomatically = "RestartAutomatically";
     public const string RestartNever = "NeverRestart";
@@ -44,6 +50,8 @@ public sealed class AppSettings : ObservableObject
     private DayOfWeek _scheduledUpdateDay = DayOfWeek.Sunday;
     private DateTime _lastScheduledUpdateRun = DateTime.MinValue;
     private bool _runMissedUpdatesASAP = true;
+    private string _defaultPortableFolder = PortableAppsDefaultPath;
+    private bool _allowScriptExecution;
 
     public bool SilentInstall
     {
@@ -177,6 +185,20 @@ public sealed class AppSettings : ObservableObject
         set => SetProperty(ref _runMissedUpdatesASAP, value);
     }
 
+    public string DefaultPortableFolder
+    {
+        get => _defaultPortableFolder;
+        set => SetProperty(
+            ref _defaultPortableFolder,
+            string.IsNullOrWhiteSpace(value) ? PortableAppsDefaultPath : value);
+    }
+
+    public bool AllowScriptExecution
+    {
+        get => _allowScriptExecution;
+        set => SetProperty(ref _allowScriptExecution, value);
+    }
+
     public static AppSettings CreateDefault()
     {
         return new AppSettings();
@@ -207,7 +229,9 @@ public sealed class AppSettings : ObservableObject
             ScheduledUpdateHour = ScheduledUpdateHour,
             ScheduledUpdateDay = ScheduledUpdateDay,
             LastScheduledUpdateRun = LastScheduledUpdateRun,
-            RunMissedUpdatesASAP = RunMissedUpdatesASAP
+            RunMissedUpdatesASAP = RunMissedUpdatesASAP,
+            DefaultPortableFolder = DefaultPortableFolder,
+            AllowScriptExecution = AllowScriptExecution
         };
     }
 
@@ -237,6 +261,8 @@ public sealed class AppSettings : ObservableObject
         ScheduledUpdateDay = source.ScheduledUpdateDay;
         LastScheduledUpdateRun = source.LastScheduledUpdateRun;
         RunMissedUpdatesASAP = source.RunMissedUpdatesASAP;
+        DefaultPortableFolder = source.DefaultPortableFolder;
+        AllowScriptExecution = source.AllowScriptExecution;
     }
 
     private static string NormalizeRestartBehavior(string? value)

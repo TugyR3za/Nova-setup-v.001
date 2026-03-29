@@ -10,7 +10,17 @@ public class InstallResult
 
     public bool Skipped { get; set; }
 
+    public bool Cancelled { get; set; }
+
     public bool RequiresRestart { get; set; }
 
     public string Message { get; set; } = string.Empty;
+
+    public string StatusText => Success
+        ? "Installed"
+        : Cancelled
+            ? "Cancelled"
+            : Skipped
+                ? "Skipped"
+                : "Failed";
 }

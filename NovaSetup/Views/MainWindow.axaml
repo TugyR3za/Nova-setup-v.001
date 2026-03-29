@@ -25,7 +25,23 @@
 
     <Window.Resources>
         <converters:LogLevelToBrushConverter x:Key="LogLevelToBrushConverter" />
+        <converters:InstallQueueStatusToBrushConverter x:Key="InstallQueueStatusToBrushConverter" />
+        <converters:InstallQueueStatusToProgressVisibilityConverter x:Key="InstallQueueStatusToProgressVisibilityConverter" />
     </Window.Resources>
+
+    <Window.Styles>
+        <Style Selector="Border.installQueueRow">
+            <Setter Property="Background" Value="{DynamicResource CardBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource CardBorderBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+        </Style>
+
+        <Style Selector="Border.installQueueRow.active">
+            <Setter Property="Background" Value="{DynamicResource AccentSoftBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}" />
+            <Setter Property="BorderThickness" Value="3,1,1,1" />
+        </Style>
+    </Window.Styles>
 
     <Grid RowDefinitions="Auto,Auto,*"
           RowSpacing="8">
@@ -305,7 +321,9 @@
                                                    IsRecommendedFilter="{Binding IsRecommendedFilter, Mode=TwoWay}"
                                                    IsDevToolsFilter="{Binding IsDevToolsFilter, Mode=TwoWay}"
                                                    IsUtilitiesFilter="{Binding IsUtilitiesFilter, Mode=TwoWay}"
+                                                   IsArm64Filter="{Binding IsArm64Filter, Mode=TwoWay}"
                                                    IsUpdatesFilter="{Binding IsUpdatesFilter, Mode=TwoWay}"
+                                                   IsArm64Machine="{Binding IsArm64Machine}"
                                                    IsGridViewActive="{Binding IsGridViewActive, Mode=TwoWay}"
                                                    RefreshCatalogCommand="{Binding RefreshCatalogCommand}"
                                                    ToggleViewModeCommand="{Binding ToggleViewModeCommand}" />
@@ -314,7 +332,14 @@
                                                          IsVisible="{Binding IsListViewActive}"
                                                          Items="{Binding VisibleApps}"
                                                          OpenPublisherCommand="{Binding OpenPublisherCommand}"
-                                                         ShowAppDetailsCommand="{Binding ShowAppDetailsCommand}" />
+                                                         ShowAppDetailsCommand="{Binding ShowAppDetailsCommand}"
+                                                         InstallAppCommand="{Binding InstallAppCommand}"
+                                                         UpdateAppCommand="{Binding UpdateAppCommand}"
+                                                         UninstallCommand="{Binding UninstallCommand}"
+                                                         OpenInstallLocationCommand="{Binding OpenInstallLocationCommand}"
+                                                         CopyToClipboardCommand="{Binding CopyToClipboardCommand}"
+                                                         ToggleSilentInstallPreferenceCommand="{Binding ToggleSilentInstallPreferenceCommand}"
+                                                         ToggleScanningPreferenceCommand="{Binding ToggleScanningPreferenceCommand}" />
 
                                 <controls:AppGridControl Grid.Row="1"
                                                          IsVisible="{Binding IsGridViewActive}"
@@ -360,67 +385,152 @@
                                 </StackPanel>
                             </Border>
 
-                            <Grid ColumnDefinitions="2*,1*" ColumnSpacing="10">
-                                <Border Grid.Column="0" Classes="card">
-                                    <StackPanel Spacing="8">
-                                        <TextBlock Text="Now installing" FontSize="18" FontWeight="SemiBold" />
-                                        <TextBlock Text="{Binding InstallStatusText}"
-                                                   TextWrapping="Wrap"
-                                                   Foreground="{DynamicResource TextMutedBrush}" />
-                                    </StackPanel>
-                                </Border>
+                            <Grid ColumnDefinitions="1.45*,0.95*" ColumnSpacing="12">
+                                <StackPanel Grid.Column="0"
+                                            Spacing="12">
+                                    <Grid ColumnDefinitions="2*,1*" ColumnSpacing="10">
+                                        <Border Grid.Column="0" Classes="card">
+                                            <StackPanel Spacing="8">
+                                                <TextBlock Text="Now installing" FontSize="18" FontWeight="SemiBold" />
+                                                <TextBlock Text="{Binding InstallStatusText}"
+                                                           TextWrapping="Wrap"
+                                                           Foreground="{DynamicResource TextMutedBrush}" />
+                                            </StackPanel>
+                                        </Border>
 
-                                <Border Grid.Column="1" Classes="card">
-                                    <StackPanel Spacing="8">
-                                        <TextBlock Text="Actions" FontSize="18" FontWeight="SemiBold" />
-                                        <Button Content="Pause"
-                                                Command="{Binding PauseInstallCommand}" />
-                                        <Button Content="Open Logs"
+                                        <Border Grid.Column="1" Classes="card">
+                                            <StackPanel Spacing="8">
+                                                <TextBlock Text="Actions" FontSize="18" FontWeight="SemiBold" />
+                                                <Button Content="Cancel All"
+                                                        Command="{Binding PauseInstallCommand}" />
+                                                <Button Content="Open Logs"
+                                                        Command="{Binding OpenLogFileCommand}" />
+                                            </StackPanel>
+                                        </Border>
+                                    </Grid>
+
+                                    <Border Classes="card">
+                                        <StackPanel Spacing="8">
+                                            <TextBlock Text="Activity" FontSize="18" FontWeight="SemiBold" />
+                                            <ItemsControl ItemsSource="{Binding InstallResults}">
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <Border BorderBrush="{DynamicResource CardBorderBrush}"
+                                                                BorderThickness="1"
+                                                                CornerRadius="10"
+                                                                Padding="10"
+                                                                Margin="0,0,0,6">
+                                                            <Grid ColumnDefinitions="2*,Auto,3*">
+                                                                <TextBlock Text="{Binding AppName}" FontWeight="SemiBold" />
+                                                                <TextBlock Grid.Column="1"
+                                                                           Text="{Binding StatusText}"
+                                                                           Foreground="{DynamicResource TextMutedBrush}" />
+                                                                <TextBlock Grid.Column="2"
+                                                                           Text="{Binding Message}"
+                                                                           Foreground="{DynamicResource TextMutedBrush}"
+                                                                           TextWrapping="Wrap" />
+                                                            </Grid>
+                                                        </Border>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+                                        </StackPanel>
+                                    </Border>
+
+                                    <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
+                                        <Button Grid.Column="0"
+                                                Content="Open Log File"
                                                 Command="{Binding OpenLogFileCommand}" />
-                                    </StackPanel>
-                                </Border>
-                            </Grid>
-
-                            <Border Classes="card">
-                                <StackPanel Spacing="8">
-                                    <TextBlock Text="Queue" FontSize="18" FontWeight="SemiBold" />
-                                    <ItemsControl ItemsSource="{Binding InstallResults}">
-                                        <ItemsControl.ItemTemplate>
-                                            <DataTemplate>
-                                                <Border BorderBrush="{DynamicResource CardBorderBrush}"
-                                                        BorderThickness="1"
-                                                        CornerRadius="10"
-                                                        Padding="10"
-                                                        Margin="0,0,0,6">
-                                                    <Grid ColumnDefinitions="2*,Auto,3*">
-                                                        <TextBlock Text="{Binding AppName}" FontWeight="SemiBold" />
-                                                        <TextBlock Grid.Column="1"
-                                                                   Text="{Binding Skipped, StringFormat='Skipped: {0}'}"
-                                                                   Foreground="{DynamicResource TextMutedBrush}" />
-                                                        <TextBlock Grid.Column="2"
-                                                                   Text="{Binding Message}"
-                                                                   Foreground="{DynamicResource TextMutedBrush}"
-                                                                   TextWrapping="Wrap" />
-                                                    </Grid>
-                                                </Border>
-                                            </DataTemplate>
-                                        </ItemsControl.ItemTemplate>
-                                    </ItemsControl>
+                                    </Grid>
                                 </StackPanel>
-                            </Border>
 
-                            <Grid ColumnDefinitions="Auto,Auto,*" ColumnSpacing="10">
-                                <Button Grid.Column="0"
-                                        Content="Open Log File"
-                                        Command="{Binding OpenLogFileCommand}" />
-                                <Button Grid.Column="1"
-                                        Classes="ghost"
-                                        Content="Finish and Summary (auto)"
-                                        IsEnabled="False" />
+                                <Border Grid.Column="1"
+                                        Classes="card"
+                                        IsVisible="{Binding IsQueueVisible}"
+                                        Background="{DynamicResource ElevatedCardBrush}">
+                                    <Grid RowDefinitions="Auto,*"
+                                          RowSpacing="10">
+                                        <Grid ColumnDefinitions="*,Auto"
+                                              ColumnSpacing="10">
+                                            <StackPanel Spacing="2">
+                                                <TextBlock Text="Install queue"
+                                                           FontSize="18"
+                                                           FontWeight="SemiBold" />
+                                                <TextBlock Text="{Binding InstallQueueHeaderText}"
+                                                           Foreground="{DynamicResource TextMutedBrush}"
+                                                           TextWrapping="Wrap" />
+                                            </StackPanel>
+
+                                            <Button Grid.Column="1"
+                                                    Classes="ghost compact"
+                                                    Content="Clear"
+                                                    Command="{Binding ClearQueueCommand}" />
+                                        </Grid>
+
+                                        <ScrollViewer Grid.Row="1"
+                                                      VerticalScrollBarVisibility="Auto"
+                                                      HorizontalScrollBarVisibility="Disabled">
+                                            <ItemsControl ItemsSource="{Binding InstallQueue}">
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <Border Classes="installQueueRow"
+                                                                Classes.active="{Binding IsActive}"
+                                                                CornerRadius="12"
+                                                                Padding="10"
+                                                                Margin="0,0,0,8">
+                                                            <Grid RowDefinitions="Auto,Auto,Auto"
+                                                                  RowSpacing="6">
+                                                                <Grid ColumnDefinitions="Auto,*,Auto"
+                                                                      ColumnSpacing="10">
+                                                                    <Ellipse Width="10"
+                                                                             Height="10"
+                                                                             Fill="{Binding Status, Converter={StaticResource InstallQueueStatusToBrushConverter}}"
+                                                                             VerticalAlignment="Center" />
+
+                                                                    <StackPanel Grid.Column="1"
+                                                                                Spacing="2">
+                                                                        <TextBlock Text="{Binding AppName}"
+                                                                                   FontWeight="SemiBold"
+                                                                                   TextWrapping="Wrap" />
+                                                                        <TextBlock Text="{Binding StatusText}"
+                                                                                   FontSize="12"
+                                                                                   Foreground="{DynamicResource TextMutedBrush}"
+                                                                                   TextWrapping="Wrap" />
+                                                                    </StackPanel>
+
+                                                                    <Border Grid.Column="2"
+                                                                            Width="28"
+                                                                            Height="28"
+                                                                            CornerRadius="14"
+                                                                            Background="{DynamicResource AppIconBackgroundBrush}"
+                                                                            VerticalAlignment="Top">
+                                                                        <TextBlock Text="{Binding IconGlyph}"
+                                                                                   HorizontalAlignment="Center"
+                                                                                   VerticalAlignment="Center"
+                                                                                   FontWeight="SemiBold" />
+                                                                    </Border>
+                                                                </Grid>
+
+                                                                <ProgressBar Grid.Row="2"
+                                                                             Minimum="0"
+                                                                             Maximum="1"
+                                                                             Height="3"
+                                                                             Value="{Binding Progress}"
+                                                                             Background="{DynamicResource InputBrush}"
+                                                                             Foreground="{DynamicResource AccentBrush}"
+                                                                             IsVisible="{Binding Status, Converter={StaticResource InstallQueueStatusToProgressVisibilityConverter}}" />
+                                                            </Grid>
+                                                        </Border>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+                                        </ScrollViewer>
+                                    </Grid>
+                                </Border>
                             </Grid>
                         </StackPanel>
                     </ScrollViewer>
-                    <StackPanel IsVisible="{Binding IsHistorySelected}"
+                    <StackPanel IsVisible="{Binding IsHistoryScreenVisible}"
                                 Spacing="12">
                         <Border Classes="card"
                                 IsVisible="{Binding HasInstallResults}"
@@ -471,6 +581,112 @@
                                 </Border>
                             </StackPanel>
                         </Border>
+
+                        <Grid IsVisible="{Binding HasInstallResults}"
+                              ColumnDefinitions="1*,1*"
+                              ColumnSpacing="10">
+                            <Border Grid.Column="0"
+                                    Classes="card">
+                                <StackPanel Spacing="8">
+                                    <TextBlock Text="Latest install queue"
+                                               FontSize="18"
+                                               FontWeight="SemiBold" />
+                                    <TextBlock Text="Apps from the most recent install run are shown here."
+                                               Foreground="{DynamicResource TextMutedBrush}"
+                                               TextWrapping="Wrap" />
+                                    <ItemsControl ItemsSource="{Binding InstallQueue}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Border Classes="installQueueRow"
+                                                        Classes.active="{Binding IsActive}"
+                                                        CornerRadius="12"
+                                                        Padding="10"
+                                                        Margin="0,0,0,8">
+                                                    <Grid RowDefinitions="Auto,Auto"
+                                                          RowSpacing="6">
+                                                        <Grid ColumnDefinitions="Auto,*,Auto"
+                                                              ColumnSpacing="10">
+                                                            <Ellipse Width="10"
+                                                                     Height="10"
+                                                                     Fill="{Binding Status, Converter={StaticResource InstallQueueStatusToBrushConverter}}"
+                                                                     VerticalAlignment="Center" />
+
+                                                            <StackPanel Grid.Column="1"
+                                                                        Spacing="2">
+                                                                <TextBlock Text="{Binding AppName}"
+                                                                           FontWeight="SemiBold"
+                                                                           TextWrapping="Wrap" />
+                                                                <TextBlock Text="{Binding StatusText}"
+                                                                           FontSize="12"
+                                                                           Foreground="{DynamicResource TextMutedBrush}"
+                                                                           TextWrapping="Wrap" />
+                                                            </StackPanel>
+
+                                                            <Border Grid.Column="2"
+                                                                    Width="28"
+                                                                    Height="28"
+                                                                    CornerRadius="14"
+                                                                    Background="{DynamicResource AppIconBackgroundBrush}"
+                                                                    VerticalAlignment="Top">
+                                                                <TextBlock Text="{Binding IconGlyph}"
+                                                                           HorizontalAlignment="Center"
+                                                                           VerticalAlignment="Center"
+                                                                           FontWeight="SemiBold" />
+                                                            </Border>
+                                                        </Grid>
+
+                                                        <ProgressBar Grid.Row="1"
+                                                                     Minimum="0"
+                                                                     Maximum="1"
+                                                                     Height="3"
+                                                                     Value="{Binding Progress}"
+                                                                     Background="{DynamicResource InputBrush}"
+                                                                     Foreground="{DynamicResource AccentBrush}"
+                                                                     IsVisible="{Binding Status, Converter={StaticResource InstallQueueStatusToProgressVisibilityConverter}}" />
+                                                    </Grid>
+                                                </Border>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </StackPanel>
+                            </Border>
+
+                            <Border Grid.Column="1"
+                                    Classes="card">
+                                <StackPanel Spacing="8">
+                                    <TextBlock Text="Latest install activity"
+                                               FontSize="18"
+                                               FontWeight="SemiBold" />
+                                    <TextBlock Text="Each result from the most recent install run is listed below."
+                                               Foreground="{DynamicResource TextMutedBrush}"
+                                               TextWrapping="Wrap" />
+                                    <ItemsControl ItemsSource="{Binding InstallResults}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Border BorderBrush="{DynamicResource CardBorderBrush}"
+                                                        BorderThickness="1"
+                                                        CornerRadius="10"
+                                                        Padding="10"
+                                                        Margin="0,0,0,6">
+                                                    <Grid ColumnDefinitions="2*,Auto,3*"
+                                                          ColumnSpacing="10">
+                                                        <TextBlock Text="{Binding AppName}"
+                                                                   FontWeight="SemiBold" />
+                                                        <TextBlock Grid.Column="1"
+                                                                   Text="{Binding StatusText}"
+                                                                   Foreground="{DynamicResource TextMutedBrush}" />
+                                                        <TextBlock Grid.Column="2"
+                                                                   Text="{Binding Message}"
+                                                                   Foreground="{DynamicResource TextMutedBrush}"
+                                                                   TextWrapping="Wrap" />
+                                                    </Grid>
+                                                </Border>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </StackPanel>
+                            </Border>
+                        </Grid>
 
                         <views:HistoryView DataContext="{Binding HistoryViewModel}" />
                     </StackPanel>
@@ -937,6 +1153,26 @@
                                                     <StackPanel Spacing="6" IsVisible="{Binding IsCustomDownloadFolderVisible}">
                                                         <TextBlock Text="Custom folder path" FontWeight="Medium" />
                                                         <TextBox Watermark="e.g. C:\Downloads" Text="{Binding Settings.CustomDownloadFolder}" />
+                                                    </StackPanel>
+                                                    <Border Height="1" Background="{DynamicResource CardBorderBrush}" Margin="-16,0" />
+                                                    <StackPanel Spacing="6">
+                                                        <TextBlock Text="Portable apps folder" FontWeight="Medium" />
+                                                        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                                                            <TextBox Text="{Binding Settings.DefaultPortableFolder}"
+                                                                     IsReadOnly="True" />
+                                                            <Button Grid.Column="1"
+                                                                    Content="Browse"
+                                                                    Command="{Binding BrowsePortableFolderCommand}" />
+                                                        </Grid>
+                                                    </StackPanel>
+                                                    <Border Height="1" Background="{DynamicResource CardBorderBrush}" Margin="-16,0" />
+                                                    <StackPanel Spacing="0">
+                                                        <CheckBox IsChecked="{Binding Settings.AllowScriptExecution}" Content="Allow pre/post install scripts" />
+                                                        <TextBlock Text="Only enable this if you trust the apps.json source. Scripts run with your user permissions."
+                                                                   FontSize="12"
+                                                                   Foreground="{DynamicResource TextMutedBrush}"
+                                                                   TextWrapping="Wrap"
+                                                                   Margin="24,2,0,0" />
                                                     </StackPanel>
                                                     <Border Height="1" Background="{DynamicResource CardBorderBrush}" Margin="-16,0" />
                                                     <StackPanel Spacing="0">

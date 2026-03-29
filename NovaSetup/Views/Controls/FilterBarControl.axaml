@@ -21,6 +21,11 @@
           <RadioButton GroupName="filter" Classes="segmented" IsChecked="{Binding #Root.IsRecommendedFilter, Mode=TwoWay}" Content="Recommended" />
           <RadioButton GroupName="filter" Classes="segmented" IsChecked="{Binding #Root.IsDevToolsFilter, Mode=TwoWay}" Content="Dev Tools" />
           <RadioButton GroupName="filter" Classes="segmented" IsChecked="{Binding #Root.IsUtilitiesFilter, Mode=TwoWay}" Content="Utilities" />
+          <RadioButton GroupName="filter"
+                       Classes="segmented"
+                       IsVisible="{Binding #Root.IsArm64Machine}"
+                       IsChecked="{Binding #Root.IsArm64Filter, Mode=TwoWay}"
+                       Content="ARM64" />
           <RadioButton GroupName="filter" Classes="segmented" IsChecked="{Binding #Root.IsUpdatesFilter, Mode=TwoWay}" Content="Updates" />
         </StackPanel>
       </Border>

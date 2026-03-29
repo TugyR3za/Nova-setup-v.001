@@ -78,6 +78,8 @@ public sealed class LoggingService
     }
 
     // Compatibility helpers for existing services.
+    public void Log(string message) => LogInfo(message);
+
     public void Info(string message) => LogInfo(message);
 
     public void Warn(string message) => LogWarning(message);

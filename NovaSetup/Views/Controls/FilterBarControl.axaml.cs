@@ -42,10 +42,19 @@ public partial class FilterBarControl : UserControl
             nameof(IsUtilitiesFilter),
             defaultBindingMode: BindingMode.TwoWay);
 
+    public static readonly StyledProperty<bool> IsArm64FilterProperty =
+        AvaloniaProperty.Register<FilterBarControl, bool>(
+            nameof(IsArm64Filter),
+            defaultBindingMode: BindingMode.TwoWay);
+
     public static readonly StyledProperty<bool> IsUpdatesFilterProperty =
         AvaloniaProperty.Register<FilterBarControl, bool>(
             nameof(IsUpdatesFilter),
             defaultBindingMode: BindingMode.TwoWay);
+
+    public static readonly StyledProperty<bool> IsArm64MachineProperty =
+        AvaloniaProperty.Register<FilterBarControl, bool>(
+            nameof(IsArm64Machine));
 
     public static readonly StyledProperty<bool> IsGridViewActiveProperty =
         AvaloniaProperty.Register<FilterBarControl, bool>(
@@ -105,10 +114,22 @@ public partial class FilterBarControl : UserControl
         set => SetValue(IsUtilitiesFilterProperty, value);
     }
 
+    public bool IsArm64Filter
+    {
+        get => GetValue(IsArm64FilterProperty);
+        set => SetValue(IsArm64FilterProperty, value);
+    }
+
     public bool IsUpdatesFilter
     {
         get => GetValue(IsUpdatesFilterProperty);
         set => SetValue(IsUpdatesFilterProperty, value);
+    }
+
+    public bool IsArm64Machine
+    {
+        get => GetValue(IsArm64MachineProperty);
+        set => SetValue(IsArm64MachineProperty, value);
     }
 
     public bool IsGridViewActive

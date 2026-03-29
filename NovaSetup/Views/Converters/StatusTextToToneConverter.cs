@@ -1,6 +1,7 @@
 using System;
 using System.Globalization;
 using Avalonia.Data.Converters;
+using NovaSetup.Models;
 
 namespace NovaSetup.Views.Converters;
 
@@ -23,20 +24,37 @@ public sealed class StatusTextToToneConverter : IValueConverter
             return StatusTone.Default;
         }
 
-        return statusText.Trim().ToLowerInvariant() switch
+        var normalized = statusText.Trim();
+
+        if (string.Equals(normalized, AppItem.StatusInstalled, StringComparison.OrdinalIgnoreCase))
         {
-            "installed" => StatusTone.Success,
-            "update available" => StatusTone.Info,
-            "available" => StatusTone.Info,
-            "selected" => StatusTone.Info,
-            "recommended" => StatusTone.Info,
-            "will be skipped" => StatusTone.Warning,
-            "unsupported on this os" => StatusTone.Warning,
-            "needs manual install" => StatusTone.Warning,
-            "pending restart" => StatusTone.Warning,
-            "failed" => StatusTone.Error,
-            _ => StatusTone.Default
-        };
+            return StatusTone.Success;
+        }
+
+        if (string.Equals(normalized, AppItem.StatusUpdateAvailable, StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(normalized, AppItem.StatusAvailable, StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(normalized, AppItem.StatusSelected, StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(normalized, "recommended", StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(normalized, AppItem.StatusInstalling, StringComparison.OrdinalIgnoreCase))
+        {
+            return StatusTone.Info;
+        }
+
+        if (string.Equals(normalized, AppItem.StatusWillBeSkipped, StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(normalized, AppItem.StatusUnsupportedOnCurrentOs, StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(normalized, AppItem.StatusNeedsManualInstall, StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(normalized, "pending restart", StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(normalized, AppItem.StatusCancelled, StringComparison.OrdinalIgnoreCase))
+        {
+            return StatusTone.Warning;
+        }
+
+        if (string.Equals(normalized, AppItem.StatusFailed, StringComparison.OrdinalIgnoreCase))
+        {
+            return StatusTone.Error;
+        }
+
+        return StatusTone.Default;
     }
 
     public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture) =>

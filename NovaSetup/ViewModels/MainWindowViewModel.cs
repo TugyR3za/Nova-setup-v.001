@@ -42,6 +42,7 @@ public sealed class MainWindowViewModel : ObservableObject
     private readonly BrowserService _browserService;
     private readonly SettingsService _settingsService;
     private readonly ProfileService _profileService;
+    private readonly AppPreferencesService _appPreferencesService;
     private readonly DependencyResolverService _dependencyResolverService;
     private readonly AppUpdateService _appUpdateService;
     private ScheduledUpdateService? _scheduledUpdateService;
@@ -49,11 +50,13 @@ public sealed class MainWindowViewModel : ObservableObject
     private bool _isGridViewActive;
     private readonly ObservableCollection<AppItem> _apps = new();
     private readonly ObservableCollection<AppItem> _visibleApps = new();
+    private readonly ObservableCollection<InstallQueueItem> _installQueue = new();
     private readonly ObservableCollection<NovaProfile> _savedProfiles = new();
     private readonly ObservableCollection<LogEntry> _filteredLiveLogs = new();
     private readonly ObservableCollection<InstallResult> _installResults = new();
     private readonly ObservableCollection<InstallResult> _installedResults = new();
     private readonly ObservableCollection<InstallResult> _failedResults = new();
+    private readonly ObservableCollection<InstallResult> _cancelledResults = new();
     private readonly ObservableCollection<InstallResult> _skippedResults = new();
     private readonly ObservableCollection<InstallResult> _restartRequiredResults = new();
     private readonly ObservableCollection<InstallResult> _unsupportedSkippedResults = new();
@@ -80,11 +83,21 @@ public sealed class MainWindowViewModel : ObservableObject
     private readonly AsyncRelayCommand _copyLogsCommand;
     private readonly AsyncRelayCommand _copySelectedLogCommand;
     private readonly AsyncRelayCommand _exportLogsCommand;
+    private readonly AsyncRelayCommand _browsePortableFolderCommand;
+    private readonly RelayCommand _installAppCommand;
+    private readonly RelayCommand _updateAppCommand;
+    private readonly RelayCommand _uninstallCommand;
+    private readonly RelayCommand _openInstallLocationCommand;
+    private readonly RelayCommand _copyToClipboardCommand;
+    private readonly RelayCommand _toggleSilentInstallPreferenceCommand;
+    private readonly RelayCommand _toggleScanningPreferenceCommand;
+    private readonly RelayCommand _toggleInstallScriptsPreferenceCommand;
     private readonly RelayCommand _openPublisherCommand;
     private readonly RelayCommand _openAboutGitHubCommand;
     private readonly RelayCommand _showAppDetailsCommand;
     private readonly RelayCommand _closeAppDetailsCommand;
     private readonly RelayCommand _pauseInstallCommand;
+    private readonly RelayCommand _clearQueueCommand;
     private readonly RelayCommand _exportReportCommand;
     private readonly RelayCommand _toggleSettingsPanelCommand;
     private readonly RelayCommand _toggleAccountMenuCommand;
@@ -109,6 +122,7 @@ public sealed class MainWindowViewModel : ObservableObject
     private bool _isInitialized;
     private bool _isInitializing;
     private bool _isInstalling;
+    private bool _isQueueVisible;
     private bool _restartRequired;
     private bool _isRestartConfirmationVisible;
     private bool _restartDecisionFinalized;
@@ -148,12 +162,14 @@ public sealed class MainWindowViewModel : ObservableObject
     private bool _isRecommendedFilter;
     private bool _isDevToolsFilter;
     private bool _isUtilitiesFilter;
+    private bool _isArm64Filter;
     private bool _isUpdatesFilter;
     private string _selectedLogLevelFilter = LogFilterAll;
     private double _progressValue;
     private CancellationTokenSource? _settingsSaveCts;
     private CancellationTokenSource? _startupDetectionCts;
     private CancellationTokenSource? _dependencyInfoDismissCts;
+    private CancellationTokenSource? _installQueueCts;
 
     private static readonly IReadOnlyList<SettingChoice> RestartBehaviorChoices =
     [
@@ -220,6 +236,7 @@ public sealed class MainWindowViewModel : ObservableObject
         BrowserService browserService,
         SettingsService settingsService,
         ProfileService profileService,
+        AppPreferencesService appPreferencesService,
         HistoryService historyService)
     {
         _platformService = platformService;
@@ -231,8 +248,11 @@ public sealed class MainWindowViewModel : ObservableObject
         _browserService = browserService;
         _settingsService = settingsService;
         _profileService = profileService;
+        _appPreferencesService = appPreferencesService;
         _dependencyResolverService = new DependencyResolverService(loggingService);
         _appUpdateService = new AppUpdateService(loggingService);
+        _installerService.AppInstallStarted += HandleInstallerAppStarted;
+        _installerService.AppInstallCompleted += HandleInstallerAppCompleted;
 
         Settings = new AppSettings();
         HistoryViewModel = new HistoryViewModel(historyService, loggingService);
@@ -264,11 +284,21 @@ public sealed class MainWindowViewModel : ObservableObject
         _copyLogsCommand = new AsyncRelayCommand(CopyLogsAsync, () => IsDeveloperModeEnabled && FilteredLiveLogs.Count > 0);
         _copySelectedLogCommand = new AsyncRelayCommand(CopySelectedLogAsync, () => IsDeveloperModeEnabled && SelectedLiveLogEntry is not null);
         _exportLogsCommand = new AsyncRelayCommand(ExportLogsAsync, () => IsDeveloperModeEnabled && FilteredLiveLogs.Count > 0);
+        _browsePortableFolderCommand = new AsyncRelayCommand(BrowsePortableFolderAsync, () => !IsInstalling);
+        _installAppCommand = new RelayCommand(InstallAppFromContextMenu, CanExecuteAppContextInstall);
+        _updateAppCommand = new RelayCommand(UpdateAppFromContextMenu, CanExecuteAppContextUpdate);
+        _uninstallCommand = new RelayCommand(UninstallAppFromContextMenu, CanExecuteAppContextUninstall);
+        _openInstallLocationCommand = new RelayCommand(OpenInstallLocationFromContextMenu, CanExecuteAppContextInstalledAction);
+        _copyToClipboardCommand = new RelayCommand(CopyToClipboardFromContextMenu);
+        _toggleSilentInstallPreferenceCommand = new RelayCommand(ToggleSilentInstallPreference, CanExecuteAppContextParameter);
+        _toggleScanningPreferenceCommand = new RelayCommand(ToggleScanningPreference, CanExecuteAppContextParameter);
+        _toggleInstallScriptsPreferenceCommand = new RelayCommand(ToggleInstallScriptsPreference, CanExecuteAppContextParameter);
         _openPublisherCommand = new RelayCommand(OpenPublisherHomepage);
         _openAboutGitHubCommand = new RelayCommand(_ => OpenAboutGitHub(), _ => !IsInstalling);
         _showAppDetailsCommand = new RelayCommand(ShowAppDetails);
         _closeAppDetailsCommand = new RelayCommand(_ => CloseAppDetails());
         _pauseInstallCommand = new RelayCommand(_ => PauseInstallPlaceholder(), _ => IsInstalling);
+        _clearQueueCommand = new RelayCommand(_ => ClearQueue(), _ => IsQueueVisible && !IsInstalling);
         _exportReportCommand = new RelayCommand(_ => ExportReportPlaceholder());
         _toggleSettingsPanelCommand = new RelayCommand(_ => ToggleSettingsPanel());
         _toggleAccountMenuCommand = new RelayCommand(_ => ToggleAccountMenu());
@@ -308,6 +338,8 @@ public sealed class MainWindowViewModel : ObservableObject
     public ObservableCollection<AppItem> Apps => _apps;
 
     public ObservableCollection<AppItem> VisibleApps => _visibleApps;
+
+    public ObservableCollection<InstallQueueItem> InstallQueue => _installQueue;
 
     public ObservableCollection<NovaProfile> SavedProfiles => _savedProfiles;
 
@@ -405,7 +437,7 @@ public sealed class MainWindowViewModel : ObservableObject
         SectionDrivers => "Focused view for drivers, GPU tools, and accessory software.",
         SectionMyLists => "Only selected apps are shown here so you can review your list quickly.",
         SectionUpdates => "Review installed software that has a newer version available in the catalog.",
-        SectionHistory => "View the history of installed applications on this machine.",
+        SectionHistory => "Review the latest install activity and the full install history on this machine.",
         _ => "Pick apps, drivers, and packs, then press Install"
     };
 
@@ -531,7 +563,7 @@ public sealed class MainWindowViewModel : ObservableObject
     public bool IsAboutSelected => string.Equals(_currentSection, SectionAbout, StringComparison.Ordinal);
     public bool IsAboutUnselected => !IsAboutSelected;
 
-    public bool IsHomeScreenVisible => !IsInstalling && !IsUpdatesSelected && !IsHistorySelected && !IsLogsSelected && !IsAboutSelected;
+    public bool IsHomeScreenVisible => !IsInstalling && !IsQueueVisible && !IsUpdatesSelected && !IsHistorySelected && !IsLogsSelected && !IsAboutSelected;
 
     public bool IsListViewActive => !_isGridViewActive;
 
@@ -556,19 +588,21 @@ public sealed class MainWindowViewModel : ObservableObject
         IsGridViewActive = !IsGridViewActive;
     }
 
-    public bool IsInstallScreenVisible => IsInstalling;
+    public bool IsInstallScreenVisible => IsInstalling || IsQueueVisible;
 
-    public bool IsSummaryScreenVisible => !IsInstalling && IsHistorySelected && HasInstallResults;
+    public bool IsSummaryScreenVisible => !IsInstalling && !IsQueueVisible && IsHistorySelected && HasInstallResults;
 
-    public bool IsHistoryEmptyScreenVisible => !IsInstalling && IsHistorySelected && !HasInstallResults;
+    public bool IsHistoryEmptyScreenVisible => !IsInstalling && !IsQueueVisible && IsHistorySelected && !HasInstallResults;
 
-    public bool IsLogsScreenVisible => !IsInstalling && IsLogsSelected;
+    public bool IsHistoryScreenVisible => !IsInstalling && !IsQueueVisible && IsHistorySelected;
 
-    public bool IsAboutScreenVisible => !IsInstalling && IsAboutSelected;
+    public bool IsLogsScreenVisible => !IsInstalling && !IsQueueVisible && IsLogsSelected;
 
-    public bool IsUpdatesScreenVisible => !IsInstalling && IsUpdatesSelected;
+    public bool IsAboutScreenVisible => !IsInstalling && !IsQueueVisible && IsAboutSelected;
 
-    public bool IsSelectionPhase => !IsUpdatesSelected && !IsHistorySelected && !IsLogsSelected && !IsAboutSelected;
+    public bool IsUpdatesScreenVisible => !IsInstalling && !IsQueueVisible && IsUpdatesSelected;
+
+    public bool IsSelectionPhase => !IsQueueVisible && !IsUpdatesSelected && !IsHistorySelected && !IsLogsSelected && !IsAboutSelected;
 
     public bool IsSettingsPanelOpen
     {
@@ -855,6 +889,18 @@ public sealed class MainWindowViewModel : ObservableObject
         }
     }
 
+    public bool IsArm64Filter
+    {
+        get => _isArm64Filter;
+        set
+        {
+            if (SetProperty(ref _isArm64Filter, value) && value && !_updatingFilterFlags)
+            {
+                SetCategoryFilter("ARM64");
+            }
+        }
+    }
+
     public bool IsUpdatesFilter
     {
         get => _isUpdatesFilter;
@@ -880,10 +926,69 @@ public sealed class MainWindowViewModel : ObservableObject
         }
     }
 
+    public bool IsQueueVisible
+    {
+        get => _isQueueVisible;
+        private set
+        {
+            if (SetProperty(ref _isQueueVisible, value))
+            {
+                OnPropertyChanged(nameof(InstallQueueHeaderText));
+                NotifyScreenStateChanged();
+                UpdateCommandStates();
+            }
+        }
+    }
+
     public string InstallStatusText
     {
         get => _installStatusText;
         private set => SetProperty(ref _installStatusText, value);
+    }
+
+    public string InstallQueueHeaderText
+    {
+        get
+        {
+            if (_installQueue.Count == 0)
+            {
+                return "Install queue";
+            }
+
+            if (IsInstalling)
+            {
+                var activeIndex = _installQueue
+                    .Select((item, index) => new { item, index })
+                    .FirstOrDefault(entry => entry.item.IsActive)?.index ?? -1;
+                var currentPosition = activeIndex >= 0
+                    ? activeIndex + 1
+                    : Math.Min(_installQueue.Count, _installQueue.Count(item => item.Status != InstallQueueStatus.Pending) + 1);
+                return $"Installing {currentPosition} of {_installQueue.Count}...";
+            }
+
+            var doneCount = _installQueue.Count(item => item.Status == InstallQueueStatus.Done);
+            var failedCount = _installQueue.Count(item => item.Status == InstallQueueStatus.Failed);
+            var skippedCount = _installQueue.Count(item => item.Status == InstallQueueStatus.Skipped);
+            var cancelledCount = _installQueue.Count(item => item.Status == InstallQueueStatus.Cancelled);
+
+            var summaryParts = new List<string> { $"{doneCount} done" };
+            if (failedCount > 0)
+            {
+                summaryParts.Add($"{failedCount} failed");
+            }
+
+            if (skippedCount > 0)
+            {
+                summaryParts.Add($"{skippedCount} skipped");
+            }
+
+            if (cancelledCount > 0)
+            {
+                summaryParts.Add($"{cancelledCount} cancelled");
+            }
+
+            return $"Finished - {string.Join(", ", summaryParts)}";
+        }
     }
 
     public string InstallSummaryText
@@ -1082,6 +1187,8 @@ public sealed class MainWindowViewModel : ObservableObject
 
     public ICommand ShowHelpCommand => _showHelpCommand;
 
+    public ICommand HelpCommand => _showHelpCommand;
+
     public ICommand RefreshCatalogCommand => _refreshCatalogCommand;
 
     public ICommand ShowUpdatesFilterCommand => _showUpdatesFilterCommand;
@@ -1104,6 +1211,24 @@ public sealed class MainWindowViewModel : ObservableObject
 
     public ICommand ExportLogsCommand => _exportLogsCommand;
 
+    public ICommand BrowsePortableFolderCommand => _browsePortableFolderCommand;
+
+    public ICommand InstallAppCommand => _installAppCommand;
+
+    public ICommand UpdateAppCommand => _updateAppCommand;
+
+    public ICommand UninstallCommand => _uninstallCommand;
+
+    public ICommand OpenInstallLocationCommand => _openInstallLocationCommand;
+
+    public ICommand CopyToClipboardCommand => _copyToClipboardCommand;
+
+    public ICommand ToggleSilentInstallPreferenceCommand => _toggleSilentInstallPreferenceCommand;
+
+    public ICommand ToggleScanningPreferenceCommand => _toggleScanningPreferenceCommand;
+
+    public ICommand ToggleInstallScriptsPreferenceCommand => _toggleInstallScriptsPreferenceCommand;
+
     public ICommand OpenPublisherCommand => _openPublisherCommand;
 
     public ICommand OpenAboutGitHubCommand => _openAboutGitHubCommand;
@@ -1113,6 +1238,8 @@ public sealed class MainWindowViewModel : ObservableObject
     public ICommand CloseAppDetailsCommand => _closeAppDetailsCommand;
 
     public ICommand PauseInstallCommand => _pauseInstallCommand;
+
+    public ICommand ClearQueueCommand => _clearQueueCommand;
 
     public ICommand ExportReportCommand => _exportReportCommand;
 
@@ -1204,6 +1331,7 @@ public sealed class MainWindowViewModel : ObservableObject
             }
 
             var apps = await Task.Run(() => _catalogService.LoadAppsAsync(_currentPlatformId));
+            await _appPreferencesService.ApplyToAppsAsync(apps);
             var selection = _selectionService.LoadSelection();
             ApplySelectionProfile(selection);
 
@@ -1278,6 +1406,7 @@ public sealed class MainWindowViewModel : ObservableObject
             OnPropertyChanged(nameof(SelectedAppsSizeMB));
             OnPropertyChanged(nameof(SelectedAppsTimeMins));
         };
+        _installQueue.CollectionChanged += HandleInstallQueueCollectionChanged;
         _savedProfiles.CollectionChanged += (_, _) =>
         {
             OnPropertyChanged(nameof(HasSavedProfiles));
@@ -1288,6 +1417,38 @@ public sealed class MainWindowViewModel : ObservableObject
         LoggingService.LiveLogs.CollectionChanged += HandleLiveLogsCollectionChanged;
     }
 
+    private void HandleInstallQueueCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    {
+        if (e.OldItems is not null)
+        {
+            foreach (var oldItem in e.OldItems.OfType<InstallQueueItem>())
+            {
+                oldItem.PropertyChanged -= HandleInstallQueueItemPropertyChanged;
+            }
+        }
+
+        if (e.NewItems is not null)
+        {
+            foreach (var newItem in e.NewItems.OfType<InstallQueueItem>())
+            {
+                newItem.PropertyChanged += HandleInstallQueueItemPropertyChanged;
+            }
+        }
+
+        IsQueueVisible = _installQueue.Count > 0;
+        OnPropertyChanged(nameof(InstallQueueHeaderText));
+    }
+
+    private void HandleInstallQueueItemPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(InstallQueueItem.Status) ||
+            e.PropertyName == nameof(InstallQueueItem.IsActive) ||
+            e.PropertyName == nameof(InstallQueueItem.StatusText))
+        {
+            OnPropertyChanged(nameof(InstallQueueHeaderText));
+        }
+    }
+
     private void HandleLiveLogsCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
         // Marshal to UI thread to safely mutate UI-bound collections
@@ -1295,6 +1456,49 @@ public sealed class MainWindowViewModel : ObservableObject
         {
             RefreshFilteredLiveLogs();
             OnPropertyChanged(nameof(LiveLogs));
+        });
+    }
+
+    private void HandleInstallerAppStarted(AppItem app)
+    {
+        Dispatcher.UIThread.Post(() =>
+        {
+            var trackedApp = _apps.FirstOrDefault(candidate =>
+                candidate.Id.Equals(app.Id, StringComparison.OrdinalIgnoreCase));
+            if (trackedApp is null)
+            {
+                return;
+            }
+
+            trackedApp.IsCancellable = true;
+            trackedApp.CancelCommand = new RelayCommand(_ => CancelSingleInstall(trackedApp), _ => trackedApp.IsCancellable);
+            trackedApp.StatusBadge = AppItem.StatusInstalling;
+
+            if (ReferenceEquals(SelectedDetailApp, trackedApp))
+            {
+                NotifyAppDetailsStateChanged();
+            }
+        });
+    }
+
+    private void HandleInstallerAppCompleted(AppItem app)
+    {
+        Dispatcher.UIThread.Post(() =>
+        {
+            var trackedApp = _apps.FirstOrDefault(candidate =>
+                candidate.Id.Equals(app.Id, StringComparison.OrdinalIgnoreCase));
+            if (trackedApp is null)
+            {
+                return;
+            }
+
+            trackedApp.IsCancellable = false;
+            trackedApp.CancelCommand = null;
+
+            if (ReferenceEquals(SelectedDetailApp, trackedApp))
+            {
+                NotifyAppDetailsStateChanged();
+            }
         });
     }
 
@@ -1540,7 +1744,7 @@ public sealed class MainWindowViewModel : ObservableObject
 
     private void DetectInstalledAppsNow()
     {
-        if (_apps.Count == 0 && _currentPlatformId == PlatformService.Unknown)
+        if (_apps.Count == 0 || _currentPlatformId == PlatformService.Unknown)
         {
             return;
         }
@@ -1651,6 +1855,7 @@ public sealed class MainWindowViewModel : ObservableObject
             IsRecommendedFilter = string.Equals(filter, "Recommended", StringComparison.OrdinalIgnoreCase);
             IsDevToolsFilter = string.Equals(filter, "Dev Tools", StringComparison.OrdinalIgnoreCase);
             IsUtilitiesFilter = string.Equals(filter, "Utilities", StringComparison.OrdinalIgnoreCase);
+            IsArm64Filter = string.Equals(filter, "ARM64", StringComparison.OrdinalIgnoreCase);
             IsUpdatesFilter = string.Equals(filter, "Updates", StringComparison.OrdinalIgnoreCase);
         }
         finally
@@ -1698,6 +1903,7 @@ public sealed class MainWindowViewModel : ObservableObject
             "Dev Tools" => category.Contains("coding", StringComparison.OrdinalIgnoreCase) ||
                            category.Contains("dev", StringComparison.OrdinalIgnoreCase),
             "Utilities" => category.Contains("util", StringComparison.OrdinalIgnoreCase),
+            "ARM64" => app.WindowsInstall?.HasArm64Support == true,
             "Updates" => app.HasUpdateAvailable,
             _ => true
         };
@@ -1724,6 +1930,7 @@ public sealed class MainWindowViewModel : ObservableObject
         OnPropertyChanged(nameof(IsHomeScreenVisible));
         OnPropertyChanged(nameof(IsInstallScreenVisible));
         OnPropertyChanged(nameof(IsUpdatesScreenVisible));
+        OnPropertyChanged(nameof(IsHistoryScreenVisible));
         OnPropertyChanged(nameof(IsSummaryScreenVisible));
         OnPropertyChanged(nameof(IsHistoryEmptyScreenVisible));
         OnPropertyChanged(nameof(IsLogsScreenVisible));
@@ -1759,7 +1966,17 @@ public sealed class MainWindowViewModel : ObservableObject
     {
         if (string.Equals(_currentSection, section, StringComparison.Ordinal))
         {
+            if (!IsInstalling && IsQueueVisible)
+            {
+                IsQueueVisible = false;
+            }
+
             return;
+        }
+
+        if (!IsInstalling && IsQueueVisible)
+        {
+            IsQueueVisible = false;
         }
 
         _currentSection = section;
@@ -1771,7 +1988,7 @@ public sealed class MainWindowViewModel : ObservableObject
 
         if (section == SectionHistory)
         {
-            StatusText = "Install history page selected.";
+            StatusText = "Downloads page selected. Latest install activity and full history are available.";
             _ = HistoryViewModel.RefreshAsync();
         }
         else if (section == SectionLogs)
@@ -2410,6 +2627,8 @@ public sealed class MainWindowViewModel : ObservableObject
         }
     }
 
+    public bool IsArm64Machine => PlatformService.IsArm64();
+
     private bool CanRunScheduledUpdatesNow()
     {
         return !IsInstalling &&
@@ -2617,6 +2836,16 @@ public sealed class MainWindowViewModel : ObservableObject
 
     private void OpenPublisherHomepage(object? parameter)
     {
+        if (parameter is string url)
+        {
+            if (!_browserService.OpenUrl(url))
+            {
+                StatusText = "Could not open link.";
+            }
+
+            return;
+        }
+
         if (parameter is not AppItem app)
         {
             return;
@@ -2626,6 +2855,291 @@ public sealed class MainWindowViewModel : ObservableObject
         {
             StatusText = $"Could not open homepage for {app.Name}.";
         }
+    }
+
+    private bool CanExecuteAppContextParameter(object? parameter)
+    {
+        return !IsInstalling && parameter is AppItem;
+    }
+
+    private bool CanExecuteAppContextInstall(object? parameter)
+    {
+        return !IsInstalling && parameter is AppItem app && !app.IsInstalled;
+    }
+
+    private bool CanExecuteAppContextUpdate(object? parameter)
+    {
+        return !IsInstalling && parameter is AppItem app && app.HasUpdateAvailable;
+    }
+
+    private bool CanExecuteAppContextUninstall(object? parameter)
+    {
+        return !IsInstalling && parameter is AppItem app && app.IsInstalled;
+    }
+
+    private bool CanExecuteAppContextInstalledAction(object? parameter)
+    {
+        return !IsInstalling && parameter is AppItem app && app.IsInstalled;
+    }
+
+    private void InstallAppFromContextMenu(object? parameter)
+    {
+        if (parameter is not AppItem app)
+        {
+            return;
+        }
+
+        _ = InstallAppFromContextMenuAsync(app);
+    }
+
+    private async Task InstallAppFromContextMenuAsync(AppItem app)
+    {
+        try
+        {
+            await InstallAppsAsync(new[] { app });
+        }
+        catch (Exception ex)
+        {
+            StatusText = $"Install failed to start for {app.Name}.";
+            _loggingService.LogError($"Context-menu install failed for {app.Name}: {ex.Message}");
+        }
+    }
+
+    private void UpdateAppFromContextMenu(object? parameter)
+    {
+        if (parameter is not AppItem app)
+        {
+            return;
+        }
+
+        _ = UpdateAppFromContextMenuAsync(app);
+    }
+
+    private async Task UpdateAppFromContextMenuAsync(AppItem app)
+    {
+        try
+        {
+            await UpdateSingleAppAsync(app);
+        }
+        catch (Exception ex)
+        {
+            StatusText = $"Update failed for {app.Name}.";
+            _loggingService.LogError($"Context-menu update failed for {app.Name}: {ex.Message}");
+        }
+    }
+
+    private void UninstallAppFromContextMenu(object? parameter)
+    {
+        if (parameter is not AppItem app)
+        {
+            return;
+        }
+
+        _ = UninstallAppAsync(app);
+    }
+
+    private async Task UninstallAppAsync(AppItem app)
+    {
+        if (!OperatingSystem.IsWindows())
+        {
+            StatusText = "Uninstall is only supported on Windows.";
+            _loggingService.LogWarning($"Uninstall requested for {app.Name}, but the current platform does not support winget uninstall.");
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(app.WingetId))
+        {
+            StatusText = $"Uninstall is not supported for {app.Name}.";
+            _loggingService.LogWarning($"Uninstall requested for {app.Name}, but no WingetId is configured.");
+            return;
+        }
+
+        try
+        {
+            StatusText = $"Uninstalling {app.Name}...";
+            _loggingService.LogInfo($"Starting uninstall for {app.Name} via winget.");
+
+            using var process = new Process
+            {
+                StartInfo = new ProcessStartInfo
+                {
+                    FileName = ResolveWingetExecutablePathForCommands(),
+                    Arguments = $"uninstall --id {QuoteArgument(app.WingetId)} --exact --silent --disable-interactivity",
+                    UseShellExecute = false,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    CreateNoWindow = true
+                }
+            };
+
+            process.Start();
+            var stdoutTask = process.StandardOutput.ReadToEndAsync();
+            var stderrTask = process.StandardError.ReadToEndAsync();
+            await process.WaitForExitAsync();
+
+            var stdout = await stdoutTask;
+            var stderr = await stderrTask;
+            var output = string.Join(
+                Environment.NewLine,
+                new[] { stdout, stderr }.Where(text => !string.IsNullOrWhiteSpace(text)));
+
+            if (process.ExitCode == 0)
+            {
+                app.IsInstalled = false;
+                app.InstalledVersion = string.Empty;
+                app.HasInstallFailed = false;
+                app.RequiresRestartHint = false;
+                app.StatusBadge = AppItem.StatusNotInstalled;
+                StatusText = $"{app.Name} uninstalled.";
+                _loggingService.LogInfo(
+                    string.IsNullOrWhiteSpace(output)
+                        ? $"{app.Name} uninstalled successfully."
+                        : $"{app.Name} uninstalled successfully. {output.Trim()}");
+                await RefreshAvailableAppUpdatesAsync(rerunInstalledDetection: true, updateStatusText: false);
+                await HistoryViewModel.RefreshAsync();
+                return;
+            }
+
+            StatusText = $"Uninstall failed for {app.Name}.";
+            _loggingService.LogWarning(
+                string.IsNullOrWhiteSpace(output)
+                    ? $"winget uninstall failed for {app.Name} with exit code {process.ExitCode}."
+                    : $"winget uninstall failed for {app.Name} with exit code {process.ExitCode}. {output.Trim()}");
+        }
+        catch (Exception ex)
+        {
+            StatusText = $"Uninstall failed for {app.Name}.";
+            _loggingService.LogError($"Failed to uninstall {app.Name}: {ex.Message}");
+        }
+    }
+
+    private void OpenInstallLocationFromContextMenu(object? parameter)
+    {
+        if (parameter is not AppItem app)
+        {
+            return;
+        }
+
+        OpenInstallLocation(app);
+    }
+
+    private void OpenInstallLocation(AppItem app)
+    {
+        if (!OperatingSystem.IsWindows())
+        {
+            StatusText = "Open install location is only supported on Windows.";
+            _loggingService.LogWarning($"Open install location requested for {app.Name}, but the current platform does not support Windows Explorer.");
+            return;
+        }
+
+        var executablePath = _detectionService.TryGetInstalledExecutablePath(app, _currentPlatformId);
+        if (string.IsNullOrWhiteSpace(executablePath))
+        {
+            StatusText = $"Could not find an install location for {app.Name}.";
+            _loggingService.LogWarning($"Open install location requested for {app.Name}, but no executable path could be resolved.");
+            return;
+        }
+
+        var directoryPath = Path.GetDirectoryName(executablePath);
+        if (string.IsNullOrWhiteSpace(directoryPath) || !Directory.Exists(directoryPath))
+        {
+            StatusText = $"Could not find an install folder for {app.Name}.";
+            _loggingService.LogWarning($"Open install location requested for {app.Name}, but the resolved folder was unavailable: {directoryPath}");
+            return;
+        }
+
+        try
+        {
+            Process.Start(new ProcessStartInfo
+            {
+                FileName = "explorer.exe",
+                Arguments = QuoteArgument(directoryPath),
+                UseShellExecute = true
+            });
+
+            StatusText = $"Opened install location for {app.Name}.";
+            _loggingService.LogInfo($"Opened install location for {app.Name}: {directoryPath}");
+        }
+        catch (Exception ex)
+        {
+            StatusText = $"Could not open install location for {app.Name}.";
+            _loggingService.LogError($"Failed to open install location for {app.Name}: {ex.Message}");
+        }
+    }
+
+    private void CopyToClipboardFromContextMenu(object? parameter)
+    {
+        if (parameter is not string text || string.IsNullOrWhiteSpace(text))
+        {
+            return;
+        }
+
+        _ = CopyToClipboardAsync(text);
+    }
+
+    private async Task CopyToClipboardAsync(string text)
+    {
+        if (Application.Current?.ApplicationLifetime is not IClassicDesktopStyleApplicationLifetime desktop ||
+            desktop.MainWindow is not Window window)
+        {
+            StatusText = "Clipboard unavailable: operation requires desktop clipboard access.";
+            _loggingService.LogWarning("Copy to clipboard failed: clipboard unavailable (no desktop application lifetime).");
+            return;
+        }
+
+        var clipboard = TopLevel.GetTopLevel(window)?.Clipboard;
+        if (clipboard is null)
+        {
+            StatusText = "Clipboard unavailable: operation requires desktop clipboard access.";
+            _loggingService.LogWarning("Copy to clipboard failed: clipboard unavailable (TopLevel not available).");
+            return;
+        }
+
+        await clipboard.SetTextAsync(text);
+        StatusText = $"Copied '{text}' to clipboard.";
+        _loggingService.LogInfo($"Copied '{text}' to clipboard.");
+    }
+
+    private void ToggleSilentInstallPreference(object? parameter)
+    {
+        if (parameter is not AppItem app)
+        {
+            return;
+        }
+
+        app.UserDisabledSilentInstall = !app.UserDisabledSilentInstall;
+        _loggingService.LogInfo(
+            app.UserDisabledSilentInstall
+                ? $"Silent install disabled for {app.Name} by user preference."
+                : $"Silent install enabled for {app.Name} by user preference.");
+    }
+
+    private void ToggleScanningPreference(object? parameter)
+    {
+        if (parameter is not AppItem app)
+        {
+            return;
+        }
+
+        app.UserDisabledScanning = !app.UserDisabledScanning;
+        _loggingService.LogInfo(
+            app.UserDisabledScanning
+                ? $"Update scanning disabled for {app.Name} by user preference."
+                : $"Update scanning enabled for {app.Name} by user preference.");
+    }
+
+    private void ToggleInstallScriptsPreference(object? parameter)
+    {
+        if (parameter is not AppItem app)
+        {
+            return;
+        }
+
+        app.UserTrustedInstallScripts = !app.UserTrustedInstallScripts;
+        _loggingService.LogInfo(
+            app.UserTrustedInstallScripts
+                ? $"Install scripts enabled for {app.Name} by user preference."
+                : $"Install scripts disabled for {app.Name} by user preference.");
     }
 
     private void ShowAppDetails(object? parameter)
@@ -2660,8 +3174,11 @@ public sealed class MainWindowViewModel : ObservableObject
 
     private void PauseInstallPlaceholder()
     {
-        StatusText = "Pause is not available yet. Installation continues.";
-        _loggingService.LogInfo("Pause requested (placeholder).");
+        _installQueueCts?.Cancel();
+        _installerService.CancelAllActiveInstalls();
+        InstallStatusText = "Cancel requested for all active installs.";
+        StatusText = InstallStatusText;
+        _loggingService.LogInfo("Cancel requested for all active installs.");
     }
 
     private void ExportReportPlaceholder()
@@ -2872,6 +3389,7 @@ public sealed class MainWindowViewModel : ObservableObject
         _loggingService.LogInfo("Manual refresh started.");
 
         var refreshedApps = await _catalogService.LoadAppsAsync(_currentPlatformId);
+        await _appPreferencesService.ApplyToAppsAsync(refreshedApps);
         if (refreshedApps.Count > 0)
         {
             ReplaceCatalogApps(refreshedApps, selectedIds, detailAppId, wasDetailsOpen);
@@ -2933,7 +3451,19 @@ public sealed class MainWindowViewModel : ObservableObject
 
     private void HandleAppPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
-        if (_suppressAppSelectionHandling || sender is not AppItem app || e.PropertyName != nameof(AppItem.IsSelected))
+        if (_suppressAppSelectionHandling || sender is not AppItem app)
+        {
+            return;
+        }
+
+        if (IsAppPreferenceProperty(e.PropertyName))
+        {
+            _ = SaveAppPreferenceAsync(app);
+            SyncUpdatesViewFromCurrentApps();
+            return;
+        }
+
+        if (e.PropertyName != nameof(AppItem.IsSelected))
         {
             return;
         }
@@ -2947,6 +3477,40 @@ public sealed class MainWindowViewModel : ObservableObject
         {
             SaveCurrentList(showStatusMessage: false);
         }
+    }
+
+    private static bool IsAppPreferenceProperty(string? propertyName)
+    {
+        return propertyName == nameof(AppItem.UserDisabledSilentInstall) ||
+               propertyName == nameof(AppItem.UserDisabledScanning) ||
+               propertyName == nameof(AppItem.UserDisabledAutoUpdate) ||
+               propertyName == nameof(AppItem.UserTrustedInstallScripts);
+    }
+
+    private async Task SaveAppPreferenceAsync(AppItem app)
+    {
+        await _appPreferencesService.SavePreferenceAsync(
+            app.Id,
+            new AppUserPreference
+            {
+                DisableSilentInstall = app.UserDisabledSilentInstall,
+                DisableScanning = app.UserDisabledScanning,
+                DisableAutoUpdate = app.UserDisabledAutoUpdate,
+                AllowInstallScripts = app.UserTrustedInstallScripts
+            });
+    }
+
+    private void SyncUpdatesViewFromCurrentApps()
+    {
+        RefreshAllAppVisualStates();
+
+        var availableUpdates = _apps
+            .Where(app => !app.UserDisabledScanning && app.HasUpdateAvailable)
+            .OrderBy(app => app.Name, StringComparer.OrdinalIgnoreCase)
+            .ToList();
+
+        UpdatesViewModel.SetAvailableUpdates(availableUpdates);
+        NotifyAppDetailsStateChanged();
     }
 
     private bool CanInstall()
@@ -2963,12 +3527,23 @@ public sealed class MainWindowViewModel : ObservableObject
             return;
         }
 
-        ShowDependencyInstallInfo(selectedApps);
+        await InstallAppsAsync(selectedApps);
+    }
+
+    private async Task InstallAppsAsync(IReadOnlyList<AppItem> selectedApps)
+    {
+        if (selectedApps.Count == 0)
+        {
+            InstallStatusText = "No selected apps to install.";
+            return;
+        }
+
         ResetInstallOutputState();
         IsSettingsPanelOpen = false;
         CloseAppDetails(logAction: false);
         IsInstalling = true;
-        _ = AutoDismissDependencyInfoAsync();
+        _ = ShowDependencyInstallInfoAsync(selectedApps);
+        PrepareInstallQueue(selectedApps);
 
         InstallStatusText = $"Starting installation for {selectedApps.Count} app(s)...";
         _loggingService.LogInfo(InstallStatusText);
@@ -2980,35 +3555,94 @@ public sealed class MainWindowViewModel : ObservableObject
             _loggingService.LogInfo("Parallel install is enabled in settings, but the installer currently uses the stable sequential pipeline.");
         }
 
-        var processedCount = 0;
-        foreach (var app in selectedApps)
-        {
-            InstallStatusText = $"Installing {app.Name} ({processedCount + 1}/{selectedApps.Count})...";
-            var batchResults = await _installerService.InstallSelectedAppsAsync(
-                new[] { app },
-                _currentPlatformId,
-                silentInstallEnabled: Settings.SilentInstall,
-                keepInstallersAfterInstall: Settings.KeepInstallersAfterInstall,
-                downloadLocationMode: Settings.DownloadLocationMode,
-                customDownloadFolder: Settings.CustomDownloadFolder,
-                catalogApps: _apps);
+        _installQueueCts?.Cancel();
+        _installQueueCts?.Dispose();
+        _installQueueCts = new CancellationTokenSource();
+        var installQueueToken = _installQueueCts.Token;
+        var queueProgress = new Progress<InstallQueueProgress>(HandleInstallQueueProgress);
 
-            foreach (var result in batchResults)
+        var processedCount = 0;
+        try
+        {
+            foreach (var app in selectedApps)
             {
-                AddInstallResult(result);
-                ApplyInstallResultToApp(result);
+                installQueueToken.ThrowIfCancellationRequested();
+                InstallStatusText = $"Installing {app.Name} ({processedCount + 1}/{selectedApps.Count})...";
+                var batchResults = await _installerService.InstallSelectedAppsAsync(
+                    new[] { app },
+                    _currentPlatformId,
+                    silentInstallEnabled: Settings.SilentInstall,
+                    keepInstallersAfterInstall: Settings.KeepInstallersAfterInstall,
+                    downloadLocationMode: Settings.DownloadLocationMode,
+                    customDownloadFolder: Settings.CustomDownloadFolder,
+                    catalogApps: _apps,
+                    queueProgress: queueProgress,
+                    cancellationToken: installQueueToken);
+
+                foreach (var result in batchResults)
+                {
+                    AddInstallResult(result);
+                    ApplyInstallResultToApp(result);
+                    ApplyInstallResultToQueue(result);
+                }
+
+                processedCount++;
+                ProgressValue = Math.Round((double)processedCount / selectedApps.Count * 100.0, 1);
+
+                if (installQueueToken.IsCancellationRequested)
+                {
+                    break;
+                }
             }
 
-            processedCount++;
-            ProgressValue = Math.Round((double)processedCount / selectedApps.Count * 100.0, 1);
+            await RefreshInstalledStatesAfterInstallAsync();
+            await HistoryViewModel.RefreshAsync();
+            FinalizeInstallSummary();
+            await ApplyPostInstallRestartBehaviorAsync();
+        }
+        catch (OperationCanceledException)
+        {
+            MarkPendingQueueItemsCancelled();
+            InstallStatusText = "Installation cancelled.";
+            StatusText = InstallStatusText;
+            IsQueueVisible = false;
+            _loggingService.LogWarning("Install queue cancelled.");
+        }
+        finally
+        {
+            _installQueueCts?.Dispose();
+            _installQueueCts = null;
+            ResetAppCancellationState();
+            IsInstalling = false;
+            UpdateCommandStates();
+        }
+    }
+
+    private async Task BrowsePortableFolderAsync()
+    {
+        var storageProvider = GetStorageProvider();
+        if (storageProvider is null)
+        {
+            StatusText = "Portable folder picker is unavailable on this platform.";
+            return;
         }
 
-        await RefreshInstalledStatesAfterInstallAsync();
-        await HistoryViewModel.RefreshAsync();
-        FinalizeInstallSummary();
-        IsInstalling = false;
-        await ApplyPostInstallRestartBehaviorAsync();
-        UpdateCommandStates();
+        var folders = await storageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
+        {
+            AllowMultiple = false,
+            Title = "Choose portable apps folder"
+        });
+
+        var folder = folders.FirstOrDefault();
+        var localPath = folder?.TryGetLocalPath();
+        if (string.IsNullOrWhiteSpace(localPath))
+        {
+            return;
+        }
+
+        Settings.DefaultPortableFolder = localPath;
+        StatusText = $"Portable apps folder set to {localPath}.";
+        _loggingService.LogInfo(StatusText);
     }
 
     private void ResetInstallOutputState()
@@ -3022,12 +3656,143 @@ public sealed class MainWindowViewModel : ObservableObject
         _installResults.Clear();
         _installedResults.Clear();
         _failedResults.Clear();
+        _cancelledResults.Clear();
         _skippedResults.Clear();
         _restartRequiredResults.Clear();
         _unsupportedSkippedResults.Clear();
+        _installQueue.Clear();
+        IsQueueVisible = false;
     }
 
-    private void ShowDependencyInstallInfo(IReadOnlyCollection<AppItem> selectedApps)
+    private void PrepareInstallQueue(IEnumerable<AppItem> selectedApps)
+    {
+        _installQueue.Clear();
+        foreach (var app in selectedApps)
+        {
+            _installQueue.Add(new InstallQueueItem
+            {
+                AppId = app.Id,
+                AppName = app.Name,
+                IconGlyph = string.IsNullOrWhiteSpace(app.Name)
+                    ? "?"
+                    : app.Name[..1].ToUpperInvariant(),
+                Status = InstallQueueStatus.Pending,
+                StatusText = "Waiting...",
+                Progress = 0,
+                IsActive = false
+            });
+        }
+
+        IsQueueVisible = _installQueue.Count > 0;
+    }
+
+    private void ResetAppCancellationState()
+    {
+        foreach (var app in _apps)
+        {
+            app.IsCancellable = false;
+            app.CancelCommand = null;
+        }
+    }
+
+    private void CancelSingleInstall(AppItem app)
+    {
+        if (app is null)
+        {
+            return;
+        }
+
+        app.IsCancellable = false;
+        app.CancelCommand = null;
+        InstallStatusText = $"Cancelling {app.Name}...";
+        _installerService.CancelApp(app.Id);
+    }
+
+    private void HandleInstallQueueProgress(InstallQueueProgress progress)
+    {
+        Dispatcher.UIThread.Post(() =>
+        {
+            var queueItem = _installQueue.FirstOrDefault(item =>
+                item.AppId.Equals(progress.AppId, StringComparison.OrdinalIgnoreCase));
+            if (queueItem is null)
+            {
+                return;
+            }
+
+            var isActiveStatus = progress.Status == InstallQueueStatus.Downloading || progress.Status == InstallQueueStatus.Installing;
+            if (isActiveStatus)
+            {
+                foreach (var item in _installQueue)
+                {
+                    item.IsActive = false;
+                }
+            }
+
+            queueItem.Status = progress.Status;
+            queueItem.StatusText = progress.StatusText;
+            queueItem.Progress = Math.Clamp(progress.Progress, 0, 1);
+            queueItem.IsActive = isActiveStatus;
+            OnPropertyChanged(nameof(InstallQueueHeaderText));
+        });
+    }
+
+    private void ApplyInstallResultToQueue(InstallResult result)
+    {
+        var queueItem = _installQueue.FirstOrDefault(item =>
+            item.AppId.Equals(result.AppId, StringComparison.OrdinalIgnoreCase));
+        if (queueItem is null)
+        {
+            return;
+        }
+
+        queueItem.Status = result switch
+        {
+            { Cancelled: true } => InstallQueueStatus.Cancelled,
+            { Skipped: true } => InstallQueueStatus.Skipped,
+            { Success: true } => InstallQueueStatus.Done,
+            _ => InstallQueueStatus.Failed
+        };
+        queueItem.StatusText = queueItem.Status switch
+        {
+            InstallQueueStatus.Done => "Done ✓",
+            InstallQueueStatus.Cancelled => "Cancelled",
+            InstallQueueStatus.Skipped => "Skipped",
+            _ => "Failed"
+        };
+        queueItem.Progress = 1.0;
+        queueItem.IsActive = false;
+        OnPropertyChanged(nameof(InstallQueueHeaderText));
+    }
+
+    private void MarkPendingQueueItemsCancelled()
+    {
+        foreach (var item in _installQueue.Where(item =>
+                     item.Status == InstallQueueStatus.Pending ||
+                     item.Status == InstallQueueStatus.Downloading ||
+                     item.Status == InstallQueueStatus.Installing))
+        {
+            item.Status = InstallQueueStatus.Cancelled;
+            item.StatusText = "Cancelled";
+            item.Progress = 1.0;
+            item.IsActive = false;
+        }
+
+        OnPropertyChanged(nameof(InstallQueueHeaderText));
+    }
+
+    private void ClearQueue()
+    {
+        if (IsInstalling)
+        {
+            return;
+        }
+
+        _installQueue.Clear();
+        IsQueueVisible = false;
+        _loggingService.LogInfo("Install queue cleared.");
+    }
+
+    private async Task ShowDependencyInstallInfoAsync(IReadOnlyCollection<AppItem> selectedApps)
     {
         var selectedIds = selectedApps
             .Where(app => !string.IsNullOrWhiteSpace(app.Id))
@@ -3038,7 +3803,8 @@ public sealed class MainWindowViewModel : ObservableObject
             .Where(app => !string.IsNullOrWhiteSpace(app.Id))
             .GroupBy(app => app.Id, StringComparer.OrdinalIgnoreCase)
             .ToDictionary(group => group.Key, group => group.First(), StringComparer.OrdinalIgnoreCase);
-        var missingDependencies = _dependencyResolverService.GetMissingDependencies(selectedIds, allAppsById, _detectionService);
+        var missingDependencies = await Task.Run(
+            () => _dependencyResolverService.GetMissingDependencies(selectedIds, allAppsById, _detectionService));
 
         if (missingDependencies.Count == 0)
         {
@@ -3050,11 +3816,13 @@ public sealed class MainWindowViewModel : ObservableObject
                              string.Join(", ", missingDependencies.Select(app => app.Name));
         IsDependencyInfoVisible = true;
         _loggingService.LogInfo(DependencyInfoText);
+        _ = AutoDismissDependencyInfoAsync();
     }
 
     private async Task AutoDismissDependencyInfoAsync()
     {
         _dependencyInfoDismissCts?.Cancel();
+        _dependencyInfoDismissCts?.Dispose();
 
         if (!IsDependencyInfoVisible)
         {
@@ -3103,6 +3871,10 @@ public sealed class MainWindowViewModel : ObservableObject
         {
             _installedResults.Add(result);
         }
+        else if (result.Cancelled)
+        {
+            _cancelledResults.Add(result);
+        }
         else if (result.Skipped)
         {
             _skippedResults.Add(result);
@@ -3127,12 +3899,13 @@ public sealed class MainWindowViewModel : ObservableObject
         var successCount = _installedResults.Count;
         var skippedCount = _skippedResults.Count;
         var failedCount = _failedResults.Count;
+        var cancelledCount = _cancelledResults.Count;
         var restartCount = _restartRequiredResults.Count;
 
         RestartRequired = restartCount > 0;
         ProgressValue = 100;
         InstallStatusText = "Installation finished.";
-        InstallSummaryText = $"Installed: {successCount} | Failed: {failedCount} | Skipped: {skippedCount} | Restart: {restartCount}";
+        InstallSummaryText = $"Installed: {successCount} | Failed: {failedCount} | Cancelled: {cancelledCount} | Skipped: {skippedCount} | Restart: {restartCount}";
         StatusText = InstallSummaryText;
 
         if (Settings.SelfDeleteAfterInstall)
@@ -3151,7 +3924,7 @@ public sealed class MainWindowViewModel : ObservableObject
         {
             RestartStatusText = "Restart recommended: some apps or drivers may not work correctly until the PC is restarted.";
             _loggingService.LogWarning(
-                $"Restart recommended after install. RestartItems={restartCount}, Installed={successCount}, Failed={failedCount}, Skipped={skippedCount}");
+                $"Restart recommended after install. RestartItems={restartCount}, Installed={successCount}, Failed={failedCount}, Cancelled={cancelledCount}, Skipped={skippedCount}");
         }
         else
         {
@@ -3160,7 +3933,6 @@ public sealed class MainWindowViewModel : ObservableObject
             _loggingService.LogInfo("Installation finished with no restart required.");
         }
 
-        NavigateTo(SectionHistory);
     }
 
     private async Task ApplyPostInstallRestartBehaviorAsync()
@@ -3217,7 +3989,14 @@ public sealed class MainWindowViewModel : ObservableObject
             app.IsInstalled = true;
             app.InstalledVersion = string.IsNullOrWhiteSpace(app.Version) ? app.InstalledVersion : app.Version;
             app.HasInstallFailed = false;
-            app.StatusBadge = app.HasUpdateAvailable ? "Update Available" : "Installed";
+            app.StatusBadge = app.HasUpdateAvailable && !app.UserDisabledScanning
+                ? AppItem.StatusUpdateAvailable
+                : AppItem.StatusInstalled;
+        }
+        else if (result.Cancelled)
+        {
+            app.HasInstallFailed = false;
+            app.StatusBadge = AppItem.StatusCancelled;
         }
         else if (result.Skipped)
         {
@@ -3225,23 +4004,25 @@ public sealed class MainWindowViewModel : ObservableObject
             {
                 app.IsInstalled = true;
                 app.HasInstallFailed = false;
-                app.StatusBadge = app.HasUpdateAvailable ? "Update Available" : "Installed";
+                app.StatusBadge = app.HasUpdateAvailable && !app.UserDisabledScanning
+                    ? AppItem.StatusUpdateAvailable
+                    : AppItem.StatusInstalled;
             }
             else if (result.Message.Contains("requires manual installer interaction", StringComparison.OrdinalIgnoreCase) ||
                      result.Message.Contains("requires manual install", StringComparison.OrdinalIgnoreCase))
             {
                 app.HasInstallFailed = false;
-                app.StatusBadge = "Needs Manual Install";
+                app.StatusBadge = AppItem.StatusNeedsManualInstall;
             }
             else
             {
-                app.StatusBadge = app.WillBeSkipped ? "Will Be Skipped" : "Skipped";
+                app.StatusBadge = app.WillBeSkipped ? AppItem.StatusWillBeSkipped : AppItem.StatusSkipped;
             }
         }
         else
         {
             app.HasInstallFailed = true;
-            app.StatusBadge = "Failed";
+            app.StatusBadge = AppItem.StatusFailed;
         }
 
         if (result.RequiresRestart)
@@ -3319,7 +4100,7 @@ public sealed class MainWindowViewModel : ObservableObject
 
         if (app.WillBeSkipped)
         {
-            app.StatusBadge = "Will Be Skipped";
+            app.StatusBadge = AppItem.StatusWillBeSkipped;
             if (app.IsRecommended)
             {
                 var unsupportedMessage = $"Unsupported on {CurrentPlatform}; it will be skipped.";
@@ -3342,7 +4123,7 @@ public sealed class MainWindowViewModel : ObservableObject
 
         if (!app.IsSupportedOnCurrentPlatform)
         {
-            app.StatusBadge = "Unsupported on this OS";
+            app.StatusBadge = AppItem.StatusUnsupportedOnCurrentOs;
             if (app.IsRecommended)
             {
                 if (string.IsNullOrWhiteSpace(app.RecommendationReason))
@@ -3360,15 +4141,21 @@ public sealed class MainWindowViewModel : ObservableObject
 
         if (app.IsInstalled && !app.HasInstallFailed)
         {
-            app.StatusBadge = app.HasUpdateAvailable ? "Update Available" : "Installed";
+            app.StatusBadge = app.HasUpdateAvailable && !app.UserDisabledScanning
+                ? AppItem.StatusUpdateAvailable
+                : AppItem.StatusInstalled;
         }
-        else if (app.IsSelected && Settings.SilentInstall && !app.SupportsSilentInstall && !app.HasInstallFailed)
+        else if (app.IsSelected &&
+                 Settings.SilentInstall &&
+                 !app.UserDisabledSilentInstall &&
+                 !app.SupportsSilentInstall &&
+                 !app.HasInstallFailed)
         {
-            app.StatusBadge = "Needs Manual Install";
+            app.StatusBadge = AppItem.StatusNeedsManualInstall;
         }
         else if (!app.HasInstallFailed)
         {
-            app.StatusBadge = app.IsSelected ? "Selected" : "Available";
+            app.StatusBadge = app.IsSelected ? AppItem.StatusSelected : AppItem.StatusAvailable;
         }
 
         if (app.RecommendationReason == UnsupportedSelectionNote)
@@ -3537,6 +4324,12 @@ public sealed class MainWindowViewModel : ObservableObject
             ReleaseNotesUrl = source.ReleaseNotesUrl,
             Tags = source.Tags.ToList(),
             Dependencies = source.Dependencies.ToList(),
+            IsPortable = source.IsPortable,
+            PortableInstallPath = source.PortableInstallPath,
+            UserDisabledSilentInstall = source.UserDisabledSilentInstall,
+            UserDisabledScanning = source.UserDisabledScanning,
+            UserDisabledAutoUpdate = source.UserDisabledAutoUpdate,
+            UserTrustedInstallScripts = source.UserTrustedInstallScripts,
             SupportedPlatforms = new PlatformSupport
             {
                 Windows = source.SupportedPlatforms.Windows,
@@ -3563,6 +4356,7 @@ public sealed class MainWindowViewModel : ObservableObject
             InstallerUrl = source.InstallerUrl,
             InstallerUrl32 = source.InstallerUrl32,
             InstallerUrl64 = source.InstallerUrl64,
+            InstallerUrlArm64 = source.InstallerUrlArm64,
             InstallerFileName = source.InstallerFileName,
             Sha256 = source.Sha256,
             Sha25632 = source.Sha25632,
@@ -3571,7 +4365,18 @@ public sealed class MainWindowViewModel : ObservableObject
             SilentCommand = source.SilentCommand,
             Arguments = source.Arguments,
             SilentArguments = source.SilentArguments,
+            SilentArgumentsArm64 = source.SilentArgumentsArm64,
             Architecture = source.Architecture,
+            HasArm64Support = source.HasArm64Support,
+            PortableArchiveUrl = source.PortableArchiveUrl,
+            PortableExecutable = source.PortableExecutable,
+            PortableArchiveType = source.PortableArchiveType,
+            PortableSubfolder = source.PortableSubfolder,
+            VirusTotalUrl = source.VirusTotalUrl,
+            VirusTotalRatio = source.VirusTotalRatio,
+            VirusTotalScanDate = source.VirusTotalScanDate,
+            PreInstallScript = source.PreInstallScript,
+            PostInstallScript = source.PostInstallScript,
             RequiresRestart = source.RequiresRestart,
             RequiresElevation = source.RequiresElevation,
             NeedsManualInstall = source.NeedsManualInstall,
@@ -3579,6 +4384,22 @@ public sealed class MainWindowViewModel : ObservableObject
             DetectDisplayNameContains = source.DetectDisplayNameContains,
             DetectExecutable = source.DetectExecutable
         };
+    }
+
+    private static string QuoteArgument(string value)
+    {
+        return $"\"{value.Replace("\"", "\\\"", StringComparison.Ordinal)}\"";
+    }
+
+    private static string ResolveWingetExecutablePathForCommands()
+    {
+        var localAlias = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            "Microsoft",
+            "WindowsApps",
+            "winget.exe");
+
+        return string.IsNullOrWhiteSpace(localAlias) ? "winget.exe" : localAlias;
     }
 
     private void UpdateCommandStates()
@@ -3602,7 +4423,16 @@ public sealed class MainWindowViewModel : ObservableObject
         _copyLogsCommand.RaiseCanExecuteChanged();
         _copySelectedLogCommand.RaiseCanExecuteChanged();
         _exportLogsCommand.RaiseCanExecuteChanged();
+        _browsePortableFolderCommand.RaiseCanExecuteChanged();
+        _installAppCommand.RaiseCanExecuteChanged();
+        _updateAppCommand.RaiseCanExecuteChanged();
+        _uninstallCommand.RaiseCanExecuteChanged();
+        _openInstallLocationCommand.RaiseCanExecuteChanged();
+        _copyToClipboardCommand.RaiseCanExecuteChanged();
+        _toggleSilentInstallPreferenceCommand.RaiseCanExecuteChanged();
+        _toggleScanningPreferenceCommand.RaiseCanExecuteChanged();
         _pauseInstallCommand.RaiseCanExecuteChanged();
+        _clearQueueCommand.RaiseCanExecuteChanged();
         _navigateDashboardCommand.RaiseCanExecuteChanged();
         _navigateAppsCommand.RaiseCanExecuteChanged();
         _navigateDriversCommand.RaiseCanExecuteChanged();

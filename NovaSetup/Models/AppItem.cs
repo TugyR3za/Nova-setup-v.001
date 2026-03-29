@@ -1,10 +1,26 @@
+using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
+using System.Windows.Input;
+using NovaSetup.Services;
 
 namespace NovaSetup.Models;
 
 public class AppItem : ObservableObject
 {
+    public const string StatusNotInstalled = "Not Installed";
+    public const string StatusAvailable = "Available";
+    public const string StatusSelected = "Selected";
+    public const string StatusInstalled = "Installed";
+    public const string StatusInstalling = "Installing";
+    public const string StatusUpdateAvailable = "Update Available";
+    public const string StatusWillBeSkipped = "Will Be Skipped";
+    public const string StatusUnsupportedOnCurrentOs = "Unsupported on this OS";
+    public const string StatusNeedsManualInstall = "Needs Manual Install";
+    public const string StatusSkipped = "Skipped";
+    public const string StatusFailed = "Failed";
+    public const string StatusCancelled = "Cancelled";
+
     private string _id = string.Empty;
     private string _name = string.Empty;
     private string _category = string.Empty;
@@ -18,6 +34,7 @@ public class AppItem : ObservableObject
     private string _license = string.Empty;
     private string _releaseNotesUrl = string.Empty;
     private List<string> _dependencies = new();
+    private bool _isPortable;
     private PlatformSupport _supportedPlatforms = new();
     private InstallDefinition? _windowsInstall;
     private InstallDefinition? _linuxInstall;
@@ -36,8 +53,19 @@ public class AppItem : ObservableObject
     // Runtime/UI state (not part of apps.json schema).
     private bool _supportsCustomPath;
     private bool _hasInstallFailed;
-    private string _statusBadge = "Not Installed";
+    private string _statusBadge = StatusNotInstalled;
     private double _rowOpacity = 1.0;
+    private bool _isCancellable;
+    private ICommand? _cancelCommand;
+    private string _portableInstallPath = string.Empty;
+    private long _downloadedBytes;
+    private long _totalBytes;
+    private string _downloadProgressText = string.Empty;
+    private double _downloadProgressPercent;
+    private bool _userDisabledSilentInstall;
+    private bool _userDisabledScanning;
+    private bool _userDisabledAutoUpdate;
+    private bool _userTrustedInstallScripts;
 
     public string Id
     {
@@ -72,7 +100,13 @@ public class AppItem : ObservableObject
     public string HomepageUrl
     {
         get => _homepageUrl;
-        set => SetProperty(ref _homepageUrl, value);
+        set
+        {
+            if (SetProperty(ref _homepageUrl, value))
+            {
+                OnPropertyChanged(nameof(HasHomepageLink));
+            }
+        }
     }
 
     public string Description
@@ -142,6 +176,12 @@ public class AppItem : ObservableObject
         set => SetProperty(ref _dependencies, value ?? new List<string>());
     }
 
+    public bool IsPortable
+    {
+        get => _isPortable;
+        set => SetProperty(ref _isPortable, value);
+    }
+
     public PlatformSupport SupportedPlatforms
     {
         get => _supportedPlatforms;
@@ -151,13 +191,35 @@ public class AppItem : ObservableObject
     public InstallDefinition? WindowsInstall
     {
         get => _windowsInstall;
-        set => SetProperty(ref _windowsInstall, value);
+        set
+        {
+            if (SetProperty(ref _windowsInstall, value))
+            {
+                OnPropertyChanged(nameof(ShowArmIndicator));
+                OnPropertyChanged(nameof(ArmIndicatorText));
+                OnPropertyChanged(nameof(CurrentVirusTotalUrl));
+                OnPropertyChanged(nameof(CurrentVirusTotalRatio));
+                OnPropertyChanged(nameof(HasVirusTotalData));
+                OnPropertyChanged(nameof(VirusTotalDisplayText));
+                OnPropertyChanged(nameof(HasInstallScripts));
+                OnPropertyChanged(nameof(CanShowPreferencesButton));
+                OnPropertyChanged(nameof(InstallScriptsPreferenceMenuText));
+            }
+        }
     }
 
     public InstallDefinition? LinuxInstall
     {
         get => _linuxInstall;
-        set => SetProperty(ref _linuxInstall, value);
+        set
+        {
+            if (SetProperty(ref _linuxInstall, value))
+            {
+                OnPropertyChanged(nameof(HasInstallScripts));
+                OnPropertyChanged(nameof(CanShowPreferencesButton));
+                OnPropertyChanged(nameof(InstallScriptsPreferenceMenuText));
+            }
+        }
     }
 
     public bool IsSelected
@@ -174,6 +236,8 @@ public class AppItem : ObservableObject
             if (SetProperty(ref _isInstalled, value))
             {
                 OnPropertyChanged(nameof(HasUpdateAvailable));
+                OnPropertyChanged(nameof(CanInstallFromContextMenu));
+                OnPropertyChanged(nameof(CanShowPreferencesButton));
             }
         }
     }
@@ -255,7 +319,194 @@ public class AppItem : ObservableObject
     }
 
     [JsonIgnore]
+    public bool IsCancellable
+    {
+        get => _isCancellable;
+        set => SetProperty(ref _isCancellable, value);
+    }
+
+    [JsonIgnore]
+    public ICommand? CancelCommand
+    {
+        get => _cancelCommand;
+        set => SetProperty(ref _cancelCommand, value);
+    }
+
+    [JsonIgnore]
+    public string PortableInstallPath
+    {
+        get => _portableInstallPath;
+        set => SetProperty(ref _portableInstallPath, value ?? string.Empty);
+    }
+
+    [JsonIgnore]
+    public long DownloadedBytes
+    {
+        get => _downloadedBytes;
+        set => SetProperty(ref _downloadedBytes, value);
+    }
+
+    [JsonIgnore]
+    public long TotalBytes
+    {
+        get => _totalBytes;
+        set => SetProperty(ref _totalBytes, value);
+    }
+
+    [JsonIgnore]
+    public string DownloadProgressText
+    {
+        get => _downloadProgressText;
+        set => SetProperty(ref _downloadProgressText, value ?? string.Empty);
+    }
+
+    [JsonIgnore]
+    public double DownloadProgressPercent
+    {
+        get => _downloadProgressPercent;
+        set => SetProperty(ref _downloadProgressPercent, value);
+    }
+
+    [JsonIgnore]
+    public bool UserDisabledSilentInstall
+    {
+        get => _userDisabledSilentInstall;
+        set
+        {
+            if (SetProperty(ref _userDisabledSilentInstall, value))
+            {
+                OnPropertyChanged(nameof(SilentInstallEnabled));
+                OnPropertyChanged(nameof(SilentInstallPreferenceMenuText));
+            }
+        }
+    }
+
+    [JsonIgnore]
+    public bool UserDisabledScanning
+    {
+        get => _userDisabledScanning;
+        set
+        {
+            if (SetProperty(ref _userDisabledScanning, value))
+            {
+                OnPropertyChanged(nameof(ScanningEnabled));
+                OnPropertyChanged(nameof(UpdateScanningPreferenceMenuText));
+            }
+        }
+    }
+
+    [JsonIgnore]
+    public bool UserDisabledAutoUpdate
+    {
+        get => _userDisabledAutoUpdate;
+        set
+        {
+            if (SetProperty(ref _userDisabledAutoUpdate, value))
+            {
+                OnPropertyChanged(nameof(AutoUpdateEnabled));
+            }
+        }
+    }
+
+    [JsonIgnore]
+    public bool UserTrustedInstallScripts
+    {
+        get => _userTrustedInstallScripts;
+        set
+        {
+            if (SetProperty(ref _userTrustedInstallScripts, value))
+            {
+                OnPropertyChanged(nameof(InstallScriptsEnabled));
+                OnPropertyChanged(nameof(InstallScriptsPreferenceMenuText));
+            }
+        }
+    }
+
+    [JsonIgnore]
+    public bool SilentInstallEnabled
+    {
+        get => !UserDisabledSilentInstall;
+        set => UserDisabledSilentInstall = !value;
+    }
+
+    [JsonIgnore]
+    public bool ScanningEnabled
+    {
+        get => !UserDisabledScanning;
+        set => UserDisabledScanning = !value;
+    }
+
+    [JsonIgnore]
+    public bool AutoUpdateEnabled
+    {
+        get => !UserDisabledAutoUpdate;
+        set => UserDisabledAutoUpdate = !value;
+    }
+
+    [JsonIgnore]
+    public bool InstallScriptsEnabled
+    {
+        get => UserTrustedInstallScripts;
+        set => UserTrustedInstallScripts = value;
+    }
+
+    [JsonIgnore]
+    public bool HasHomepageLink => !string.IsNullOrWhiteSpace(HomepageUrl);
+
+    [JsonIgnore]
+    public bool CanInstallFromContextMenu => !IsInstalled;
+
+    [JsonIgnore]
+    public string SilentInstallPreferenceMenuText =>
+        UserDisabledSilentInstall
+            ? "Enable silent install"
+            : "Disable silent install";
+
+    [JsonIgnore]
+    public string UpdateScanningPreferenceMenuText =>
+        UserDisabledScanning
+            ? "Enable update scanning"
+            : "Skip update scanning";
+
+    [JsonIgnore]
+    public bool HasInstallScripts =>
+        !string.IsNullOrWhiteSpace(WindowsInstall?.PreInstallScript) ||
+        !string.IsNullOrWhiteSpace(WindowsInstall?.PostInstallScript) ||
+        !string.IsNullOrWhiteSpace(LinuxInstall?.PreInstallScript) ||
+        !string.IsNullOrWhiteSpace(LinuxInstall?.PostInstallScript);
+
+    [JsonIgnore]
+    public bool CanShowPreferencesButton => IsInstalled || HasInstallScripts;
+
+    [JsonIgnore]
+    public string InstallScriptsPreferenceMenuText =>
+        UserTrustedInstallScripts
+            ? "Disallow install scripts"
+            : "Allow install scripts";
+
+    [JsonIgnore]
+    public bool IsArm64Machine => PlatformService.IsArm64();
+
+    [JsonIgnore]
+    public bool ShowArmIndicator => IsArm64Machine && (WindowsInstall?.HasArm64Support ?? false);
+
+    [JsonIgnore]
+    public string ArmIndicatorText => ShowArmIndicator ? "ARM64" : string.Empty;
+
+    [JsonIgnore]
     public string IconGlyph => string.IsNullOrWhiteSpace(Name) ? "?" : Name[0].ToString().ToUpperInvariant();
+
+    [JsonIgnore]
+    public string CurrentVirusTotalUrl => WindowsInstall?.VirusTotalUrl ?? string.Empty;
+
+    [JsonIgnore]
+    public string CurrentVirusTotalRatio => WindowsInstall?.VirusTotalRatio ?? string.Empty;
+
+    [JsonIgnore]
+    public bool HasVirusTotalData => !string.IsNullOrWhiteSpace(CurrentVirusTotalRatio);
+
+    [JsonIgnore]
+    public string VirusTotalDisplayText => HasVirusTotalData ? $"VT: {CurrentVirusTotalRatio}" : string.Empty;
 
     [JsonIgnore]
     public bool HasUpdateAvailable =>
@@ -303,6 +554,8 @@ public class InstallDefinition
 
     public string InstallerUrl64 { get; set; } = string.Empty;
 
+    public string InstallerUrlArm64 { get; set; } = string.Empty;
+
     // Optional explicit output file name for downloaded installers.
     public string InstallerFileName { get; set; } = string.Empty;
 
@@ -321,7 +574,31 @@ public class InstallDefinition
 
     public string SilentArguments { get; set; } = string.Empty;
 
+    public string SilentArgumentsArm64 { get; set; } = string.Empty;
+
     public string Architecture { get; set; } = string.Empty;
+
+    public bool HasArm64Support { get; set; }
+
+    public string PortableArchiveUrl { get; set; } = string.Empty;
+
+    public string PortableExecutable { get; set; } = string.Empty;
+
+    public string PortableArchiveType { get; set; } = "zip";
+
+    public string PortableSubfolder { get; set; } = string.Empty;
+
+    public string VirusTotalUrl { get; set; } = string.Empty;
+
+    public string VirusTotalRatio { get; set; } = string.Empty;
+
+    public DateTime VirusTotalScanDate { get; set; } = DateTime.MinValue;
+
+    /// <summary>Optional PowerShell script or .ps1 path to run before installation begins.</summary>
+    public string PreInstallScript { get; set; } = string.Empty;
+
+    /// <summary>Optional PowerShell script or .ps1 path to run after installation completes.</summary>
+    public string PostInstallScript { get; set; } = string.Empty;
 
     public bool RequiresRestart { get; set; }
 

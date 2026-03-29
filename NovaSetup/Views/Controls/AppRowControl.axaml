@@ -7,16 +7,58 @@
              x:Name="Root">
   <UserControl.Resources>
     <converters:StatusTextToToneConverter x:Key="StatusTextToToneConverter" />
+    <converters:StringHasValueConverter x:Key="StringHasValueConverter" />
+    <converters:VirusTotalRatioToBrushConverter x:Key="VirusTotalRatioToBrushConverter" />
   </UserControl.Resources>
 
   <Border Classes="rowCard"
           Classes.selected="{Binding #Root.Item.IsSelected}"
           Opacity="{Binding #Root.Item.RowOpacity}">
-    <Grid ColumnDefinitions="36,*,84,140,52"
+    <Border.ContextMenu>
+      <ContextMenu DataContext="{Binding #Root}">
+        <MenuItem Header="Install"
+                  IsVisible="{Binding Item.CanInstallFromContextMenu}"
+                  Command="{Binding InstallAppCommand}"
+                  CommandParameter="{Binding Item}" />
+        <MenuItem Header="Update"
+                  IsVisible="{Binding Item.HasUpdateAvailable}"
+                  Command="{Binding UpdateAppCommand}"
+                  CommandParameter="{Binding Item}" />
+        <MenuItem Header="Uninstall"
+                  IsVisible="{Binding Item.IsInstalled}"
+                  Command="{Binding UninstallCommand}"
+                  CommandParameter="{Binding Item}" />
+        <Separator />
+        <MenuItem Header="Open install location"
+                  IsVisible="{Binding Item.IsInstalled}"
+                  Command="{Binding OpenInstallLocationCommand}"
+                  CommandParameter="{Binding Item}" />
+        <MenuItem Header="Open homepage"
+                  IsVisible="{Binding Item.HasHomepageLink}"
+                  Command="{Binding OpenPublisherCommand}"
+                  CommandParameter="{Binding Item}" />
+        <MenuItem Header="Copy app name"
+                  Command="{Binding CopyToClipboardCommand}"
+                  CommandParameter="{Binding Item.Name}" />
+        <Separator />
+        <MenuItem Header="{Binding Item.SilentInstallPreferenceMenuText}"
+                  Command="{Binding ToggleSilentInstallPreferenceCommand}"
+                  CommandParameter="{Binding Item}" />
+        <MenuItem Header="{Binding Item.UpdateScanningPreferenceMenuText}"
+                  Command="{Binding ToggleScanningPreferenceCommand}"
+                  CommandParameter="{Binding Item}" />
+        <MenuItem Header="{Binding Item.InstallScriptsPreferenceMenuText}"
+                  IsVisible="{Binding Item.HasInstallScripts}"
+                  Command="{Binding ToggleInstallScriptsPreferenceCommand}"
+                  CommandParameter="{Binding Item}" />
+      </ContextMenu>
+    </Border.ContextMenu>
+    <Grid ColumnDefinitions="36,*,84,170,72,122"
           ColumnSpacing="8">
       <CheckBox Classes="appCheck"
                 IsChecked="{Binding #Root.Item.IsSelected}"
                 IsEnabled="{Binding #Root.Item.IsSupportedOnCurrentPlatform}"
+                IsVisible="{Binding #Root.SelectionEnabled}"
                 VerticalAlignment="Center"
                 HorizontalAlignment="Center" />
 
@@ -49,6 +91,16 @@
               <TextBlock Text="Recommended"
                          FontSize="10" />
             </Border>
+            <Border IsVisible="{Binding #Root.Item.ShowArmIndicator}"
+                    Background="{DynamicResource AccentSoftBrush}"
+                    BorderBrush="{DynamicResource AccentBrush}"
+                    BorderThickness="1"
+                    CornerRadius="7"
+                    Padding="6,2">
+              <TextBlock Text="{Binding #Root.Item.ArmIndicatorText}"
+                         Foreground="{DynamicResource AccentBrush}"
+                         FontSize="10" />
+            </Border>
           </StackPanel>
 
           <StackPanel Orientation="Horizontal"
@@ -72,21 +124,94 @@
                  Foreground="{DynamicResource TextMutedBrush}"
                  Opacity="0.5" />
 
-      <controls:StatusPillControl Grid.Column="3"
-                                  Text="{Binding #Root.Item.StatusBadge}"
-                                  Tone="{Binding #Root.Item.StatusBadge, Converter={StaticResource StatusTextToToneConverter}}" />
+      <StackPanel Grid.Column="3"
+                  Spacing="4"
+                  VerticalAlignment="Center">
+        <controls:StatusPillControl Text="{Binding #Root.Item.StatusBadge}"
+                                    Tone="{Binding #Root.Item.StatusBadge, Converter={StaticResource StatusTextToToneConverter}}" />
+        <Button Classes="link compact"
+                Command="{Binding #Root.OpenPublisherCommand}"
+                CommandParameter="{Binding #Root.Item.CurrentVirusTotalUrl}"
+                HorizontalAlignment="Left"
+                Padding="0"
+                IsVisible="{Binding #Root.Item.VirusTotalDisplayText, Converter={StaticResource StringHasValueConverter}}">
+          <TextBlock Text="{Binding #Root.Item.VirusTotalDisplayText}"
+                     FontSize="11"
+                     Foreground="{Binding #Root.Item.CurrentVirusTotalRatio, Converter={StaticResource VirusTotalRatioToBrushConverter}}"
+                     TextWrapping="NoWrap"
+                     TextTrimming="CharacterEllipsis" />
+        </Button>
+        <ProgressBar Minimum="0"
+                     Maximum="100"
+                     Height="4"
+                     Value="{Binding #Root.Item.DownloadProgressPercent}"
+                     Background="{DynamicResource InputBrush}"
+                     Foreground="{DynamicResource AccentBrush}"
+                     IsVisible="{Binding #Root.Item.DownloadProgressText, Converter={StaticResource StringHasValueConverter}}" />
+        <TextBlock Text="{Binding #Root.Item.DownloadProgressText}"
+                   FontSize="11"
+                   Foreground="{DynamicResource TextMutedBrush}"
+                   TextWrapping="NoWrap"
+                   TextTrimming="CharacterEllipsis"
+                   IsVisible="{Binding #Root.Item.DownloadProgressText, Converter={StaticResource StringHasValueConverter}}" />
+      </StackPanel>
 
       <Button Grid.Column="4"
-              Classes="ghost compact detailsBtn"
-              Width="46"
+              Classes="ghost compact"
+              IsVisible="{Binding #Root.Item.IsCancellable}"
+              Content="Cancel"
+              Command="{Binding #Root.Item.CancelCommand}"
               HorizontalAlignment="Left"
-              Command="{Binding #Root.ShowAppDetailsCommand}"
-              CommandParameter="{Binding #Root.Item}">
-        <Viewbox Width="16" Height="16">
-          <Path Data="{DynamicResource IconOverflowGeometry}"
-                Fill="{DynamicResource TextSecondaryBrush}" />
-        </Viewbox>
-      </Button>
+              MinWidth="64" />
+
+      <Grid Grid.Column="5">
+        <StackPanel Orientation="Horizontal"
+                    Spacing="6">
+          <Button x:Name="PreferencesButton"
+                  Classes="ghost compact detailsBtn"
+                  IsVisible="{Binding #Root.Item.CanShowPreferencesButton}"
+                  Content="Prefs"
+                  HorizontalAlignment="Left"
+                  MinWidth="56"
+                  Click="PreferencesButton_OnClick" />
+
+          <Button Classes="ghost compact detailsBtn"
+                  Width="46"
+                  HorizontalAlignment="Left"
+                  Command="{Binding #Root.ShowAppDetailsCommand}"
+                  CommandParameter="{Binding #Root.Item}">
+            <Viewbox Width="16" Height="16">
+              <Path Data="{DynamicResource IconOverflowGeometry}"
+                    Fill="{DynamicResource TextSecondaryBrush}" />
+            </Viewbox>
+          </Button>
+        </StackPanel>
+
+        <Popup IsOpen="{Binding #Root.IsPreferencesMenuOpen, Mode=TwoWay}"
+               PlacementTarget="{Binding #PreferencesButton}"
+               Placement="Bottom"
+               HorizontalOffset="-4"
+               VerticalOffset="8"
+               IsLightDismissEnabled="True"
+               Closed="PreferencesPopup_OnClosed">
+          <Border Classes="accountMenuPopup"
+                  MinWidth="190">
+            <StackPanel Spacing="8">
+              <TextBlock Text="App preferences"
+                         FontWeight="SemiBold" />
+              <CheckBox IsChecked="{Binding #Root.Item.SilentInstallEnabled}"
+                        Content="Silent install" />
+              <CheckBox IsChecked="{Binding #Root.Item.ScanningEnabled}"
+                        Content="Scan for updates" />
+              <CheckBox IsChecked="{Binding #Root.Item.AutoUpdateEnabled}"
+                        Content="Auto-update" />
+              <CheckBox IsChecked="{Binding #Root.Item.InstallScriptsEnabled}"
+                        IsVisible="{Binding #Root.Item.HasInstallScripts}"
+                        Content="Allow install scripts" />
+            </StackPanel>
+          </Border>
+        </Popup>
+      </Grid>
     </Grid>
   </Border>
 </UserControl>

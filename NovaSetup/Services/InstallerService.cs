@@ -2,7 +2,7 @@ using System.Diagnostics;
 using System.ComponentModel;
 using System.Net.Http;
 using System.Security.Principal;
-using System.Runtime.InteropServices;
+using Avalonia.Threading;
 using NovaSetup.Models;
 
 namespace NovaSetup.Services;
@@ -16,17 +16,88 @@ public sealed class InstallerService
     private readonly HistoryService? _historyService;
     private readonly DependencyResolverService _dependencyResolverService;
     private readonly HashVerificationService _hashVerificationService;
+    private readonly PortableAppService _portableAppService;
+    private readonly ScriptRunnerService? _scriptRunnerService;
+    private readonly AppSettings? _settings;
+    private readonly Dictionary<string, CancellationTokenSource> _appCancellationTokens = new(StringComparer.OrdinalIgnoreCase);
+    private readonly Dictionary<string, Process> _activeInstallProcesses = new(StringComparer.OrdinalIgnoreCase);
+    private readonly Dictionary<string, string> _activeInstallNames = new(StringComparer.OrdinalIgnoreCase);
+    private readonly object _activeInstallLock = new();
+
+    public event Action<AppItem>? AppInstallStarted;
+    public event Action<AppItem>? AppInstallCompleted;
+
+    public Func<AppSettings?>? SettingsAccessor { get; set; }
 
     public InstallerService(
         LoggingService? loggingService = null,
         DetectionService? detectionService = null,
-        HistoryService? historyService = null)
+        HistoryService? historyService = null,
+        ScriptRunnerService? scriptRunnerService = null)
     {
         _loggingService = loggingService;
         _detectionService = detectionService;
         _historyService = historyService;
         _dependencyResolverService = new DependencyResolverService(loggingService);
         _hashVerificationService = new HashVerificationService(loggingService);
+        _portableAppService = new PortableAppService(loggingService);
+        _scriptRunnerService = scriptRunnerService ?? new ScriptRunnerService(loggingService);
+        _scriptRunnerService.SettingsAccessor ??= () => _settings ?? SettingsAccessor?.Invoke() ?? AppSettings.CreateDefault();
+    }
+
+    public InstallerService(
+        AppSettings? settings,
+        LoggingService? loggingService = null,
+        ScriptRunnerService? scriptRunnerService = null)
+        : this(loggingService, null, null, scriptRunnerService)
+    {
+        _settings = settings;
+    }
+
+    public void CancelApp(string appId)
+    {
+        if (string.IsNullOrWhiteSpace(appId))
+        {
+            return;
+        }
+
+        CancellationTokenSource? cancellationSource;
+        string appName;
+
+        lock (_activeInstallLock)
+        {
+            _appCancellationTokens.TryGetValue(appId, out cancellationSource);
+            appName = _activeInstallNames.TryGetValue(appId, out var activeName)
+                ? activeName
+                : appId;
+        }
+
+        if (cancellationSource is null)
+        {
+            _loggingService?.LogWarning($"[Installer] No active install found for: {appId}");
+            return;
+        }
+
+        _loggingService?.LogWarning($"[Installer] Cancel requested for: {appName}");
+
+        try
+        {
+            cancellationSource.Cancel();
+        }
+        catch (ObjectDisposedException)
+        {
+            // The install already completed while the cancel request was in flight.
+        }
+
+        TryKillActiveProcess(appId);
+    }
+
+    public void CancelAllActiveInstalls()
+    {
+        foreach (var appId in AllowedCommandsService.Instance.GetActiveInstalls())
+        {
+            CancelApp(appId);
+        }
     }
 
     public async Task<IReadOnlyList<InstallResult>> InstallSelectedAppsAsync(
@@ -38,6 +109,7 @@ public sealed class InstallerService
         string customDownloadFolder = "",
         IEnumerable<AppItem>? catalogApps = null,
         bool allowUpgradeForInstalledApps = false,
+        IProgress<InstallQueueProgress>? queueProgress = null,
         CancellationToken cancellationToken = default)
     {
         var source = selectedApps?.ToList() ?? new List<AppItem>();
@@ -56,10 +128,14 @@ public sealed class InstallerService
         _loggingService?.LogInfo(
             $"Install started. Platform={currentPlatform}, CandidateCount={source.Count}, Silent={silentInstallEnabled}.");
 
-        var orderedIds = _dependencyResolverService.ResolveBuildOrder(requestedIds, allAppsById);
+        var orderedIds = await Task.Run(
+            () => _dependencyResolverService.ResolveBuildOrder(requestedIds, allAppsById),
+            cancellationToken);
         var missingDependencies = _detectionService is null
             ? new List<AppItem>()
-            : _dependencyResolverService.GetMissingDependencies(requestedIds, allAppsById, _detectionService);
+            : await Task.Run(
+                () => _dependencyResolverService.GetMissingDependencies(requestedIds, allAppsById, _detectionService),
+                cancellationToken);
         var requestedSet = new HashSet<string>(requestedIds, StringComparer.OrdinalIgnoreCase);
         var missingDependencySet = new HashSet<string>(
             missingDependencies.Select(app => app.Id),
@@ -89,7 +165,8 @@ public sealed class InstallerService
             currentPlatform,
             silentInstallEnabled,
             allowUpgradeForInstalledApps,
-            results);
+            results,
+            queueProgress);
         if (plan.Count == 0)
         {
             _loggingService?.LogInfo("No install actions generated.");
@@ -109,7 +186,7 @@ public sealed class InstallerService
             foreach (var action in plan)
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                var result = await InstallAppAsync(action, currentPlatform, tempRoot, downloadedFiles, cancellationToken);
+                var result = await InstallAppAsync(action, currentPlatform, tempRoot, downloadedFiles, queueProgress, cancellationToken);
                 results.Add(result);
             }
         }
@@ -135,7 +212,8 @@ public sealed class InstallerService
         string currentPlatform,
         bool silentInstallEnabled,
         bool allowUpgradeForInstalledApps,
-        List<InstallResult> results)
+        List<InstallResult> results,
+        IProgress<InstallQueueProgress>? queueProgress)
     {
         var plan = new List<InstallAction>();
 
@@ -151,14 +229,18 @@ public sealed class InstallerService
             if (!app.IsSupportedOnCurrentPlatform)
             {
                 _loggingService?.LogWarning($"Skipping {app.Name}: unsupported on {currentPlatform}.");
-                results.Add(CreateSkippedResult(app, "Unsupported on current OS."));
+                var skippedResult = CreateSkippedResult(app, "Unsupported on current OS.");
+                results.Add(skippedResult);
+                ReportQueueFinalStatus(queueProgress, skippedResult);
                 continue;
             }
 
             if (app.WillBeSkipped)
             {
                 _loggingService?.LogWarning($"Skipping {app.Name}: marked to skip.");
-                results.Add(CreateSkippedResult(app, "Marked to be skipped."));
+                var skippedResult = CreateSkippedResult(app, "Marked to be skipped.");
+                results.Add(skippedResult);
+                ReportQueueFinalStatus(queueProgress, skippedResult);
                 continue;
             }
 
@@ -166,7 +248,9 @@ public sealed class InstallerService
             if (installDefinition is null)
             {
                 _loggingService?.LogError($"Skipping {app.Name}: missing install metadata for {currentPlatform}.");
-                results.Add(CreateFailureResult(app, "Missing install metadata for current OS."));
+                var failureResult = CreateFailureResult(app, "Missing install metadata for current OS.");
+                results.Add(failureResult);
+                ReportQueueFinalStatus(queueProgress, failureResult);
                 app.HasInstallFailed = true;
                 continue;
             }
@@ -174,29 +258,41 @@ public sealed class InstallerService
             if (installDefinition.NeedsManualInstall)
             {
                 _loggingService?.LogWarning($"Skipping {app.Name}: manual install required.");
-                results.Add(CreateSkippedResult(app, "Requires manual install."));
+                var skippedResult = CreateSkippedResult(app, "Requires manual install.");
+                results.Add(skippedResult);
+                ReportQueueFinalStatus(queueProgress, skippedResult);
                 continue;
             }
 
             if (!allowUpgradeForInstalledApps && IsCurrentlyInstalled(app, currentPlatform))
             {
                 _loggingService?.LogInfo($"Skipping {app.Name}: already installed on this PC.");
-                results.Add(CreateSkippedResult(app, "Already installed on this PC."));
+                var skippedResult = CreateSkippedResult(app, "Already installed on this PC.");
+                results.Add(skippedResult);
+                ReportQueueFinalStatus(queueProgress, skippedResult);
                 continue;
             }
 
-            if (silentInstallEnabled && !app.SupportsSilentInstall)
+            var silentDisabledByUserPreference = silentInstallEnabled && app.UserDisabledSilentInstall;
+            if (silentDisabledByUserPreference)
+            {
+                _loggingService?.LogInfo(
+                    $"[Installer] Silent install disabled for {app.Name} by user preference - running interactive install");
+            }
+
+            if (silentInstallEnabled && !silentDisabledByUserPreference && !app.SupportsSilentInstall)
             {
                 _loggingService?.LogWarning(
                     $"Skipping {app.Name}: silent installation is enabled, but this app requires an interactive installer.");
-                results.Add(
-                    CreateSkippedResult(
-                        app,
-                        "Silent installation is enabled, but this app requires manual installer interaction. Turn off Silent installation to install it."));
+                var skippedResult = CreateSkippedResult(
+                    app,
+                    "Silent installation is enabled, but this app requires manual installer interaction. Turn off Silent installation to install it.");
+                results.Add(skippedResult);
+                ReportQueueFinalStatus(queueProgress, skippedResult);
                 continue;
             }
 
-            var useSilent = silentInstallEnabled && app.SupportsSilentInstall;
+            var useSilent = silentInstallEnabled && !app.UserDisabledSilentInstall && app.SupportsSilentInstall;
             plan.Add(new InstallAction(app, installDefinition, useSilent));
         }
 
@@ -257,29 +353,123 @@ public sealed class InstallerService
         string currentPlatform,
         string tempRoot,
         List<string> downloadedFiles,
+        IProgress<InstallQueueProgress>? queueProgress,
         CancellationToken cancellationToken)
     {
         if (!AllowedCommandsService.Instance.TryBeginInstall(action.App.Id))
         {
             _loggingService?.LogWarning(
                 $"[AllowedCommands] Skipped duplicate install request for: {action.App.Name} (already in progress)");
-            return CreateSkippedResult(action.App, "Install already in progress.");
+            var skippedResult = CreateSkippedResult(action.App, "Install already in progress.");
+            ReportQueueFinalStatus(queueProgress, skippedResult);
+            return skippedResult;
         }
+
+        using var appCancellationSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        RegisterAppCancellation(action.App, appCancellationSource);
+        AppInstallStarted?.Invoke(action.App);
 
         var stopwatch = Stopwatch.StartNew();
         var exitCode = -1;
         string? command = null;
         string installMethod = "manual";
+        var appCancellationToken = appCancellationSource.Token;
+        var postInstallScript = action.InstallDefinition.PostInstallScript;
 
         try
         {
             _loggingService?.LogInfo($"Installing app: {action.App.Name}");
             var wasInstalledBefore = IsCurrentlyInstalled(action.App, currentPlatform);
 
+            if (!string.IsNullOrWhiteSpace(action.InstallDefinition.PreInstallScript))
+            {
+                await RunInstallScriptAsync(
+                    action.InstallDefinition.PreInstallScript,
+                    action.App,
+                    "pre",
+                    appCancellationToken);
+            }
+
+            if (OperatingSystem.IsWindows() &&
+                currentPlatform == PlatformService.Windows &&
+                action.App.IsPortable &&
+                !string.IsNullOrWhiteSpace(action.InstallDefinition.PortableArchiveUrl))
+            {
+                installMethod = "direct";
+                var portableDestinationFolder = ResolvePortableDestinationFolder(action.App);
+                if (string.IsNullOrWhiteSpace(portableDestinationFolder))
+                {
+                    action.App.HasInstallFailed = true;
+                    return await FinalizeInstallResultAsync(
+                        action.App,
+                        currentPlatform,
+                        installMethod,
+                        stopwatch.ElapsedMilliseconds,
+                        CreateFailureResult(action.App, "Portable apps folder is not configured."),
+                        queueProgress);
+                }
+
+                ReportQueueProgress(queueProgress, action.App.Id, InstallQueueStatus.Downloading, "Downloading...", 0);
+                var portableInstalled = await _portableAppService.InstallPortableAsync(
+                    action.App,
+                    portableDestinationFolder);
+                if (!portableInstalled)
+                {
+                    action.App.HasInstallFailed = true;
+                    return await FinalizeInstallResultAsync(
+                        action.App,
+                        currentPlatform,
+                        installMethod,
+                        stopwatch.ElapsedMilliseconds,
+                        CreateFailureResult(action.App, "Portable app extraction failed."),
+                        queueProgress);
+                }
+
+                ReportQueueProgress(queueProgress, action.App.Id, InstallQueueStatus.Installing, "Installing...", 0.6);
+                if (_detectionService is not null)
+                {
+                    _detectionService.IsAppInstalled(action.App, currentPlatform);
+                }
+
+                action.App.IsInstalled = true;
+                action.App.HasInstallFailed = false;
+                action.App.RequiresRestartHint = false;
+                action.App.StatusBadge = AppItem.StatusInstalled;
+
+                return await FinalizeInstallResultAsync(
+                    action.App,
+                    currentPlatform,
+                    installMethod,
+                    stopwatch.ElapsedMilliseconds,
+                    new InstallResult
+                    {
+                        AppId = action.App.Id,
+                        AppName = action.App.Name,
+                        Success = true,
+                        Skipped = false,
+                        RequiresRestart = false,
+                        Message = wasInstalledBefore
+                            ? "Portable app refreshed successfully."
+                            : "Portable app extracted successfully."
+                    },
+                    queueProgress);
+            }
+
             string? installerPath = null;
             if (HasInstallerDownloadUrl(action.InstallDefinition))
             {
-                var download = await DownloadInstallerAsync(action, tempRoot, cancellationToken);
+                var download = await DownloadInstallerAsync(action, tempRoot, queueProgress, appCancellationToken);
+                if (download.Cancelled)
+                {
+                    return await FinalizeInstallResultAsync(
+                        action.App,
+                        currentPlatform,
+                        installMethod,
+                        stopwatch.ElapsedMilliseconds,
+                        CreateCancelledResult(action.App, download.Message),
+                        queueProgress);
+                }
+
                 if (!download.Success)
                 {
                     if (HasCommandFallback(action.InstallDefinition))
@@ -296,7 +486,8 @@ public sealed class InstallerService
                             currentPlatform,
                             installMethod,
                             stopwatch.ElapsedMilliseconds,
-                            CreateFailureResult(action.App, AppendElevationDeniedMessage(download.Message)));
+                            CreateFailureResult(action.App, AppendElevationDeniedMessage(download.Message)),
+                            queueProgress);
                     }
                 }
 
@@ -326,10 +517,15 @@ public sealed class InstallerService
                             currentPlatform,
                             installMethod,
                             stopwatch.ElapsedMilliseconds,
-                            CreateFailureResult(action.App, "SHA256 verification failed."));
+                            CreateFailureResult(action.App, "SHA256 verification failed."),
+                            queueProgress);
                     }
+
+                    LogVirusTotalStatus(action.App, action.InstallDefinition);
                 }
             }
+
+            ReportQueueProgress(queueProgress, action.App.Id, InstallQueueStatus.Installing, "Installing...", 0.6);
 
             command = currentPlatform == PlatformService.Windows
                 ? BuildWindowsInstallCommand(action, installerPath)
@@ -347,16 +543,28 @@ public sealed class InstallerService
                     stopwatch.ElapsedMilliseconds,
                     CreateFailureResult(
                         action.App,
-                        AppendElevationDeniedMessage("No valid install command could be built.")));
+                        AppendElevationDeniedMessage("No valid install command could be built.")),
+                    queueProgress);
             }
 
-            var execution = await ExecuteInstallCommandAsync(action, command, currentPlatform, cancellationToken);
+            var execution = await ExecuteInstallCommandAsync(action, command, currentPlatform, appCancellationToken);
             exitCode = execution.ExitCode;
+            if (execution.Cancelled)
+            {
+                return await FinalizeInstallResultAsync(
+                    action.App,
+                    currentPlatform,
+                    installMethod,
+                    stopwatch.ElapsedMilliseconds,
+                    CreateCancelledResult(action.App, execution.Message),
+                    queueProgress);
+            }
+
             var restartRequired = DetermineIfRestartNeeded(action, execution.ExitCode);
             var wasVerifiedAfterInstall = false;
             if (!wasInstalledBefore)
             {
-                wasVerifiedAfterInstall = await WaitForInstallVerificationAsync(action, currentPlatform, cancellationToken);
+                wasVerifiedAfterInstall = await WaitForInstallVerificationAsync(action, currentPlatform, appCancellationToken);
             }
 
             if (!execution.Success)
@@ -384,7 +592,8 @@ public sealed class InstallerService
                             Skipped = false,
                             RequiresRestart = restartRequired,
                             Message = recoveredMessage
-                        });
+                        },
+                        queueProgress);
                 }
 
                 action.App.HasInstallFailed = true;
@@ -406,7 +615,8 @@ public sealed class InstallerService
                         Skipped = false,
                         RequiresRestart = restartRequired,
                         Message = failureMessage
-                    });
+                    },
+                    queueProgress);
             }
 
             if (!wasInstalledBefore && !wasVerifiedAfterInstall)
@@ -430,7 +640,8 @@ public sealed class InstallerService
                         Skipped = false,
                         RequiresRestart = restartRequired,
                         Message = verificationFailureMessage
-                    });
+                    },
+                    queueProgress);
             }
 
             action.App.IsInstalled = true;
@@ -453,13 +664,44 @@ public sealed class InstallerService
                     Message = execution.RanElevated
                         ? "Install completed after administrator approval."
                         : execution.Message
-                });
+                },
+                queueProgress);
+        }
+        catch (OperationCanceledException)
+        {
+            _loggingService?.LogWarning($"Install cancelled for {action.App.Name}.");
+            return await FinalizeInstallResultAsync(
+                action.App,
+                currentPlatform,
+                installMethod,
+                stopwatch.ElapsedMilliseconds,
+                CreateCancelledResult(action.App, "Install cancelled."),
+                queueProgress);
         }
         finally
         {
+            if (!string.IsNullOrWhiteSpace(postInstallScript))
+            {
+                await RunInstallScriptAsync(
+                    postInstallScript,
+                    action.App,
+                    "post",
+                    CancellationToken.None);
+            }
+
+            await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                action.App.DownloadProgressText = string.Empty;
+                action.App.DownloadProgressPercent = 0;
+                action.App.DownloadedBytes = 0;
+                action.App.TotalBytes = 0;
+            });
             _loggingService?.LogDebug($"[Installer] Process exit code for {action.App.Name}: {exitCode}");
             _loggingService?.LogDebug($"[Installer] Elapsed install time for {action.App.Name}: {stopwatch.ElapsedMilliseconds} ms");
+            UnregisterActiveProcess(action.App.Id);
+            UnregisterAppCancellation(action.App.Id, appCancellationSource);
             AllowedCommandsService.Instance.EndInstall(action.App.Id);
+            AppInstallCompleted?.Invoke(action.App);
         }
     }
 
@@ -468,10 +710,55 @@ public sealed class InstallerService
         string currentPlatform,
         string installMethod,
         long elapsedMs,
-        InstallResult result)
+        InstallResult result,
+        IProgress<InstallQueueProgress>? queueProgress)
     {
         await RecordInstallHistoryAsync(app, currentPlatform, installMethod, result, elapsedMs);
+        ReportQueueFinalStatus(queueProgress, result);
         return result;
+    }
+
+    private async Task RunInstallScriptAsync(
+        string scriptContentOrPath,
+        AppItem app,
+        string scriptPhase,
+        CancellationToken cancellationToken)
+    {
+        if (_scriptRunnerService is null || string.IsNullOrWhiteSpace(scriptContentOrPath))
+        {
+            return;
+        }
+
+        if (!app.UserTrustedInstallScripts)
+        {
+            _loggingService?.LogInfo(
+                $"[ScriptRunner] Install scripts are not enabled for {app.Name}. Skipping {scriptPhase} script.");
+            return;
+        }
+
+        try
+        {
+            var scriptResult = await _scriptRunnerService.RunScriptAsync(
+                scriptContentOrPath,
+                app.Id,
+                scriptPhase,
+                cancellationToken);
+
+            if (!scriptResult.Success)
+            {
+                _loggingService?.LogWarning(
+                    $"[ScriptRunner] {scriptPhase} script for {app.Name} failed with exit code {scriptResult.ExitCode}. Install will continue.");
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            _loggingService?.LogWarning(
+                $"[ScriptRunner] {scriptPhase} script for {app.Name} failed unexpectedly: {ex.Message}");
+        }
     }
 
     private async Task RecordInstallHistoryAsync(
@@ -503,13 +790,16 @@ public sealed class InstallerService
     private async Task<DownloadOutcome> DownloadInstallerAsync(
         InstallAction action,
         string tempRoot,
+        IProgress<InstallQueueProgress>? queueProgress,
         CancellationToken cancellationToken)
     {
-        var installerUrl = ResolveInstallerUrl(action.InstallDefinition);
+        var (installerUrl, selectedArchitecture) = ResolveInstallerUrl(action.InstallDefinition);
         if (string.IsNullOrWhiteSpace(installerUrl))
         {
             return DownloadOutcome.Fail("Installer URL is missing.");
         }
+
+        _loggingService?.LogInfo($"[Installer] Using {selectedArchitecture} installer for {action.App.Name}");
 
         if (!Uri.TryCreate(installerUrl, UriKind.Absolute, out var uri) ||
             (uri.Scheme != Uri.UriSchemeHttp && uri.Scheme != Uri.UriSchemeHttps))
@@ -534,25 +824,14 @@ public sealed class InstallerService
         try
         {
             _loggingService?.LogInfo($"Downloading installer for {action.App.Name} from {uri}");
-            using var response = await SharedHttpClient.GetAsync(uri, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
-            if (!response.IsSuccessStatusCode)
-            {
-                _loggingService?.LogError(
-                    $"Download failed for {action.App.Name}. HTTP {(int)response.StatusCode} {response.ReasonPhrase}.");
-                return DownloadOutcome.Fail($"Download failed: HTTP {(int)response.StatusCode}.");
-            }
-
-            await using var networkStream = await response.Content.ReadAsStreamAsync(cancellationToken);
-            await using var fileStream = new FileStream(targetPath, FileMode.Create, FileAccess.Write, FileShare.None);
-            await networkStream.CopyToAsync(fileStream, cancellationToken);
-
+            var downloadedPath = await DownloadInstallerAsync(action.App, installerUrl, targetPath, queueProgress, cancellationToken);
             _loggingService?.LogInfo($"Downloaded installer for {action.App.Name} to {targetPath}");
-            return DownloadOutcome.Ok(targetPath);
+            return DownloadOutcome.Ok(downloadedPath);
         }
         catch (OperationCanceledException)
         {
             _loggingService?.LogWarning($"Download cancelled for {action.App.Name}.");
-            return DownloadOutcome.Fail("Download cancelled.");
+            return DownloadOutcome.CancelledResult("Download cancelled.");
         }
         catch (Exception ex)
         {
@@ -561,20 +840,102 @@ public sealed class InstallerService
         }
     }
 
-    private static string ResolveInstallerUrl(InstallDefinition definition)
+    private async Task<string> DownloadInstallerAsync(AppItem app, string downloadUrl, string destinationPath)
+    {
+        return await DownloadInstallerAsync(app, downloadUrl, destinationPath, null, CancellationToken.None);
+    }
+
+    private async Task<string> DownloadInstallerAsync(
+        AppItem app,
+        string downloadUrl,
+        string destinationPath,
+        IProgress<InstallQueueProgress>? queueProgress,
+        CancellationToken cancellationToken)
+    {
+        long totalBytes = 0;
+        try
+        {
+            using var headRequest = new HttpRequestMessage(HttpMethod.Head, downloadUrl);
+            using var headResponse = await SharedHttpClient.SendAsync(headRequest, cancellationToken);
+            if (headResponse.Content.Headers.ContentLength.HasValue)
+            {
+                totalBytes = headResponse.Content.Headers.ContentLength.Value;
+            }
+        }
+        catch
+        {
+            // Content-Length not available — proceed without total.
+        }
+
+        await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
+        {
+            app.TotalBytes = totalBytes;
+            app.DownloadedBytes = 0;
+            app.DownloadProgressText = totalBytes > 0
+                ? $"0 B / {FormatBytes(totalBytes)}"
+                : "Starting download...";
+        });
+        ReportQueueProgress(queueProgress, app.Id, InstallQueueStatus.Downloading, "Downloading...", 0);
+
+        using var response = await SharedHttpClient.GetAsync(downloadUrl, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
+        response.EnsureSuccessStatusCode();
+
+        using var contentStream = await response.Content.ReadAsStreamAsync(cancellationToken);
+        await using var fileStream = new FileStream(destinationPath, FileMode.Create, FileAccess.Write, FileShare.None, 81920, true);
+
+        var buffer = new byte[81920];
+        long downloadedBytes = 0;
+        int bytesRead;
+        while ((bytesRead = await contentStream.ReadAsync(buffer, 0, buffer.Length, cancellationToken)) > 0)
+        {
+            await fileStream.WriteAsync(buffer, 0, bytesRead, cancellationToken);
+            downloadedBytes += bytesRead;
+            var downloaded = downloadedBytes;
+            var total = totalBytes;
+            await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                app.DownloadedBytes = downloaded;
+                app.DownloadProgressPercent = total > 0 ? (downloaded / (double)total) * 100.0 : 0;
+                app.DownloadProgressText = total > 0
+                    ? $"{FormatBytes(downloaded)} / {FormatBytes(total)}"
+                    : $"{FormatBytes(downloaded)} downloaded";
+            });
+
+            var queueProgressValue = total > 0
+                ? Math.Clamp((downloaded / (double)total) * 0.5, 0, 0.5)
+                : 0;
+            var statusText = total > 0
+                ? $"Downloading... {Math.Round((downloaded / (double)total) * 100.0, 0):0}%"
+                : "Downloading...";
+            ReportQueueProgress(queueProgress, app.Id, InstallQueueStatus.Downloading, statusText, queueProgressValue);
+        }
+
+        return destinationPath;
+    }
+
+    private static (string Url, string SelectedArchitecture) ResolveInstallerUrl(InstallDefinition definition)
     {
         if (definition is null)
         {
-            return string.Empty;
+            return (string.Empty, "universal");
         }
 
-        return RuntimeInformation.OSArchitecture switch
+        if (PlatformService.IsArm64() && !string.IsNullOrWhiteSpace(definition.InstallerUrlArm64))
         {
-            Architecture.X86 when !string.IsNullOrWhiteSpace(definition.InstallerUrl32) => definition.InstallerUrl32,
-            Architecture.X64 when !string.IsNullOrWhiteSpace(definition.InstallerUrl64) => definition.InstallerUrl64,
-            Architecture.Arm64 when !string.IsNullOrWhiteSpace(definition.InstallerUrl64) => definition.InstallerUrl64,
-            _ => definition.InstallerUrl
-        };
+            return (definition.InstallerUrlArm64, "arm64");
+        }
+
+        if (PlatformService.IsX64() && !string.IsNullOrWhiteSpace(definition.InstallerUrl64))
+        {
+            return (definition.InstallerUrl64, "x64");
+        }
+
+        if (!string.IsNullOrWhiteSpace(definition.InstallerUrl32))
+        {
+            return (definition.InstallerUrl32, "x86");
+        }
+
+        return (definition.InstallerUrl, "universal");
     }
 
     private static string ResolveInstallerSha256(InstallDefinition definition)
@@ -584,13 +945,94 @@ public sealed class InstallerService
             return string.Empty;
         }
 
-        return RuntimeInformation.OSArchitecture switch
+        if (PlatformService.IsArm64() && !string.IsNullOrWhiteSpace(definition.InstallerUrlArm64))
         {
-            Architecture.X86 when !string.IsNullOrWhiteSpace(definition.Sha25632) => definition.Sha25632,
-            Architecture.X64 when !string.IsNullOrWhiteSpace(definition.Sha25664) => definition.Sha25664,
-            Architecture.Arm64 when !string.IsNullOrWhiteSpace(definition.Sha25664) => definition.Sha25664,
+            return definition.Sha256;
+        }
+
+        return PlatformService.GetArchitecture() switch
+        {
+            "x86" when !string.IsNullOrWhiteSpace(definition.Sha25632) => definition.Sha25632,
+            "x64" when !string.IsNullOrWhiteSpace(definition.Sha25664) => definition.Sha25664,
             _ => definition.Sha256
         };
+    }
+
+    private void LogVirusTotalStatus(AppItem app, InstallDefinition definition)
+    {
+        var ratio = definition?.VirusTotalRatio?.Trim() ?? string.Empty;
+        if (string.IsNullOrWhiteSpace(ratio))
+        {
+            _loggingService?.LogInfo($"[VirusTotal] No VirusTotal data for {app.Name}");
+            return;
+        }
+
+        if (TryParseVirusTotalDetections(ratio, out var detections))
+        {
+            if (detections == 0)
+            {
+                _loggingService?.LogInfo($"[VirusTotal] {app.Name} installer is clean ({ratio})");
+            }
+            else
+            {
+                _loggingService?.LogWarning(
+                    $"[VirusTotal] WARNING: {app.Name} installer has {ratio} detections on VirusTotal. Proceeding with install as user requested.");
+            }
+
+            return;
+        }
+
+        _loggingService?.LogInfo($"[VirusTotal] No VirusTotal data for {app.Name}");
+    }
+
+    private static bool TryParseVirusTotalDetections(string ratio, out int detections)
+    {
+        detections = 0;
+        if (string.IsNullOrWhiteSpace(ratio))
+        {
+            return false;
+        }
+
+        var separatorIndex = ratio.IndexOf('/');
+        if (separatorIndex <= 0)
+        {
+            return false;
+        }
+
+        return int.TryParse(ratio[..separatorIndex].Trim(), out detections);
+    }
+
+    private static void ReportQueueProgress(
+        IProgress<InstallQueueProgress>? queueProgress,
+        string appId,
+        InstallQueueStatus status,
+        string statusText,
+        double progress)
+    {
+        if (queueProgress is null || string.IsNullOrWhiteSpace(appId))
+        {
+            return;
+        }
+
+        queueProgress.Report(new InstallQueueProgress(appId, status, statusText, Math.Clamp(progress, 0, 1)));
+    }
+
+    private static void ReportQueueFinalStatus(IProgress<InstallQueueProgress>? queueProgress, InstallResult result)
+    {
+        if (queueProgress is null || result is null || string.IsNullOrWhiteSpace(result.AppId))
+        {
+            return;
+        }
+
+        var (status, statusText) = result switch
+        {
+            { Cancelled: true } => (InstallQueueStatus.Cancelled, "Cancelled"),
+            { Skipped: true } => (InstallQueueStatus.Skipped, "Skipped"),
+            { Success: true } => (InstallQueueStatus.Done, "Done ✓"),
+            _ => (InstallQueueStatus.Failed, "Failed")
+        };
+
+        queueProgress.Report(new InstallQueueProgress(result.AppId, status, statusText, 1.0));
     }
 
     private async Task<ExecutionOutcome> ExecuteInstallCommandAsync(
@@ -604,25 +1046,27 @@ public sealed class InstallerService
         {
             _loggingService?.LogInfo(
                 $"Install for {action.App.Name} is configured to request administrator approval before running.");
-            return await ExecuteElevatedInstallCommandAsync(command, cancellationToken);
+            return await ExecuteElevatedInstallCommandAsync(action, command, cancellationToken);
         }
 
-        var execution = await ExecuteProcessInstallCommandAsync(command, currentPlatform, cancellationToken);
+        var execution = await ExecuteProcessInstallCommandAsync(action, command, currentPlatform, cancellationToken);
         if (ShouldRetryElevated(action, command, currentPlatform, execution))
         {
             _loggingService?.LogWarning(
                 $"Install for {action.App.Name} failed without elevation (ExitCode={execution.ExitCode}). Retrying with administrator approval.");
-            return await ExecuteElevatedInstallCommandAsync(command, cancellationToken);
+            return await ExecuteElevatedInstallCommandAsync(action, command, cancellationToken);
         }
 
         return execution;
     }
 
     private async Task<ExecutionOutcome> ExecuteProcessInstallCommandAsync(
+        InstallAction action,
         string command,
         string currentPlatform,
         CancellationToken cancellationToken)
     {
+        Process? process = null;
         try
         {
             var startInfo = currentPlatform == PlatformService.Windows
@@ -648,8 +1092,9 @@ public sealed class InstallerService
             _loggingService?.LogInfo($"Executing install command: {command}");
             _loggingService?.LogDebug($"[Installer] Full command: {command}");
             _loggingService?.LogDebug($"[Installer] Working directory: {ResolveWorkingDirectory(startInfo)}");
-            using var process = new Process { StartInfo = startInfo };
+            process = new Process { StartInfo = startInfo };
             process.Start();
+            RegisterActiveProcess(action.App.Id, process);
 
             var stdoutTask = process.StandardOutput.ReadToEndAsync(cancellationToken);
             var stderrTask = process.StandardError.ReadToEndAsync(cancellationToken);
@@ -676,24 +1121,32 @@ public sealed class InstallerService
                 ? "Install command completed successfully."
                 : (string.IsNullOrWhiteSpace(stderr) ? $"Install command failed with exit code {exitCode}." : stderr);
 
-            return new ExecutionOutcome(success, exitCode, message, RanElevated: false, ElevationCancelled: false);
+            return new ExecutionOutcome(success, exitCode, message, RanElevated: false, ElevationCancelled: false, Cancelled: false);
         }
         catch (OperationCanceledException)
         {
+            TryKillProcess(process);
             _loggingService?.LogWarning("Install command cancelled.");
-            return new ExecutionOutcome(false, -1, "Install command cancelled.", RanElevated: false, ElevationCancelled: false);
+            return new ExecutionOutcome(false, -1, "Install command cancelled.", RanElevated: false, ElevationCancelled: false, Cancelled: true);
         }
         catch (Exception ex)
         {
             _loggingService?.LogError($"Install command execution failed: {ex.Message}");
-            return new ExecutionOutcome(false, -1, $"Install command execution failed: {ex.Message}", RanElevated: false, ElevationCancelled: false);
+            return new ExecutionOutcome(false, -1, $"Install command execution failed: {ex.Message}", RanElevated: false, ElevationCancelled: false, Cancelled: false);
+        }
+        finally
+        {
+            UnregisterActiveProcess(action.App.Id, process);
+            process?.Dispose();
         }
     }
 
     private async Task<ExecutionOutcome> ExecuteElevatedInstallCommandAsync(
+        InstallAction action,
         string command,
         CancellationToken cancellationToken)
     {
+        Process? process = null;
         try
         {
             var startInfo = BuildElevatedStartInfo(command);
@@ -701,8 +1154,9 @@ public sealed class InstallerService
             _loggingService?.LogInfo($"Executing install command with administrator approval: {command}");
             _loggingService?.LogDebug($"[Installer] Full command: {command}");
             _loggingService?.LogDebug($"[Installer] Working directory: {ResolveWorkingDirectory(startInfo)}");
-            using var process = new Process { StartInfo = startInfo };
+            process = new Process { StartInfo = startInfo };
             process.Start();
+            RegisterActiveProcess(action.App.Id, process);
             await process.WaitForExitAsync(cancellationToken);
 
             var exitCode = process.ExitCode;
@@ -714,23 +1168,29 @@ public sealed class InstallerService
                 ? "Install command completed successfully."
                 : $"Install command failed with exit code {exitCode}.";
 
-            return new ExecutionOutcome(success, exitCode, message, RanElevated: true, ElevationCancelled: false);
+            return new ExecutionOutcome(success, exitCode, message, RanElevated: true, ElevationCancelled: false, Cancelled: false);
         }
         catch (Win32Exception ex) when (ex.NativeErrorCode == 1223)
         {
             const string message = "Windows permission prompt was cancelled. The install did not continue.";
             _loggingService?.LogWarning(message);
-            return new ExecutionOutcome(false, 1223, message, RanElevated: true, ElevationCancelled: true);
+            return new ExecutionOutcome(false, 1223, message, RanElevated: true, ElevationCancelled: true, Cancelled: false);
         }
         catch (OperationCanceledException)
         {
+            TryKillProcess(process);
             _loggingService?.LogWarning("Elevated install command cancelled.");
-            return new ExecutionOutcome(false, -1, "Install command cancelled.", RanElevated: true, ElevationCancelled: false);
+            return new ExecutionOutcome(false, -1, "Install command cancelled.", RanElevated: true, ElevationCancelled: false, Cancelled: true);
         }
         catch (Exception ex)
         {
             _loggingService?.LogError($"Elevated install command execution failed: {ex.Message}");
-            return new ExecutionOutcome(false, -1, $"Install command execution failed: {ex.Message}", RanElevated: true, ElevationCancelled: false);
+            return new ExecutionOutcome(false, -1, $"Install command execution failed: {ex.Message}", RanElevated: true, ElevationCancelled: false, Cancelled: false);
+        }
+        finally
+        {
+            UnregisterActiveProcess(action.App.Id, process);
+            process?.Dispose();
         }
     }
 
@@ -867,12 +1327,12 @@ public sealed class InstallerService
             if (ext == ".msi")
             {
                 var msiArgs = action.UseSilent
-                    ? FirstNonEmpty(action.InstallDefinition.SilentArguments, "/qn /norestart")
+                    ? FirstNonEmpty(ResolveSilentArguments(action.InstallDefinition), "/qn /norestart")
                     : action.InstallDefinition.Arguments;
                 return $"msiexec /i \"{installerPath}\" {msiArgs}".Trim();
             }
 
-            var args = action.UseSilent ? action.InstallDefinition.SilentArguments : action.InstallDefinition.Arguments;
+            var args = action.UseSilent ? ResolveSilentArguments(action.InstallDefinition) : action.InstallDefinition.Arguments;
             return $"\"{installerPath}\" {args}".Trim();
         }
 
@@ -991,6 +1451,21 @@ public sealed class InstallerService
             AppName = app.Name,
             Success = false,
             Skipped = true,
+            Cancelled = false,
+            RequiresRestart = false,
+            Message = reason
+        };
+    }
+
+    private static InstallResult CreateCancelledResult(AppItem app, string reason)
+    {
+        return new InstallResult
+        {
+            AppId = app.Id,
+            AppName = app.Name,
+            Success = false,
+            Skipped = false,
+            Cancelled = true,
             RequiresRestart = false,
             Message = reason
         };
@@ -1004,6 +1479,7 @@ public sealed class InstallerService
             AppName = app.Name,
             Success = false,
             Skipped = false,
+            Cancelled = false,
             RequiresRestart = false,
             Message = reason
         };
@@ -1012,6 +1488,36 @@ public sealed class InstallerService
     private static string FirstNonEmpty(string primary, string fallback)
     {
         return string.IsNullOrWhiteSpace(primary) ? fallback : primary;
+    }
+
+    private static string FormatBytes(long bytes)
+    {
+        if (bytes < 1024)
+        {
+            return $"{bytes} B";
+        }
+
+        if (bytes < 1024L * 1024L)
+        {
+            return $"{bytes / 1024d:F1} KB";
+        }
+
+        if (bytes < 1024L * 1024L * 1024L)
+        {
+            return $"{bytes / (1024d * 1024d):F1} MB";
+        }
+
+        return $"{bytes / (1024d * 1024d * 1024d):F2} GB";
+    }
+
+    private static string ResolveSilentArguments(InstallDefinition definition)
+    {
+        if (PlatformService.IsArm64() && !string.IsNullOrWhiteSpace(definition.SilentArgumentsArm64))
+        {
+            return definition.SilentArgumentsArm64;
+        }
+
+        return definition.SilentArguments;
     }
 
     private static bool HasCommandFallback(InstallDefinition definition)
@@ -1027,11 +1533,108 @@ public sealed class InstallerService
             : startInfo.WorkingDirectory;
     }
 
+    private void RegisterAppCancellation(AppItem app, CancellationTokenSource cancellationSource)
+    {
+        lock (_activeInstallLock)
+        {
+            _appCancellationTokens[app.Id] = cancellationSource;
+            _activeInstallNames[app.Id] = app.Name;
+        }
+    }
+
+    private void UnregisterAppCancellation(string appId, CancellationTokenSource cancellationSource)
+    {
+        lock (_activeInstallLock)
+        {
+            if (_appCancellationTokens.TryGetValue(appId, out var existingSource) &&
+                ReferenceEquals(existingSource, cancellationSource))
+            {
+                _appCancellationTokens.Remove(appId);
+            }
+
+            _activeInstallNames.Remove(appId);
+        }
+    }
+
+    private void RegisterActiveProcess(string appId, Process process)
+    {
+        lock (_activeInstallLock)
+        {
+            _activeInstallProcesses[appId] = process;
+        }
+    }
+
+    private void UnregisterActiveProcess(string appId, Process? process = null)
+    {
+        lock (_activeInstallLock)
+        {
+            if (_activeInstallProcesses.TryGetValue(appId, out var activeProcess) &&
+                (process is null || ReferenceEquals(activeProcess, process)))
+            {
+                _activeInstallProcesses.Remove(appId);
+            }
+        }
+    }
+
+    private void TryKillActiveProcess(string appId)
+    {
+        Process? process;
+        lock (_activeInstallLock)
+        {
+            _activeInstallProcesses.TryGetValue(appId, out process);
+        }
+
+        TryKillProcess(process);
+    }
+
+    private static void TryKillProcess(Process? process)
+    {
+        if (process is null)
+        {
+            return;
+        }
+
+        try
+        {
+            if (!process.HasExited)
+            {
+                process.Kill(entireProcessTree: true);
+            }
+        }
+        catch
+        {
+            // Best-effort termination only.
+        }
+    }
+
     private static bool HasInstallerDownloadUrl(InstallDefinition definition)
     {
         return !string.IsNullOrWhiteSpace(definition.InstallerUrl) ||
                !string.IsNullOrWhiteSpace(definition.InstallerUrl32) ||
-               !string.IsNullOrWhiteSpace(definition.InstallerUrl64);
+               !string.IsNullOrWhiteSpace(definition.InstallerUrl64) ||
+               !string.IsNullOrWhiteSpace(definition.InstallerUrlArm64);
+    }
+
+    private string ResolvePortableDestinationFolder(AppItem app)
+    {
+        if (!string.IsNullOrWhiteSpace(app.PortableInstallPath))
+        {
+            var trimmedPath = app.PortableInstallPath.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+            if (string.Equals(Path.GetFileName(trimmedPath), app.Id, StringComparison.OrdinalIgnoreCase))
+            {
+                return Directory.GetParent(trimmedPath)?.FullName ?? trimmedPath;
+            }
+
+            return trimmedPath;
+        }
+
+        var configuredPortableFolder = SettingsAccessor?.Invoke()?.DefaultPortableFolder
+            ?? _settings?.DefaultPortableFolder
+            ?? AppSettings.CreateDefault().DefaultPortableFolder;
+
+        return string.IsNullOrWhiteSpace(configuredPortableFolder)
+            ? string.Empty
+            : configuredPortableFolder;
     }
 
     private static string DetermineInstallMethod(string? command, string? installerPath)
@@ -1253,11 +1856,13 @@ public sealed class InstallerService
 
     private sealed record InstallAction(AppItem App, InstallDefinition InstallDefinition, bool UseSilent);
 
-    private sealed record DownloadOutcome(bool Success, string? FilePath, string Message)
+    private sealed record DownloadOutcome(bool Success, bool Cancelled, string? FilePath, string Message)
     {
-        public static DownloadOutcome Ok(string filePath) => new(true, filePath, "Download succeeded.");
+        public static DownloadOutcome Ok(string filePath) => new(true, false, filePath, "Download succeeded.");
 
-        public static DownloadOutcome Fail(string message) => new(false, null, message);
+        public static DownloadOutcome Fail(string message) => new(false, false, null, message);
+
+        public static DownloadOutcome CancelledResult(string message) => new(false, true, null, message);
     }
 
     private sealed record ExecutionOutcome(
@@ -1265,5 +1870,6 @@ public sealed class InstallerService
         int ExitCode,
         string Message,
         bool RanElevated,
-        bool ElevationCancelled);
+        bool ElevationCancelled,
+        bool Cancelled);
 }

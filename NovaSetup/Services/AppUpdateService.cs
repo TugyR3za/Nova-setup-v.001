@@ -43,6 +43,13 @@ public sealed class AppUpdateService
                 continue;
             }
 
+            if (app.UserDisabledScanning)
+            {
+                _loggingService?.LogInfo(
+                    $"[UpdateService] Skipping update scan for {app.Name} - disabled by user preference");
+                continue;
+            }
+
             var packageId = ExtractWingetPackageId(app.WindowsInstall);
             if (string.IsNullOrWhiteSpace(packageId))
             {
@@ -69,7 +76,7 @@ public sealed class AppUpdateService
     public List<AppItem> GetAppsWithUpdates(List<AppItem> allApps)
     {
         var updates = (allApps ?? new List<AppItem>())
-            .Where(app => app.HasUpdateAvailable)
+            .Where(app => !app.UserDisabledScanning && app.HasUpdateAvailable)
             .OrderBy(app => app.Name, StringComparer.OrdinalIgnoreCase)
             .ToList();
 
@@ -258,6 +265,11 @@ public sealed class AppUpdateService
             ReleaseNotesUrl = source.ReleaseNotesUrl,
             Tags = source.Tags.ToList(),
             Dependencies = source.Dependencies.ToList(),
+            IsPortable = source.IsPortable,
+            PortableInstallPath = source.PortableInstallPath,
+            UserDisabledSilentInstall = source.UserDisabledSilentInstall,
+            UserDisabledScanning = source.UserDisabledScanning,
+            UserDisabledAutoUpdate = source.UserDisabledAutoUpdate,
             SupportedPlatforms = new PlatformSupport
             {
                 Windows = source.SupportedPlatforms.Windows,
@@ -296,6 +308,7 @@ public sealed class AppUpdateService
             InstallerUrl = source.InstallerUrl,
             InstallerUrl32 = source.InstallerUrl32,
             InstallerUrl64 = source.InstallerUrl64,
+            InstallerUrlArm64 = source.InstallerUrlArm64,
             InstallerFileName = source.InstallerFileName,
             Sha256 = source.Sha256,
             Sha25632 = source.Sha25632,
@@ -304,7 +317,18 @@ public sealed class AppUpdateService
             SilentCommand = source.SilentCommand,
             Arguments = source.Arguments,
             SilentArguments = source.SilentArguments,
+            SilentArgumentsArm64 = source.SilentArgumentsArm64,
             Architecture = source.Architecture,
+            HasArm64Support = source.HasArm64Support,
+            PortableArchiveUrl = source.PortableArchiveUrl,
+            PortableExecutable = source.PortableExecutable,
+            PortableArchiveType = source.PortableArchiveType,
+            PortableSubfolder = source.PortableSubfolder,
+            VirusTotalUrl = source.VirusTotalUrl,
+            VirusTotalRatio = source.VirusTotalRatio,
+            VirusTotalScanDate = source.VirusTotalScanDate,
+            PreInstallScript = source.PreInstallScript,
+            PostInstallScript = source.PostInstallScript,
             RequiresRestart = source.RequiresRestart,
             RequiresElevation = source.RequiresElevation,
             NeedsManualInstall = source.NeedsManualInstall,

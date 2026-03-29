@@ -106,7 +106,18 @@ public sealed class DependencyResolverService
             selectedAppIds.Where(id => !string.IsNullOrWhiteSpace(id)),
             StringComparer.OrdinalIgnoreCase);
         var currentPlatform = GetCurrentPlatformId();
-        var installedStates = detectionService.DetectInstalledAppStates(appLookup.Values, currentPlatform);
+        var dependencyCandidateApps = orderedIds
+            .Where(id => !selectedSet.Contains(id))
+            .Where(appLookup.ContainsKey)
+            .Select(id => appLookup[id])
+            .ToList();
+
+        if (dependencyCandidateApps.Count == 0)
+        {
+            return new List<AppItem>();
+        }
+
+        var installedStates = detectionService.DetectInstalledAppStates(dependencyCandidateApps, currentPlatform);
 
         return orderedIds
             .Where(id => !selectedSet.Contains(id) && !installedStates.ContainsKey(id))

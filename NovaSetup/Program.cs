@@ -40,47 +40,53 @@ class Program
 
     private static async Task RunHeadlessScheduledUpdateAsync()
     {
-        var loggingService = new LoggingService();
+        LoggingService? loggingService = null;
 
         try
         {
+            loggingService = new LoggingService();
             loggingService.LogInfo("[ScheduledUpdates] Running in headless scheduled-update mode.");
 
             var settingsService = new SettingsService(loggingService);
             var settings = await settingsService.LoadSettingsAsync();
-            if (!settings.ScheduledUpdatesEnabled)
-            {
-                loggingService.LogInfo("[ScheduledUpdates] Scheduled updates are disabled. Exiting headless mode.");
-                Environment.Exit(0);
-                return;
-            }
-
-            var platformService = new PlatformService();
+            var catalogService = new CatalogService(loggingService);
+            var apps = await catalogService.LoadAppsAsync(PlatformService.GetCurrentPlatform());
             var detectionService = new DetectionService(loggingService);
-            var historyService = new HistoryService(loggingService);
-            var installerService = new InstallerService(loggingService, detectionService, historyService);
+            detectionService.SettingsAccessor = () => settings;
+            await detectionService.DetectInstalledAppsAsync(apps);
+            var scriptRunnerService = new ScriptRunnerService(loggingService)
+            {
+                SettingsAccessor = () => settings
+            };
+            var installerService = new InstallerService(settings, loggingService, scriptRunnerService);
+            installerService.SettingsAccessor = () => settings;
             var appUpdateService = new AppUpdateService(loggingService);
-            var taskSchedulerService = new TaskSchedulerService(loggingService);
-            var catalogService = new CatalogService(platformService, loggingService);
-
-            var platform = platformService.GetCurrentPlatformInfo();
             var scheduledUpdateService = new ScheduledUpdateService(
                 settings,
                 appUpdateService,
                 settingsService,
-                detectionService,
-                installerService,
-                taskSchedulerService,
-                () => catalogService.LoadAppsAsync(platform.Id),
                 loggingService);
+            scheduledUpdateService.ConfigureRunContext(
+                () => Task.FromResult(apps),
+                detectionService,
+                installerService);
 
             await scheduledUpdateService.RunScheduledUpdateAsync();
         }
         catch (Exception ex)
         {
-            loggingService.LogError($"[ScheduledUpdates] Headless scheduled update failed: {ex.Message}");
+            loggingService?.LogError($"[ScheduledUpdates] Headless scheduled update failed: {ex.Message}");
+            var errorDirectory = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                "NovaSetup");
+            Directory.CreateDirectory(errorDirectory);
+            File.AppendAllText(
+                Path.Combine(errorDirectory, "headless-error.log"),
+                $"{DateTime.UtcNow:O} HEADLESS ERROR: {ex}{Environment.NewLine}");
         }
-
-        Environment.Exit(0);
+        finally
+        {
+            Environment.Exit(0);
+        }
     }
 }
