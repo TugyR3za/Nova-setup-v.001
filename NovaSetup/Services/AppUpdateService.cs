@@ -13,6 +13,10 @@ public sealed class AppUpdateService
     private static readonly Regex VersionLineRegex =
         new(@"^\s*Version\s*:\s*(?<value>.+?)\s*$", RegexOptions.IgnoreCase | RegexOptions.Multiline | RegexOptions.Compiled);
 
+    private static readonly Regex WingetListSplitRegex = new(@"\s{2,}", RegexOptions.Compiled);
+
+    private static readonly Regex AnsiEscapeRegex = new(@"\x1B\[[0-9;]*[A-Za-z]", RegexOptions.Compiled);
+
     private readonly LoggingService? _loggingService;
 
     public AppUpdateService(LoggingService? loggingService = null)
@@ -36,6 +40,8 @@ public sealed class AppUpdateService
             return resolvedVersions;
         }
 
+        // Build a map of winget package IDs to app IDs for installed apps that need scanning
+        var packageIdToAppId = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         foreach (var app in allApps ?? Enumerable.Empty<AppItem>())
         {
             if (app is null || !app.IsInstalled)
@@ -51,17 +57,34 @@ public sealed class AppUpdateService
             }
 
             var packageId = ExtractWingetPackageId(app.WindowsInstall);
-            if (string.IsNullOrWhiteSpace(packageId))
+            if (!string.IsNullOrWhiteSpace(packageId))
             {
+                packageIdToAppId[packageId] = app.Id;
+            }
+        }
+
+        if (packageIdToAppId.Count == 0)
+        {
+            return resolvedVersions;
+        }
+
+        // FAST PATH: Single `winget upgrade` call to get all available updates at once
+        // This replaces N individual `winget show --id X` calls — huge speed improvement
+        var batchUpgrades = TryBatchResolveUpgrades(wingetPath);
+        foreach (var (packageId, appId) in packageIdToAppId)
+        {
+            if (batchUpgrades.TryGetValue(packageId, out var availableVersion) &&
+                !string.IsNullOrWhiteSpace(availableVersion))
+            {
+                resolvedVersions[appId] = availableVersion;
                 continue;
             }
 
-            if (!TryResolveLatestWingetVersion(wingetPath, packageId, out var latestVersion))
+            // SLOW FALLBACK: Only for packages not found in the batch result
+            if (TryResolveLatestWingetVersion(wingetPath, packageId, out var latestVersion))
             {
-                continue;
+                resolvedVersions[appId] = latestVersion;
             }
-
-            resolvedVersions[app.Id] = latestVersion;
         }
 
         if (resolvedVersions.Count > 0)
@@ -71,6 +94,84 @@ public sealed class AppUpdateService
         }
 
         return resolvedVersions;
+    }
+
+    /// <summary>
+    /// Runs a single "winget upgrade" command to discover all available updates at once.
+    /// Returns a dictionary mapping winget package IDs to their available (latest) versions.
+    /// This is dramatically faster than calling "winget show --id X" once per app.
+    /// </summary>
+    private Dictionary<string, string> TryBatchResolveUpgrades(string wingetPath)
+    {
+        var results = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
+        try
+        {
+            using var process = new Process
+            {
+                StartInfo = new ProcessStartInfo
+                {
+                    FileName = wingetPath,
+                    Arguments = "upgrade --accept-source-agreements --disable-interactivity",
+                    UseShellExecute = false,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    CreateNoWindow = true,
+                    StandardOutputEncoding = Encoding.UTF8,
+                    StandardErrorEncoding = Encoding.UTF8
+                }
+            };
+
+            process.Start();
+
+            var stdoutTask = process.StandardOutput.ReadToEndAsync();
+            var stderrTask = process.StandardError.ReadToEndAsync();
+
+            if (!process.WaitForExit(30000))
+            {
+                try { process.Kill(entireProcessTree: true); } catch { }
+                _loggingService?.LogWarning("[AppUpdateService] Batch winget upgrade timed out after 30s.");
+                return results;
+            }
+
+            var output = stdoutTask.GetAwaiter().GetResult();
+            output = AnsiEscapeRegex.Replace(output, string.Empty);
+
+            // Parse the tabular output: Name | Id | Version | Available | Source
+            var lines = output.Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+            foreach (var line in lines)
+            {
+                // Skip header/separator/footer lines
+                if (line.StartsWith("Name", StringComparison.OrdinalIgnoreCase) ||
+                    line.StartsWith("-", StringComparison.Ordinal) ||
+                    line.Contains("upgrades available", StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
+                var columns = WingetListSplitRegex.Split(line);
+                // Expected: Name, Id, Version, Available, Source (5 columns)
+                if (columns.Length >= 4)
+                {
+                    var id = columns[1].Trim();
+                    var availableVersion = columns.Length >= 5 ? columns[3].Trim() : columns[2].Trim();
+                    if (!string.IsNullOrWhiteSpace(id) && !string.IsNullOrWhiteSpace(availableVersion))
+                    {
+                        results[id] = availableVersion;
+                    }
+                }
+            }
+
+            _loggingService?.LogInfo(
+                $"[AppUpdateService] Batch winget upgrade found {results.Count} package(s) with available updates.");
+        }
+        catch (Exception ex)
+        {
+            _loggingService?.LogWarning(
+                $"[AppUpdateService] Batch winget upgrade failed, will fall back to individual queries: {ex.Message}");
+        }
+
+        return results;
     }
 
     public List<AppItem> GetAppsWithUpdates(List<AppItem> allApps)

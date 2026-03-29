@@ -28,7 +28,7 @@ public sealed class DetectionService
     public string? DetectGpuVendor(string currentPlatform)
     {
         var output = currentPlatform == PlatformService.Windows
-            ? RunCommand("wmic", "path win32_VideoController get Name")
+            ? RunPowerShellCommand("(Get-CimInstance Win32_VideoController).Name")
             : RunCommand("sh", "-c \"lspci\"");
 
         var vendor = ExtractKnownVendor(output, KnownGpuVendors);
@@ -43,7 +43,7 @@ public sealed class DetectionService
     public string? DetectMotherboardVendor(string currentPlatform)
     {
         var output = currentPlatform == PlatformService.Windows
-            ? RunCommand("wmic", "baseboard get Manufacturer")
+            ? RunPowerShellCommand("(Get-CimInstance Win32_BaseBoard).Manufacturer")
             : TryReadFile("/sys/devices/virtual/dmi/id/board_vendor");
 
         var vendor = ExtractCommonBoardVendor(output);
@@ -58,7 +58,7 @@ public sealed class DetectionService
     public IReadOnlyList<string> DetectAccessoryVendors(string currentPlatform)
     {
         var output = currentPlatform == PlatformService.Windows
-            ? RunCommand("wmic", "path Win32_PnPEntity get Name")
+            ? RunPowerShellCommand("(Get-CimInstance Win32_PnPEntity).Name -join \"`n\"")
             : RunCommand("sh", "-c \"lsusb\"");
 
         var detected = new List<string>();
@@ -78,8 +78,18 @@ public sealed class DetectionService
         return detected;
     }
 
+    /// <summary>
+    /// Runs all hardware detection queries in a single PowerShell process for speed.
+    /// Like Chocolatey, we use Get-CimInstance instead of deprecated wmic.
+    /// </summary>
     public HardwareDetectionResult DetectHardware(string currentPlatform)
     {
+        if (currentPlatform == PlatformService.Windows)
+        {
+            return DetectHardwareBatchedPowerShell();
+        }
+
+        // Linux fallback — parallel subprocess calls
         string? gpuVendor = null;
         string? motherboardVendor = null;
         IReadOnlyList<string> accessoryVendors = Array.Empty<string>();
@@ -95,6 +105,59 @@ public sealed class DetectionService
             GpuVendor = gpuVendor,
             MotherboardVendor = motherboardVendor,
             AccessoryVendors = accessoryVendors.ToList()
+        };
+    }
+
+    /// <summary>
+    /// Single PowerShell process that runs GPU + Motherboard + Accessory detection
+    /// all at once — replaces 3 separate wmic calls with one fast CIM batch.
+    /// </summary>
+    private HardwareDetectionResult DetectHardwareBatchedPowerShell()
+    {
+        const string batchScript =
+            "$gpu = (Get-CimInstance Win32_VideoController -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Name) -join '|'; " +
+            "$mb = (Get-CimInstance Win32_BaseBoard -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Manufacturer) -join '|'; " +
+            "$pnp = (Get-CimInstance Win32_PnPEntity -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Name) -join '|'; " +
+            "Write-Output \"GPU:$gpu\"; " +
+            "Write-Output \"MB:$mb\"; " +
+            "Write-Output \"PNP:$pnp\"";
+
+        var output = RunPowerShellCommand(batchScript, timeoutMs: 8000);
+        var lines = output.Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+        string gpuLine = string.Empty, mbLine = string.Empty, pnpLine = string.Empty;
+        foreach (var line in lines)
+        {
+            if (line.StartsWith("GPU:", StringComparison.OrdinalIgnoreCase))
+                gpuLine = line[4..];
+            else if (line.StartsWith("MB:", StringComparison.OrdinalIgnoreCase))
+                mbLine = line[3..];
+            else if (line.StartsWith("PNP:", StringComparison.OrdinalIgnoreCase))
+                pnpLine = line[4..];
+        }
+
+        var gpuVendor = ExtractKnownVendor(gpuLine, KnownGpuVendors);
+        if (!string.IsNullOrWhiteSpace(gpuVendor))
+            _loggingService?.LogInfo($"Detected GPU vendor: {gpuVendor}");
+
+        var motherboardVendor = ExtractCommonBoardVendor(mbLine);
+        if (!string.IsNullOrWhiteSpace(motherboardVendor))
+            _loggingService?.LogInfo($"Detected motherboard vendor: {motherboardVendor}");
+
+        var accessoryVendors = new List<string>();
+        foreach (var vendor in KnownAccessoryVendors)
+        {
+            if (pnpLine.Contains(vendor, StringComparison.OrdinalIgnoreCase))
+                accessoryVendors.Add(vendor);
+        }
+        if (accessoryVendors.Count > 0)
+            _loggingService?.LogInfo($"Detected accessory vendors: {string.Join(", ", accessoryVendors)}");
+
+        return new HardwareDetectionResult
+        {
+            GpuVendor = gpuVendor,
+            MotherboardVendor = motherboardVendor,
+            AccessoryVendors = accessoryVendors
         };
     }
 
@@ -611,6 +674,44 @@ public sealed class DetectionService
         }
     }
 
+    /// <summary>
+    /// Runs a PowerShell command and returns stdout. Uses -NoProfile for faster startup.
+    /// This is the Chocolatey-style approach: PowerShell is faster than wmic/where.exe.
+    /// </summary>
+    private static string RunPowerShellCommand(string command, int timeoutMs = 5000)
+    {
+        try
+        {
+            using var process = new Process
+            {
+                StartInfo = new ProcessStartInfo
+                {
+                    FileName = "powershell.exe",
+                    Arguments = $"-NoProfile -NoLogo -NonInteractive -ExecutionPolicy Bypass -Command \"{command.Replace("\"", "\\\"")}\"",
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    UseShellExecute = false,
+                    CreateNoWindow = true,
+                    StandardOutputEncoding = Encoding.UTF8
+                }
+            };
+
+            process.Start();
+            var output = process.StandardOutput.ReadToEnd();
+            if (!process.WaitForExit(timeoutMs))
+            {
+                try { process.Kill(entireProcessTree: true); } catch { }
+                return string.Empty;
+            }
+
+            return output;
+        }
+        catch
+        {
+            return string.Empty;
+        }
+    }
+
     private static string TryReadFile(string path)
     {
         try
@@ -645,7 +746,7 @@ public sealed class DetectionService
         foreach (var candidate in BuildExecutableCandidates(detectExecutable))
         {
             var output = currentPlatform == PlatformService.Windows
-                ? RunCommand("where.exe", candidate)
+                ? RunPowerShellCommand($"(Get-Command '{candidate}' -ErrorAction SilentlyContinue).Source")
                 : RunCommand("sh", $"-c \"command -v '{EscapeSingleQuotes(candidate)}'\"");
 
             if (!string.IsNullOrWhiteSpace(output))
