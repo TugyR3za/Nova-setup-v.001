@@ -136,6 +136,7 @@ public sealed class MainWindowViewModel : ObservableObject
     private bool _updatingFilterFlags;
     private string _currentPlatformId = PlatformService.Unknown;
     private string _currentPlatform = "Unknown OS";
+    private string _currentPackageManager = "direct";
     private string _currentProfileName = "Website Starter";
     private string _pendingProfileName = "My Setup";
     private string _pendingProfileDescription = string.Empty;
@@ -332,8 +333,16 @@ public sealed class MainWindowViewModel : ObservableObject
     public string CurrentPlatform
     {
         get => _currentPlatform;
-        private set => SetProperty(ref _currentPlatform, value);
+        private set
+        {
+            if (SetProperty(ref _currentPlatform, value))
+            {
+                OnPropertyChanged(nameof(Platform));
+            }
+        }
     }
+
+    public string Platform => $"Platform: {CurrentPlatform} | Package Manager: {_currentPackageManager}";
 
     public ObservableCollection<AppItem> Apps => _apps;
 
@@ -1108,6 +1117,11 @@ public sealed class MainWindowViewModel : ObservableObject
                 supportedPlatforms.Add("Linux");
             }
 
+            if (SelectedDetailApp.SupportedPlatforms.MacOS)
+            {
+                supportedPlatforms.Add("macOS");
+            }
+
             return supportedPlatforms.Count == 0 ? "No supported platforms listed" : string.Join(" • ", supportedPlatforms);
         }
     }
@@ -1324,6 +1338,8 @@ public sealed class MainWindowViewModel : ObservableObject
             var platform = _platformService.GetCurrentPlatformInfo();
             _currentPlatformId = platform.Id;
             CurrentPlatform = platform.Label;
+            _currentPackageManager = PlatformService.GetPackageManager();
+            OnPropertyChanged(nameof(Platform));
 
             if (updateStatusAsync is not null)
             {
@@ -4317,6 +4333,7 @@ public sealed class MainWindowViewModel : ObservableObject
             HomepageUrl = source.HomepageUrl,
             Description = source.Description,
             IconPath = source.IconPath,
+            LogoUrl = source.LogoUrl,
             WingetId = source.WingetId,
             Version = source.Version,
             InstalledVersion = source.InstalledVersion,
@@ -4333,10 +4350,12 @@ public sealed class MainWindowViewModel : ObservableObject
             SupportedPlatforms = new PlatformSupport
             {
                 Windows = source.SupportedPlatforms.Windows,
-                Linux = source.SupportedPlatforms.Linux
+                Linux = source.SupportedPlatforms.Linux,
+                MacOS = source.SupportedPlatforms.MacOS
             },
             WindowsInstall = CloneInstallDefinition(source.WindowsInstall),
             LinuxInstall = CloneInstallDefinition(source.LinuxInstall),
+            MacOSInstall = CloneInstallDefinition(source.MacOSInstall),
             IsSupportedOnCurrentPlatform = source.IsSupportedOnCurrentPlatform,
             SupportsSilentInstall = source.SupportsSilentInstall,
             IsInstalled = source.IsInstalled,

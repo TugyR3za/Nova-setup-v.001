@@ -196,6 +196,7 @@ public sealed class DetectionService
         IReadOnlyDictionary<string, InstalledAppState> detectedStates = currentPlatform switch
         {
             PlatformService.Windows => DetectWindowsInstalledAppStates(appList),
+            PlatformService.MacOS => DetectMacOSInstalledAppStates(appList),
             _ => DetectCommandBasedInstalledAppStates(appList, currentPlatform)
         };
 
@@ -229,6 +230,13 @@ public sealed class DetectionService
             var match = DetectWindowsApp(app, BuildWindowsInstallIndex(new[] { app }));
             app.InstalledVersion = match?.InstalledVersion ?? string.Empty;
             return match is not null;
+        }
+
+        if (currentPlatform == PlatformService.MacOS)
+        {
+            var isInstalledOnMacOS = DetectMacOSApp(app);
+            app.InstalledVersion = string.Empty;
+            return isInstalledOnMacOS;
         }
 
         var isInstalled = IsCommandBasedAppInstalled(app, currentPlatform);
@@ -293,6 +301,15 @@ public sealed class DetectionService
             }
 
             return TryGetExecutableInKnownWindowsLocations(app);
+        }
+
+        if (currentPlatform == PlatformService.MacOS)
+        {
+            var appBundlePath = TryGetMacOSAppBundlePath(app);
+            if (!string.IsNullOrWhiteSpace(appBundlePath))
+            {
+                return appBundlePath;
+            }
         }
 
         return TryGetExecutableOnPath(app, currentPlatform);
@@ -428,6 +445,27 @@ public sealed class DetectionService
         return detectedStates;
     }
 
+    private IReadOnlyDictionary<string, InstalledAppState> DetectMacOSInstalledAppStates(IReadOnlyList<AppItem> apps)
+    {
+        var detectedStates = new Dictionary<string, InstalledAppState>(StringComparer.OrdinalIgnoreCase);
+        if (!OperatingSystem.IsMacOS())
+        {
+            return detectedStates;
+        }
+
+        foreach (var app in apps)
+        {
+            if (!DetectMacOSApp(app))
+            {
+                continue;
+            }
+
+            detectedStates[app.Id] = new InstalledAppState(true, string.Empty);
+        }
+
+        return detectedStates;
+    }
+
     private WindowsInstallMatch? DetectWindowsApp(AppItem app, WindowsInstallIndex detectionIndex)
     {
         var explicitDisplayNameMatch = FindExplicitDisplayNameMatch(app, detectionIndex.UninstallEntries);
@@ -512,6 +550,7 @@ public sealed class DetectionService
         {
             PlatformService.Windows => app.SupportedPlatforms.Windows,
             PlatformService.Linux => app.SupportedPlatforms.Linux,
+            PlatformService.MacOS => app.SupportedPlatforms.MacOS,
             _ => false
         };
     }
@@ -674,6 +713,46 @@ public sealed class DetectionService
         }
     }
 
+    private static int RunCommandExitCode(string fileName, string arguments, int timeoutMs = 3000)
+    {
+        try
+        {
+            using var process = new Process
+            {
+                StartInfo = new ProcessStartInfo
+                {
+                    FileName = fileName,
+                    Arguments = arguments,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    UseShellExecute = false,
+                    CreateNoWindow = true
+                }
+            };
+
+            process.Start();
+            if (!process.WaitForExit(timeoutMs))
+            {
+                try
+                {
+                    process.Kill(entireProcessTree: true);
+                }
+                catch
+                {
+                    // Best-effort timeout cleanup.
+                }
+
+                return -1;
+            }
+
+            return process.ExitCode;
+        }
+        catch
+        {
+            return -1;
+        }
+    }
+
     /// <summary>
     /// Runs a PowerShell command and returns stdout. Uses -NoProfile for faster startup.
     /// This is the Chocolatey-style approach: PowerShell is faster than wmic/where.exe.
@@ -734,12 +813,78 @@ public sealed class DetectionService
         return !string.IsNullOrWhiteSpace(TryGetExecutableOnPath(app, currentPlatform));
     }
 
+    private static bool DetectMacOSApp(AppItem app)
+    {
+        if (!OperatingSystem.IsMacOS())
+        {
+            return false;
+        }
+
+        var appBundlePath = TryGetMacOSAppBundlePath(app);
+        if (!string.IsNullOrWhiteSpace(appBundlePath))
+        {
+            return true;
+        }
+
+        var brewPackageId = ResolveMacOSBrewPackageId(app);
+        if (!string.IsNullOrWhiteSpace(brewPackageId) &&
+            RunCommandExitCode("brew", $"list {brewPackageId}") == 0)
+        {
+            return true;
+        }
+
+        return HasExecutableOnPath(app, PlatformService.MacOS);
+    }
+
+    private static string? TryGetMacOSAppBundlePath(AppItem app)
+    {
+        if (!OperatingSystem.IsMacOS() || string.IsNullOrWhiteSpace(app?.Name))
+        {
+            return null;
+        }
+
+        var bundlePath = Path.Combine("/Applications", $"{app.Name}.app");
+        return Directory.Exists(bundlePath) ? bundlePath : null;
+    }
+
+    private static string ResolveMacOSBrewPackageId(AppItem app)
+    {
+        var command = app.MacOSInstall?.Command ?? string.Empty;
+        if (string.IsNullOrWhiteSpace(command))
+        {
+            return app.Id;
+        }
+
+        var tokens = command.Split(
+            [' ', '\t', '\r', '\n'],
+            StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        var installIndex = Array.FindIndex(tokens, token => string.Equals(token, "install", StringComparison.OrdinalIgnoreCase));
+        if (installIndex < 0)
+        {
+            return app.Id;
+        }
+
+        for (var index = installIndex + 1; index < tokens.Length; index++)
+        {
+            var token = tokens[index];
+            if (token.StartsWith("-", StringComparison.Ordinal))
+            {
+                continue;
+            }
+
+            return token;
+        }
+
+        return app.Id;
+    }
+
     private static string? TryGetExecutableOnPath(AppItem app, string currentPlatform)
     {
         var detectExecutable = currentPlatform switch
         {
             PlatformService.Windows => app.WindowsInstall?.DetectExecutable,
             PlatformService.Linux => app.LinuxInstall?.DetectExecutable,
+            PlatformService.MacOS => app.MacOSInstall?.DetectExecutable,
             _ => string.Empty
         };
 

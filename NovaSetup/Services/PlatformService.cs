@@ -1,5 +1,6 @@
-using NovaSetup.Models;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
+using NovaSetup.Models;
 
 namespace NovaSetup.Services;
 
@@ -9,7 +10,8 @@ public sealed class PlatformService
     {
         Unknown,
         Windows,
-        Linux
+        Linux,
+        MacOS
     }
 
     public sealed class PlatformInfo
@@ -23,9 +25,10 @@ public sealed class PlatformService
         public string Icon { get; init; } = "OS";
     }
 
-    public const string Windows = "Windows";
-    public const string Linux = "Linux";
-    public const string Unknown = "Unknown";
+    public const string Windows = "windows";
+    public const string Linux = "linux";
+    public const string MacOS = "macos";
+    public const string Unknown = "unknown";
 
     public static string GetArchitecture()
     {
@@ -48,25 +51,89 @@ public sealed class PlatformService
         return string.Equals(GetArchitecture(), "x64", StringComparison.OrdinalIgnoreCase);
     }
 
+    public static bool IsWindows()
+    {
+        return RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
+    }
+
+    public static bool IsLinux()
+    {
+        return RuntimeInformation.IsOSPlatform(OSPlatform.Linux);
+    }
+
+    public static bool IsMacOS()
+    {
+        return RuntimeInformation.IsOSPlatform(OSPlatform.OSX);
+    }
+
     public static string GetCurrentPlatform()
     {
-        if (OperatingSystem.IsWindows())
+        if (IsWindows())
         {
             return Windows;
         }
 
-        if (OperatingSystem.IsLinux())
+        if (IsLinux())
         {
             return Linux;
+        }
+
+        if (IsMacOS())
+        {
+            return MacOS;
         }
 
         return Unknown;
     }
 
-    // Simple UI-friendly platform result.
+    public static string GetPackageManager()
+    {
+        if (IsWindows())
+        {
+            if (CommandExists("where.exe", "winget"))
+            {
+                return "winget";
+            }
+
+            if (CommandExists("where.exe", "choco"))
+            {
+                return "choco";
+            }
+
+            return "direct";
+        }
+
+        if (IsLinux())
+        {
+            if (CommandExists("which", "apt"))
+            {
+                return "apt";
+            }
+
+            if (CommandExists("which", "snap"))
+            {
+                return "snap";
+            }
+
+            if (CommandExists("which", "flatpak"))
+            {
+                return "flatpak";
+            }
+
+            return "direct";
+        }
+
+        if (IsMacOS())
+        {
+            return CommandExists("which", "brew") ? "brew" : "direct";
+        }
+
+        return "direct";
+    }
+
     public PlatformInfo GetCurrentPlatformInfo()
     {
-        if (OperatingSystem.IsWindows())
+        if (IsWindows())
         {
             return new PlatformInfo
             {
@@ -77,7 +144,7 @@ public sealed class PlatformService
             };
         }
 
-        if (OperatingSystem.IsLinux())
+        if (IsLinux())
         {
             return new PlatformInfo
             {
@@ -85,6 +152,17 @@ public sealed class PlatformService
                 Id = Linux,
                 Label = "Linux",
                 Icon = "LNX"
+            };
+        }
+
+        if (IsMacOS())
+        {
+            return new PlatformInfo
+            {
+                Kind = PlatformKind.MacOS,
+                Id = MacOS,
+                Label = "macOS",
+                Icon = "MAC"
             };
         }
 
@@ -108,6 +186,7 @@ public sealed class PlatformService
         {
             Windows => "Windows",
             Linux => "Linux",
+            MacOS => "macOS",
             _ => "Unknown OS"
         };
     }
@@ -118,6 +197,7 @@ public sealed class PlatformService
         {
             Windows => "WIN",
             Linux => "LNX",
+            MacOS => "MAC",
             _ => "OS"
         };
     }
@@ -133,7 +213,48 @@ public sealed class PlatformService
         {
             Windows => support.Windows,
             Linux => support.Linux,
+            MacOS => support.MacOS,
             _ => false
         };
+    }
+
+    private static bool CommandExists(string fileName, string arguments)
+    {
+        try
+        {
+            using var process = new Process
+            {
+                StartInfo = new ProcessStartInfo
+                {
+                    FileName = fileName,
+                    Arguments = arguments,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    UseShellExecute = false,
+                    CreateNoWindow = true
+                }
+            };
+
+            process.Start();
+            if (!process.WaitForExit(3000))
+            {
+                try
+                {
+                    process.Kill(entireProcessTree: true);
+                }
+                catch
+                {
+                    // Best-effort cleanup.
+                }
+
+                return false;
+            }
+
+            return process.ExitCode == 0;
+        }
+        catch
+        {
+            return false;
+        }
     }
 }

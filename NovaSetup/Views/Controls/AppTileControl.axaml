@@ -29,17 +29,13 @@
       </Grid>
       
       <!-- Icon -->
-      <Border Grid.Row="1"
-              Width="48" Height="48"
-              CornerRadius="14"
-              Background="{DynamicResource AppIconBackgroundBrush}"
-              BoxShadow="inset 0 1 0 0 #26FFFFFF"
-              HorizontalAlignment="Center" VerticalAlignment="Center"
-              Margin="0,8,0,0">
-        <TextBlock Text="{Binding #Root.Item.IconGlyph}"
-                   FontSize="22" FontWeight="Bold"
-                   HorizontalAlignment="Center" VerticalAlignment="Center" />
-      </Border>
+      <controls:AppLogoControl Grid.Row="1"
+                               LogoUrl="{Binding #Root.Item.LogoUrl}"
+                               FallbackGlyph="{Binding #Root.Item.IconGlyph}"
+                               LogoSize="48"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center"
+                               Margin="0,8,0,0" />
       
       <!-- Name -->
       <TextBlock Grid.Row="2"

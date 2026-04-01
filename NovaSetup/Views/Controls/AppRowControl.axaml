@@ -65,17 +65,10 @@
       <Grid Grid.Column="1"
             ColumnDefinitions="36,*"
             ColumnSpacing="10">
-        <Border Width="32"
-                Height="32"
-                CornerRadius="10"
-                Background="{DynamicResource AppIconBackgroundBrush}"
-                BoxShadow="inset 0 1 0 0 #26FFFFFF"
-                VerticalAlignment="Center">
-          <TextBlock Text="{Binding #Root.Item.IconGlyph}"
-                     HorizontalAlignment="Center"
-                     VerticalAlignment="Center"
-                     FontWeight="Bold" />
-        </Border>
+        <controls:AppLogoControl LogoUrl="{Binding #Root.Item.LogoUrl}"
+                                 FallbackGlyph="{Binding #Root.Item.IconGlyph}"
+                                 LogoSize="32"
+                                 VerticalAlignment="Center" />
 
         <StackPanel Grid.Column="1"
                     Spacing="1">

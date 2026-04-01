@@ -178,6 +178,12 @@ public sealed class ProfileService
             value = value.Replace(invalidCharacter, '_');
         }
 
+        // Prevent path traversal: strip directory separators and collapse dot sequences
+        value = value
+            .Replace("..", "_", StringComparison.Ordinal)
+            .Replace("/", "_", StringComparison.Ordinal)
+            .Replace("\\", "_", StringComparison.Ordinal);
+
         return string.IsNullOrWhiteSpace(value) ? "My Setup" : value;
     }
 
@@ -210,7 +216,16 @@ public sealed class ProfileService
 
     private static string GetProfileFilePath(string profileName)
     {
-        return Path.Combine(ProfilesDirectory, $"{NormalizeProfileName(profileName)}.nova");
+        var normalized = NormalizeProfileName(profileName);
+        var candidate = Path.GetFullPath(Path.Combine(ProfilesDirectory, $"{normalized}.nova"));
+
+        // Final safety check: ensure the resolved path is still inside our profiles directory
+        if (!candidate.StartsWith(Path.GetFullPath(ProfilesDirectory), StringComparison.OrdinalIgnoreCase))
+        {
+            candidate = Path.Combine(ProfilesDirectory, "My Setup.nova");
+        }
+
+        return candidate;
     }
 
     private static async Task SaveProfileToPathAsync(NovaProfile profile, string filePath)

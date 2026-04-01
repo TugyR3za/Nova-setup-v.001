@@ -96,6 +96,7 @@ public class ScriptRunnerService
         }
         catch (Exception ex)
         {
+            TryKillProcess(process);
             _loggingService?.LogWarning(
                 $"[ScriptRunner] Failed to run {scriptPhase} script for {appId}: {ex.Message}");
             return new ScriptResult(false, -1, string.Empty, ex.Message);
@@ -177,9 +178,12 @@ public class ScriptRunnerService
             return;
         }
 
+        var end = Math.Min(combinedOutput.Length, 500);
+        if (end < combinedOutput.Length && char.IsLowSurrogate(combinedOutput[end]))
+            end--;
         var trimmed = combinedOutput.Length <= 500
             ? combinedOutput
-            : combinedOutput[..500];
+            : string.Concat(combinedOutput.AsSpan(0, end), "...");
         _loggingService?.LogDebug(
             $"[ScriptRunner] {scriptPhase} script output for {appId}: {trimmed}");
     }

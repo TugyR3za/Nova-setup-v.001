@@ -1,0 +1,23 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="NovaSetup.Views.Controls.AppLogoControl"
+             x:Name="Root">
+  <Border x:Name="LogoContainer"
+          Background="{DynamicResource AppIconBackgroundBrush}"
+          BoxShadow="inset 0 1 0 0 #26FFFFFF">
+    <Grid>
+      <Viewbox x:Name="LogoViewbox"
+               Stretch="Uniform"
+               IsVisible="False">
+        <Path x:Name="LogoPath"
+              Fill="{DynamicResource TextPrimaryBrush}"
+              Stretch="Uniform" />
+      </Viewbox>
+
+      <TextBlock x:Name="FallbackGlyphText"
+                 HorizontalAlignment="Center"
+                 VerticalAlignment="Center"
+                 FontWeight="Bold" />
+    </Grid>
+  </Border>
+</UserControl>

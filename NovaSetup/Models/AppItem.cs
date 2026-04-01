@@ -15,7 +15,7 @@ public class AppItem : ObservableObject
     public const string StatusInstalling = "Installing";
     public const string StatusUpdateAvailable = "Update Available";
     public const string StatusWillBeSkipped = "Will Be Skipped";
-    public const string StatusUnsupportedOnCurrentOs = "Unsupported on this OS";
+    public const string StatusUnsupportedOnCurrentOs = "Not available on this platform";
     public const string StatusNeedsManualInstall = "Needs Manual Install";
     public const string StatusSkipped = "Skipped";
     public const string StatusFailed = "Failed";
@@ -28,6 +28,7 @@ public class AppItem : ObservableObject
     private string _homepageUrl = string.Empty;
     private string _description = string.Empty;
     private string _iconPath = string.Empty;
+    private string? _logoUrl;
     private string _wingetId = string.Empty;
     private string _version = string.Empty;
     private string _installedVersion = string.Empty;
@@ -38,6 +39,7 @@ public class AppItem : ObservableObject
     private PlatformSupport _supportedPlatforms = new();
     private InstallDefinition? _windowsInstall;
     private InstallDefinition? _linuxInstall;
+    private InstallDefinition? _macOSInstall;
     private bool _isSelected;
     private bool _isInstalled;
     private bool _isSupportedOnCurrentPlatform = true;
@@ -119,6 +121,15 @@ public class AppItem : ObservableObject
     {
         get => _iconPath;
         set => SetProperty(ref _iconPath, value);
+    }
+
+    [JsonPropertyName("logoUrl")]
+    public string? LogoUrl
+    {
+        get => _logoUrl;
+        set => SetProperty(
+            ref _logoUrl,
+            string.IsNullOrWhiteSpace(value) ? null : value.Trim());
     }
 
     public string WingetId
@@ -214,6 +225,20 @@ public class AppItem : ObservableObject
         set
         {
             if (SetProperty(ref _linuxInstall, value))
+            {
+                OnPropertyChanged(nameof(HasInstallScripts));
+                OnPropertyChanged(nameof(CanShowPreferencesButton));
+                OnPropertyChanged(nameof(InstallScriptsPreferenceMenuText));
+            }
+        }
+    }
+
+    public InstallDefinition? MacOSInstall
+    {
+        get => _macOSInstall;
+        set
+        {
+            if (SetProperty(ref _macOSInstall, value))
             {
                 OnPropertyChanged(nameof(HasInstallScripts));
                 OnPropertyChanged(nameof(CanShowPreferencesButton));
@@ -473,7 +498,9 @@ public class AppItem : ObservableObject
         !string.IsNullOrWhiteSpace(WindowsInstall?.PreInstallScript) ||
         !string.IsNullOrWhiteSpace(WindowsInstall?.PostInstallScript) ||
         !string.IsNullOrWhiteSpace(LinuxInstall?.PreInstallScript) ||
-        !string.IsNullOrWhiteSpace(LinuxInstall?.PostInstallScript);
+        !string.IsNullOrWhiteSpace(LinuxInstall?.PostInstallScript) ||
+        !string.IsNullOrWhiteSpace(MacOSInstall?.PreInstallScript) ||
+        !string.IsNullOrWhiteSpace(MacOSInstall?.PostInstallScript);
 
     [JsonIgnore]
     public bool CanShowPreferencesButton => IsInstalled || HasInstallScripts;

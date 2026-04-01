@@ -241,7 +241,7 @@ public sealed class AppUpdateService
 
         if (OperatingSystem.IsMacOS())
         {
-            return "macos";
+            return PlatformService.MacOS;
         }
 
         return PlatformService.Unknown;
@@ -360,6 +360,8 @@ public sealed class AppUpdateService
             HomepageUrl = source.HomepageUrl,
             Description = source.Description,
             IconPath = source.IconPath,
+            LogoUrl = source.LogoUrl,
+            WingetId = source.WingetId,
             Version = source.Version,
             InstalledVersion = source.InstalledVersion,
             License = source.License,
@@ -374,10 +376,12 @@ public sealed class AppUpdateService
             SupportedPlatforms = new PlatformSupport
             {
                 Windows = source.SupportedPlatforms.Windows,
-                Linux = source.SupportedPlatforms.Linux
+                Linux = source.SupportedPlatforms.Linux,
+                MacOS = source.SupportedPlatforms.MacOS
             },
             WindowsInstall = CloneInstallDefinition(source.WindowsInstall),
             LinuxInstall = CloneInstallDefinition(source.LinuxInstall),
+            MacOSInstall = CloneInstallDefinition(source.MacOSInstall),
             IsSupportedOnCurrentPlatform = source.IsSupportedOnCurrentPlatform,
             SupportsSilentInstall = source.SupportsSilentInstall,
             IsInstalled = source.IsInstalled

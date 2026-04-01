@@ -1,673 +1,2760 @@
 [
-  {
-    "Id": "firefox",
-    "Name": "Mozilla Firefox",
-    "Category": "Browsers",
-    "PublisherName": "Mozilla",
-    "Version": "148.0.2",
-    "License": "Mozilla Public License 2.0",
-    "ReleaseNotesUrl": "https://www.mozilla.org/firefox/releasenotes/",
-    "Tags": [
-      "browser",
-      "web",
-      "privacy",
-      "productivity"
-    ],
-    "HomepageUrl": "https://www.mozilla.org/firefox/",
-    "Description": "Privacy-focused web browser.",
-    "IconPath": "Assets/icons/firefox.png",
-    "SupportedPlatforms": {
-      "Windows": true,
-      "Linux": true
+    {
+        "Id":  "firefox",
+        "Name":  "Mozilla Firefox",
+        "Category":  "Browsers",
+        "PublisherName":  "Mozilla",
+        "Version":  "148.0.2",
+        "License":  "Mozilla Public License 2.0",
+        "ReleaseNotesUrl":  "https://www.mozilla.org/firefox/releasenotes/",
+        "Tags":  [
+                     "browser",
+                     "web",
+                     "privacy",
+                     "productivity"
+                 ],
+        "HomepageUrl":  "https://www.mozilla.org/firefox/",
+        "Description":  "Privacy-focused web browser.",
+        "IconPath":  "Assets/icons/firefox.png",
+        "SupportedPlatforms":  {
+                                   "Windows":  true,
+                                   "Linux":  true,
+                                   "macOS":  true
+                               },
+        "WindowsInstall":  {
+                               "InstallerUrl":  "",
+                               "InstallerUrl32":  "https://download-installer.cdn.mozilla.net/pub/firefox/releases/148.0.2/win32/en-US/Firefox%20Setup%20148.0.2.exe",
+                               "InstallerUrl64":  "https://download-installer.cdn.mozilla.net/pub/firefox/releases/148.0.2/win64/en-US/Firefox%20Setup%20148.0.2.exe",
+                               "InstallerUrlArm64":  "https://download-installer.cdn.mozilla.net/pub/firefox/releases/148.0.2/win64-aarch64/en-US/Firefox%20Setup%20148.0.2.exe",
+                               "InstallerFileName":  "FirefoxInstaller.exe",
+                               "Sha25632":  "7F902FD955B81E558EA0E370DCBA4D3BAD58E4EB771CBBCA9ACE9FF6707EC6C4",
+                               "Sha25664":  "CD037C70015AAF17AE65D09734FBE295E1B8419164B076F1702BA9B8399DDBD8",
+                               "VirusTotalUrl":  "https://www.virustotal.com/gui/file/CD037C70015AAF17AE65D09734FBE295E1B8419164B076F1702BA9B8399DDBD8",
+                               "VirusTotalRatio":  "0/17",
+                               "VirusTotalScanDate":  "2026-03-28T00:00:00Z",
+                               "Architecture":  "",
+                               "HasArm64Support":  true,
+                               "Command":  "winget install --id Mozilla.Firefox -e --accept-source-agreements --accept-package-agreements",
+                               "SilentCommand":  "winget install --id Mozilla.Firefox -e --silent --accept-source-agreements --accept-package-agreements",
+                               "SilentArguments":  "-ms",
+                               "RequiresRestart":  false,
+                               "NeedsManualInstall":  false,
+                               "DetectDisplayNameContains":  "Mozilla Firefox",
+                               "DetectExecutable":  "firefox"
+                           },
+        "LinuxInstall":  {
+                             "Command":  "sudo apt-get install -y firefox",
+                             "SilentCommand":  "sudo apt-get install -y firefox",
+                             "RequiresRestart":  false,
+                             "NeedsManualInstall":  false,
+                             "DetectExecutable":  "firefox"
+                         },
+        "SupportsSilentInstall":  true,
+        "MacOSInstall":  {
+                             "Command":  "brew install --cask firefox",
+                             "SilentCommand":  "brew install --cask firefox",
+                             "RequiresRestart":  false,
+                             "NeedsManualInstall":  false,
+                             "DetectExecutable":  "firefox"
+                         },
+        "logoUrl":  "https://cdn.simpleicons.org/firefox"
     },
-    "WindowsInstall": {
-      "InstallerUrl": "",
-      "InstallerUrl32": "https://download-installer.cdn.mozilla.net/pub/firefox/releases/148.0.2/win32/en-US/Firefox%20Setup%20148.0.2.exe",
-      "InstallerUrl64": "https://download-installer.cdn.mozilla.net/pub/firefox/releases/148.0.2/win64/en-US/Firefox%20Setup%20148.0.2.exe",
-      "InstallerUrlArm64": "https://download-installer.cdn.mozilla.net/pub/firefox/releases/148.0.2/win64-aarch64/en-US/Firefox%20Setup%20148.0.2.exe",
-      "InstallerFileName": "FirefoxInstaller.exe",
-      "Sha25632": "7F902FD955B81E558EA0E370DCBA4D3BAD58E4EB771CBBCA9ACE9FF6707EC6C4",
-      "Sha25664": "CD037C70015AAF17AE65D09734FBE295E1B8419164B076F1702BA9B8399DDBD8",
-      "VirusTotalUrl": "https://www.virustotal.com/gui/file/CD037C70015AAF17AE65D09734FBE295E1B8419164B076F1702BA9B8399DDBD8",
-      "VirusTotalRatio": "0/17",
-      "VirusTotalScanDate": "2026-03-28T00:00:00Z",
-      "Architecture": "",
-      "HasArm64Support": true,
-      "Command": "winget install --id Mozilla.Firefox -e --accept-source-agreements --accept-package-agreements",
-      "SilentCommand": "winget install --id Mozilla.Firefox -e --silent --accept-source-agreements --accept-package-agreements",
-      "SilentArguments": "-ms",
-      "RequiresRestart": false,
-      "NeedsManualInstall": false,
-      "DetectDisplayNameContains": "Mozilla Firefox",
-      "DetectExecutable": "firefox"
+    {
+        "Id":  "chrome",
+        "Name":  "Google Chrome",
+        "Category":  "Browsers",
+        "PublisherName":  "Google",
+        "Version":  "146.0.7680.76",
+        "License":  "Freeware",
+        "ReleaseNotesUrl":  "https://chromereleases.googleblog.com/2026/03/stable-channel-update-for-desktop_12.html",
+        "Tags":  [
+                     "browser",
+                     "web",
+                     "sync",
+                     "productivity"
+                 ],
+        "HomepageUrl":  "https://www.google.com/chrome/",
+        "Description":  "Mainstream browser with sync support.",
+        "IconPath":  "Assets/icons/chrome.png",
+        "SupportedPlatforms":  {
+                                   "Windows":  true,
+                                   "Linux":  true,
+                                   "macOS":  true
+                               },
+        "WindowsInstall":  {
+                               "InstallerUrl":  "",
+                               "InstallerUrl32":  "https://dl.google.com/dl/chrome/install/googlechromestandaloneenterprise.msi",
+                               "InstallerUrl64":  "https://dl.google.com/dl/chrome/install/googlechromestandaloneenterprise64.msi",
+                               "InstallerUrlArm64":  "https://dl.google.com/dl/chrome/install/googlechromestandaloneenterprise64.msi",
+                               "InstallerFileName":  "ChromeInstaller.msi",
+                               "Sha25632":  "D08F2C2920AFB38FDB01DA2CB2672E2C7AFEE07713FBD1F3142EC008C8FBFA3F",
+                               "Sha25664":  "B99E81E6AC689703F5E190F9197E4D4DADC7D3003F4F28BD58C21FBE07ABAFC5",
+                               "Architecture":  "",
+                               "HasArm64Support":  true,
+                               "Command":  "winget install --id Google.Chrome -e --accept-source-agreements --accept-package-agreements",
+                               "SilentCommand":  "winget install --id Google.Chrome -e --silent --accept-source-agreements --accept-package-agreements",
+                               "SilentArguments":  "/qn /norestart",
+                               "PreInstallScript":  "Stop-Process -Name \u0027chrome\u0027 -Force -ErrorAction SilentlyContinue",
+                               "PostInstallScript":  "",
+                               "RequiresRestart":  false,
+                               "NeedsManualInstall":  false,
+                               "DetectDisplayNameContains":  "Google Chrome",
+                               "DetectExecutable":  "chrome"
+                           },
+        "LinuxInstall":  {
+                             "Command":  "sudo apt-get install -y google-chrome-stable",
+                             "SilentCommand":  "sudo apt-get install -y google-chrome-stable",
+                             "RequiresRestart":  false,
+                             "NeedsManualInstall":  false,
+                             "DetectExecutable":  "google-chrome"
+                         },
+        "SupportsSilentInstall":  true,
+        "MacOSInstall":  {
+                             "Command":  "brew install --cask google-chrome",
+                             "SilentCommand":  "brew install --cask google-chrome",
+                             "RequiresRestart":  false,
+                             "NeedsManualInstall":  false,
+                             "DetectExecutable":  ""
+                         },
+        "logoUrl":  "https://cdn.simpleicons.org/googlechrome"
     },
-    "LinuxInstall": {
-      "Command": "sudo apt-get install -y firefox",
-      "SilentCommand": "sudo apt-get install -y firefox",
-      "RequiresRestart": false,
-      "NeedsManualInstall": false,
-      "DetectExecutable": "firefox"
+    {
+        "Id":  "discord",
+        "Name":  "Discord",
+        "Category":  "Communication",
+        "PublisherName":  "Discord Inc.",
+        "Version":  "1.0.9229",
+        "License":  "Freeware",
+        "ReleaseNotesUrl":  "https://discord.com/tags/changelog",
+        "Tags":  [
+                     "chat",
+                     "voice",
+                     "communication",
+                     "gaming"
+                 ],
+        "HomepageUrl":  "https://discord.com/",
+        "Description":  "Voice and text chat app.",
+        "IconPath":  "Assets/icons/discord.png",
+        "SupportedPlatforms":  {
+                                   "Windows":  true,
+                                   "Linux":  true,
+                                   "macOS":  true
+                               },
+        "WindowsInstall":  {
+                               "InstallerUrl":  "https://stable.dl2.discordapp.net/distro/app/stable/win/x64/1.0.9229/DiscordSetup.exe",
+                               "InstallerUrl32":  "",
+                               "InstallerUrl64":  "https://stable.dl2.discordapp.net/distro/app/stable/win/x64/1.0.9229/DiscordSetup.exe",
+                               "InstallerFileName":  "DiscordSetup.exe",
+                               "Sha256":  "BB0C1DC9AB226E47294F9A1A50C7A3BD423617573E0A9330BC8FDBDDC37E17C7",
+                               "Architecture":  "x64",
+                               "Command":  "winget install --id Discord.Discord -e --accept-source-agreements --accept-package-agreements",
+                               "SilentCommand":  "winget install --id Discord.Discord -e --silent --accept-source-agreements --accept-package-agreements",
+                               "SilentArguments":  "-s",
+                               "RequiresRestart":  false,
+                               "NeedsManualInstall":  false,
+                               "DetectDisplayNameContains":  "Discord",
+                               "DetectExecutable":  "Discord"
+                           },
+        "LinuxInstall":  {
+                             "Command":  "sudo apt-get install -y discord",
+                             "SilentCommand":  "sudo apt-get install -y discord",
+                             "RequiresRestart":  false,
+                             "NeedsManualInstall":  false,
+                             "DetectExecutable":  "discord"
+                         },
+        "SupportsSilentInstall":  true,
+        "MacOSInstall":  {
+                             "Command":  "brew install --cask discord",
+                             "SilentCommand":  "brew install --cask discord",
+                             "RequiresRestart":  false,
+                             "NeedsManualInstall":  false,
+                             "DetectExecutable":  ""
+                         },
+        "logoUrl":  "https://cdn.simpleicons.org/discord"
     },
-    "SupportsSilentInstall": true
-  },
-  {
-    "Id": "chrome",
-    "Name": "Google Chrome",
-    "Category": "Browsers",
-    "PublisherName": "Google",
-    "Version": "146.0.7680.76",
-    "License": "Freeware",
-    "ReleaseNotesUrl": "https://chromereleases.googleblog.com/2026/03/stable-channel-update-for-desktop_12.html",
-    "Tags": [
-      "browser",
-      "web",
-      "sync",
-      "productivity"
-    ],
-    "HomepageUrl": "https://www.google.com/chrome/",
-    "Description": "Mainstream browser with sync support.",
-    "IconPath": "Assets/icons/chrome.png",
-    "SupportedPlatforms": {
-      "Windows": true,
-      "Linux": true
+    {
+        "Id":  "steam",
+        "Name":  "Steam",
+        "Category":  "Gaming",
+        "PublisherName":  "Valve",
+        "Version":  "2.10.91.91",
+        "License":  "Freeware",
+        "ReleaseNotesUrl":  "https://store.steampowered.com/news/app/593110",
+        "Tags":  [
+                     "games",
+                     "launcher",
+                     "store",
+                     "gaming"
+                 ],
+        "HomepageUrl":  "https://store.steampowered.com/",
+        "Description":  "PC gaming platform and launcher.",
+        "IconPath":  "Assets/icons/steam.png",
+        "SupportedPlatforms":  {
+                                   "Windows":  true,
+                                   "Linux":  true,
+                                   "macOS":  true
+                               },
+        "WindowsInstall":  {
+                               "InstallerUrl":  "https://cdn.akamai.steamstatic.com/client/installer/SteamSetup.exe",
+                               "InstallerUrl32":  "https://cdn.akamai.steamstatic.com/client/installer/SteamSetup.exe",
+                               "InstallerUrl64":  "https://cdn.akamai.steamstatic.com/client/installer/SteamSetup.exe",
+                               "InstallerFileName":  "SteamSetup.exe",
+                               "Sha256":  "7D3654531C32D941B8CAE81C4137FC542172BFA9635F169CB392F245A0A12BCB",
+                               "Architecture":  "",
+                               "Command":  "winget install --id Valve.Steam -e --accept-source-agreements --accept-package-agreements",
+                               "SilentCommand":  "winget install --id Valve.Steam -e --silent --accept-source-agreements --accept-package-agreements",
+                               "SilentArguments":  "/S",
+                               "RequiresRestart":  false,
+                               "NeedsManualInstall":  false,
+                               "DetectDisplayNameContains":  "Steam",
+                               "DetectExecutable":  "steam"
+                           },
+        "LinuxInstall":  {
+                             "Command":  "sudo apt-get install -y steam",
+                             "SilentCommand":  "sudo apt-get install -y steam",
+                             "RequiresRestart":  false,
+                             "NeedsManualInstall":  false,
+                             "DetectExecutable":  "steam"
+                         },
+        "SupportsSilentInstall":  true,
+        "MacOSInstall":  {
+                             "Command":  "brew install --cask steam",
+                             "SilentCommand":  "brew install --cask steam",
+                             "RequiresRestart":  false,
+                             "NeedsManualInstall":  false,
+                             "DetectExecutable":  "steam"
+                         },
+        "logoUrl":  "https://cdn.simpleicons.org/steam"
     },
-    "WindowsInstall": {
-      "InstallerUrl": "",
-      "InstallerUrl32": "https://dl.google.com/dl/chrome/install/googlechromestandaloneenterprise.msi",
-      "InstallerUrl64": "https://dl.google.com/dl/chrome/install/googlechromestandaloneenterprise64.msi",
-      "InstallerUrlArm64": "https://dl.google.com/dl/chrome/install/googlechromestandaloneenterprise64.msi",
-      "InstallerFileName": "ChromeInstaller.msi",
-      "Sha25632": "D08F2C2920AFB38FDB01DA2CB2672E2C7AFEE07713FBD1F3142EC008C8FBFA3F",
-      "Sha25664": "B99E81E6AC689703F5E190F9197E4D4DADC7D3003F4F28BD58C21FBE07ABAFC5",
-      "Architecture": "",
-      "HasArm64Support": true,
-      "Command": "winget install --id Google.Chrome -e --accept-source-agreements --accept-package-agreements",
-      "SilentCommand": "winget install --id Google.Chrome -e --silent --accept-source-agreements --accept-package-agreements",
-      "SilentArguments": "/qn /norestart",
-      "PreInstallScript": "Stop-Process -Name 'chrome' -Force -ErrorAction SilentlyContinue",
-      "PostInstallScript": "",
-      "RequiresRestart": false,
-      "NeedsManualInstall": false,
-      "DetectDisplayNameContains": "Google Chrome",
-      "DetectExecutable": "chrome"
+    {
+        "Id":  "vscode",
+        "Name":  "Visual Studio Code",
+        "Category":  "Coding",
+        "PublisherName":  "Microsoft",
+        "Version":  "1.111.0",
+        "License":  "MIT",
+        "ReleaseNotesUrl":  "https://code.visualstudio.com/updates/v1_111",
+        "Tags":  [
+                     "editor",
+                     "coding",
+                     "ide",
+                     "developer-tools"
+                 ],
+        "HomepageUrl":  "https://code.visualstudio.com/",
+        "Description":  "Code editor for development workflows.",
+        "IconPath":  "Assets/icons/vscode.png",
+        "SupportedPlatforms":  {
+                                   "Windows":  true,
+                                   "Linux":  true,
+                                   "macOS":  true
+                               },
+        "WindowsInstall":  {
+                               "InstallerUrl":  "",
+                               "InstallerUrl32":  "",
+                               "InstallerUrl64":  "https://vscode.download.prss.microsoft.com/dbazure/download/stable/ce099c1ed25d9eb3076c11e4a280f3eb52b4fbeb/VSCodeUserSetup-x64-1.111.0.exe",
+                               "InstallerUrlArm64":  "https://code.visualstudio.com/sha/download?build=stable\u0026os=win32-arm64-user",
+                               "InstallerFileName":  "VSCodeUserSetup.exe",
+                               "Sha25664":  "9696B363A5D1261C876DBC05F6777C042BF452426B4D48CCCF6229FACA5D8CAA",
+                               "Architecture":  "x64",
+                               "HasArm64Support":  true,
+                               "Command":  "winget install --id Microsoft.VisualStudioCode -e --accept-source-agreements --accept-package-agreements",
+                               "SilentCommand":  "winget install --id Microsoft.VisualStudioCode -e --silent --accept-source-agreements --accept-package-agreements",
+                               "SilentArguments":  "/VERYSILENT /NORESTART /MERGETASKS=!runcode",
+                               "RequiresRestart":  false,
+                               "NeedsManualInstall":  false,
+                               "DetectDisplayNameContains":  "Microsoft Visual Studio Code",
+                               "DetectExecutable":  "code"
+                           },
+        "LinuxInstall":  {
+                             "Command":  "sudo apt-get install -y code",
+                             "SilentCommand":  "sudo apt-get install -y code",
+                             "RequiresRestart":  false,
+                             "NeedsManualInstall":  false,
+                             "DetectExecutable":  "code"
+                         },
+        "SupportsSilentInstall":  true,
+        "MacOSInstall":  {
+                             "Command":  "brew install --cask visual-studio-code",
+                             "SilentCommand":  "brew install --cask visual-studio-code",
+                             "RequiresRestart":  false,
+                             "NeedsManualInstall":  false,
+                             "DetectExecutable":  "code"
+                         },
+        "logoUrl":  "https://cdn.simpleicons.org/visualstudiocode"
     },
-    "LinuxInstall": {
-      "Command": "sudo apt-get install -y google-chrome-stable",
-      "SilentCommand": "sudo apt-get install -y google-chrome-stable",
-      "RequiresRestart": false,
-      "NeedsManualInstall": false,
-      "DetectExecutable": "google-chrome"
+    {
+        "Id":  "git",
+        "Name":  "Git",
+        "Category":  "Coding",
+        "PublisherName":  "Git Project",
+        "Version":  "2.53.0",
+        "License":  "GNU General Public License v2.0",
+        "ReleaseNotesUrl":  "https://git-scm.com/docs/git/2.53.0",
+        "Tags":  [
+                     "git",
+                     "version-control",
+                     "developer-tools",
+                     "coding"
+                 ],
+        "HomepageUrl":  "https://git-scm.com/",
+        "Description":  "Version control system.",
+        "IconPath":  "Assets/icons/git.png",
+        "SupportedPlatforms":  {
+                                   "Windows":  true,
+                                   "Linux":  true,
+                                   "macOS":  true
+                               },
+        "WindowsInstall":  {
+                               "InstallerUrl":  "",
+                               "InstallerUrl32":  "",
+                               "InstallerUrl64":  "https://github.com/git-for-windows/git/releases/download/v2.53.0.windows.1/Git-2.53.0-64-bit.exe",
+                               "InstallerUrlArm64":  "https://github.com/git-for-windows/git/releases/download/v2.53.0.windows.1/Git-2.53.0-arm64.exe",
+                               "InstallerFileName":  "GitInstaller.exe",
+                               "Sha25664":  "3B4E1B127DBEBEA2931F2AE9DFAFA0C2343A488A1222009DEBFE78D5D335E6A9",
+                               "Architecture":  "x64",
+                               "HasArm64Support":  true,
+                               "Command":  "winget install --id Git.Git -e --accept-source-agreements --accept-package-agreements",
+                               "SilentCommand":  "winget install --id Git.Git -e --silent --accept-source-agreements --accept-package-agreements",
+                               "SilentArguments":  "/VERYSILENT /NORESTART /NOCANCEL /SP-",
+                               "RequiresRestart":  false,
+                               "NeedsManualInstall":  false,
+                               "DetectDisplayNameContains":  "Git",
+                               "DetectExecutable":  "git"
+                           },
+        "LinuxInstall":  {
+                             "Command":  "sudo apt-get install -y git",
+                             "SilentCommand":  "sudo apt-get install -y git",
+                             "RequiresRestart":  false,
+                             "NeedsManualInstall":  false,
+                             "DetectExecutable":  "git"
+                         },
+        "SupportsSilentInstall":  true,
+        "MacOSInstall":  {
+                             "Command":  "brew install git",
+                             "SilentCommand":  "brew install git",
+                             "RequiresRestart":  false,
+                             "NeedsManualInstall":  false,
+                             "DetectExecutable":  "git"
+                         },
+        "logoUrl":  "https://cdn.simpleicons.org/git"
     },
-    "SupportsSilentInstall": true
-  },
-  {
-    "Id": "discord",
-    "Name": "Discord",
-    "Category": "Communication",
-    "PublisherName": "Discord Inc.",
-    "Version": "1.0.9229",
-    "License": "Freeware",
-    "ReleaseNotesUrl": "https://discord.com/tags/changelog",
-    "Tags": [
-      "chat",
-      "voice",
-      "communication",
-      "gaming"
-    ],
-    "HomepageUrl": "https://discord.com/",
-    "Description": "Voice and text chat app.",
-    "IconPath": "Assets/icons/discord.png",
-    "SupportedPlatforms": {
-      "Windows": true,
-      "Linux": true
+    {
+        "Id":  "nvidia-app",
+        "Name":  "NVIDIA App",
+        "Category":  "Drivers",
+        "PublisherName":  "NVIDIA",
+        "Version":  "11.0.6.383",
+        "License":  "Freeware",
+        "ReleaseNotesUrl":  "https://www.nvidia.com/en-in/software/nvidia-app/release-highlights/",
+        "Tags":  [
+                     "drivers",
+                     "gpu",
+                     "nvidia",
+                     "gaming"
+                 ],
+        "HomepageUrl":  "https://www.nvidia.com/software/nvidia-app/",
+        "Description":  "Driver and gaming tools for NVIDIA GPUs.",
+        "IconPath":  "Assets/icons/nvidia.png",
+        "SupportedPlatforms":  {
+                                   "Windows":  true,
+                                   "Linux":  false,
+                                   "macOS":  false
+                               },
+        "WindowsInstall":  {
+                               "InstallerUrl":  "https://us.download.nvidia.com/nvapp/client/11.0.6.383/NVIDIA_app_v11.0.6.383.exe",
+                               "InstallerUrl32":  "",
+                               "InstallerUrl64":  "https://us.download.nvidia.com/nvapp/client/11.0.6.383/NVIDIA_app_v11.0.6.383.exe",
+                               "InstallerFileName":  "NVIDIA_app.exe",
+                               "Architecture":  "x64",
+                               "Command":  "winget install --id NVIDIA.NVIDIAApp -e --accept-source-agreements --accept-package-agreements",
+                               "SilentCommand":  "winget install --id NVIDIA.NVIDIAApp -e --silent --accept-source-agreements --accept-package-agreements",
+                               "RequiresRestart":  true,
+                               "RequiresElevation":  true,
+                               "NeedsManualInstall":  false,
+                               "DetectDisplayNameContains":  "NVIDIA App",
+                               "DetectExecutable":  "nvidia-smi"
+                           },
+        "LinuxInstall":  {
+                             "Command":  "",
+                             "SilentCommand":  "",
+                             "RequiresRestart":  false,
+                             "NeedsManualInstall":  true,
+                             "DetectExecutable":  "nvidia-smi"
+                         },
+        "SupportsSilentInstall":  false,
+        "logoUrl":  null
     },
-    "WindowsInstall": {
-      "InstallerUrl": "https://stable.dl2.discordapp.net/distro/app/stable/win/x64/1.0.9229/DiscordSetup.exe",
-      "InstallerUrl32": "",
-      "InstallerUrl64": "https://stable.dl2.discordapp.net/distro/app/stable/win/x64/1.0.9229/DiscordSetup.exe",
-      "InstallerFileName": "DiscordSetup.exe",
-      "Sha256": "BB0C1DC9AB226E47294F9A1A50C7A3BD423617573E0A9330BC8FDBDDC37E17C7",
-      "Architecture": "x64",
-      "Command": "winget install --id Discord.Discord -e --accept-source-agreements --accept-package-agreements",
-      "SilentCommand": "winget install --id Discord.Discord -e --silent --accept-source-agreements --accept-package-agreements",
-      "SilentArguments": "-s",
-      "RequiresRestart": false,
-      "NeedsManualInstall": false,
-      "DetectDisplayNameContains": "Discord",
-      "DetectExecutable": "Discord"
+    {
+        "Id":  "logitech-ghub",
+        "Name":  "Logitech G HUB",
+        "Category":  "Accessories",
+        "PublisherName":  "Logitech",
+        "Version":  "2026.1.828335",
+        "License":  "Freeware",
+        "ReleaseNotesUrl":  "https://support.logi.com/hc/en-us/articles/360048967733-G-HUB-Update-Release-Notes",
+        "Tags":  [
+                     "accessories",
+                     "peripherals",
+                     "gaming",
+                     "logitech"
+                 ],
+        "HomepageUrl":  "https://www.logitechg.com/ghub",
+        "Description":  "Accessory suite for Logitech devices.",
+        "IconPath":  "Assets/icons/logitech.png",
+        "SupportedPlatforms":  {
+                                   "Windows":  true,
+                                   "Linux":  false,
+                                   "macOS":  false
+                               },
+        "WindowsInstall":  {
+                               "InstallerUrl":  "https://download01.logi.com/web/ftp/pub/techsupport/gaming/lghub_installer.exe",
+                               "InstallerUrl32":  "",
+                               "InstallerUrl64":  "https://download01.logi.com/web/ftp/pub/techsupport/gaming/lghub_installer.exe",
+                               "InstallerFileName":  "lghub_installer.exe",
+                               "Sha256":  "FF561ACD94B159BBE6ABAF1277371A76C42A7899C895EB8C520E9C18C44C7469",
+                               "Architecture":  "x64",
+                               "Command":  "winget install --id Logitech.GHUB -e --accept-source-agreements --accept-package-agreements",
+                               "SilentCommand":  "winget install --id Logitech.GHUB -e --silent --accept-source-agreements --accept-package-agreements",
+                               "RequiresRestart":  false,
+                               "RequiresElevation":  true,
+                               "NeedsManualInstall":  false,
+                               "VerificationTimeoutSeconds":  240,
+                               "DetectDisplayNameContains":  "Logitech G HUB",
+                               "DetectExecutable":  "lghub"
+                           },
+        "LinuxInstall":  {
+                             "Command":  "",
+                             "SilentCommand":  "",
+                             "RequiresRestart":  false,
+                             "NeedsManualInstall":  true,
+                             "DetectExecutable":  ""
+                         },
+        "SupportsSilentInstall":  false,
+        "logoUrl":  null
     },
-    "LinuxInstall": {
-      "Command": "sudo apt-get install -y discord",
-      "SilentCommand": "sudo apt-get install -y discord",
-      "RequiresRestart": false,
-      "NeedsManualInstall": false,
-      "DetectExecutable": "discord"
+    {
+        "Id":  "htop",
+        "Name":  "htop",
+        "Category":  "Utilities",
+        "PublisherName":  "htop dev team",
+        "Version":  "3.4.1",
+        "License":  "GNU General Public License v2.0",
+        "ReleaseNotesUrl":  "https://github.com/htop-dev/htop/releases",
+        "Tags":  [
+                     "terminal",
+                     "monitoring",
+                     "system",
+                     "linux"
+                 ],
+        "HomepageUrl":  "https://htop.dev/",
+        "Description":  "Interactive process viewer for Linux.",
+        "IconPath":  "Assets/icons/htop.png",
+        "SupportedPlatforms":  {
+                                   "Windows":  false,
+                                   "Linux":  true,
+                                   "macOS":  false
+                               },
+        "WindowsInstall":  {
+                               "InstallerUrl32":  "",
+                               "InstallerUrl64":  "",
+                               "Architecture":  "",
+                               "Command":  "",
+                               "SilentCommand":  "",
+                               "RequiresRestart":  false,
+                               "NeedsManualInstall":  true,
+                               "DetectExecutable":  ""
+                           },
+        "LinuxInstall":  {
+                             "InstallerUrl32":  "",
+                             "InstallerUrl64":  "",
+                             "Architecture":  "",
+                             "Command":  "sudo apt-get install -y htop",
+                             "SilentCommand":  "sudo apt-get install -y htop",
+                             "RequiresRestart":  false,
+                             "NeedsManualInstall":  false,
+                             "DetectExecutable":  "htop"
+                         },
+        "SupportsSilentInstall":  true,
+        "logoUrl":  null
     },
-    "SupportsSilentInstall": true
-  },
-  {
-    "Id": "steam",
-    "Name": "Steam",
-    "Category": "Gaming",
-    "PublisherName": "Valve",
-    "Version": "2.10.91.91",
-    "License": "Freeware",
-    "ReleaseNotesUrl": "https://store.steampowered.com/news/app/593110",
-    "Tags": [
-      "games",
-      "launcher",
-      "store",
-      "gaming"
-    ],
-    "HomepageUrl": "https://store.steampowered.com/",
-    "Description": "PC gaming platform and launcher.",
-    "IconPath": "Assets/icons/steam.png",
-    "SupportedPlatforms": {
-      "Windows": true,
-      "Linux": true
+    {
+        "Id":  "vlc",
+        "Name":  "VLC media player",
+        "Category":  "Media",
+        "PublisherName":  "VideoLAN",
+        "Version":  "3.0.23",
+        "License":  "GNU General Public License v2.0",
+        "ReleaseNotesUrl":  "https://www.videolan.org/developers/vlc-branch/NEWS",
+        "Tags":  [
+                     "media",
+                     "video",
+                     "audio",
+                     "player"
+                 ],
+        "HomepageUrl":  "https://www.videolan.org/vlc/",
+        "Description":  "Open-source media player for video, audio, and streaming playback.",
+        "IconPath":  "",
+        "SupportedPlatforms":  {
+                                   "Windows":  true,
+                                   "Linux":  true,
+                                   "macOS":  true
+                               },
+        "WindowsInstall":  {
+                               "VirusTotalUrl":  "https://www.virustotal.com/gui/file/4DA1996FD534EFC1145014209C4C631D85BA14CCC2CC23224943DB4CFFF89E2E",
+                               "VirusTotalRatio":  "0/22",
+                               "VirusTotalScanDate":  "2026-03-28T00:00:00Z",
+                               "Command":  "winget install --id VideoLAN.VLC -e --accept-source-agreements --accept-package-agreements",
+                               "SilentCommand":  "winget install --id VideoLAN.VLC -e --silent --accept-source-agreements --accept-package-agreements",
+                               "RequiresRestart":  false,
+                               "NeedsManualInstall":  false,
+                               "DetectDisplayNameContains":  "VLC media player",
+                               "DetectExecutable":  "vlc"
+                           },
+        "LinuxInstall":  {
+                             "Command":  "sudo apt-get install -y vlc",
+                             "SilentCommand":  "sudo apt-get install -y vlc",
+                             "RequiresRestart":  false,
+                             "NeedsManualInstall":  false,
+                             "DetectExecutable":  "vlc"
+                         },
+        "SupportsSilentInstall":  true,
+        "MacOSInstall":  {
+                             "Command":  "brew install --cask vlc",
+                             "SilentCommand":  "brew install --cask vlc",
+                             "RequiresRestart":  false,
+                             "NeedsManualInstall":  false,
+                             "DetectExecutable":  "vlc"
+                         },
+        "logoUrl":  null
     },
-    "WindowsInstall": {
-      "InstallerUrl": "https://cdn.akamai.steamstatic.com/client/installer/SteamSetup.exe",
-      "InstallerUrl32": "https://cdn.akamai.steamstatic.com/client/installer/SteamSetup.exe",
-      "InstallerUrl64": "https://cdn.akamai.steamstatic.com/client/installer/SteamSetup.exe",
-      "InstallerFileName": "SteamSetup.exe",
-      "Sha256": "7D3654531C32D941B8CAE81C4137FC542172BFA9635F169CB392F245A0A12BCB",
-      "Architecture": "",
-      "Command": "winget install --id Valve.Steam -e --accept-source-agreements --accept-package-agreements",
-      "SilentCommand": "winget install --id Valve.Steam -e --silent --accept-source-agreements --accept-package-agreements",
-      "SilentArguments": "/S",
-      "RequiresRestart": false,
-      "NeedsManualInstall": false,
-      "DetectDisplayNameContains": "Steam",
-      "DetectExecutable": "steam"
+    {
+        "Id":  "7zip",
+        "Name":  "7-Zip",
+        "Category":  "Utilities",
+        "PublisherName":  "Igor Pavlov",
+        "Version":  "25.01",
+        "License":  "GNU LGPL",
+        "ReleaseNotesUrl":  "https://www.7-zip.org/history.txt",
+        "Tags":  [
+                     "archive",
+                     "compression",
+                     "zip",
+                     "utility"
+                 ],
+        "HomepageUrl":  "https://www.7-zip.org/",
+        "Description":  "File archiver with high compression ratio.",
+        "IconPath":  "",
+        "SupportedPlatforms":  {
+                                   "Windows":  true,
+                                   "Linux":  true,
+                                   "macOS":  true
+                               },
+        "WindowsInstall":  {
+                               "VirusTotalUrl":  "https://www.virustotal.com/gui/file/78AFA2A1C773CAF3CF7EDF62F857D2A8A5DA55FB0FFF5DA416074C0D28B2B55F",
+                               "VirusTotalRatio":  "0/71",
+                               "VirusTotalScanDate":  "2026-03-28T00:00:00Z",
+                               "Command":  "winget install --id 7zip.7zip -e --accept-source-agreements --accept-package-agreements",
+                               "SilentCommand":  "winget install --id 7zip.7zip -e --silent --accept-source-agreements --accept-package-agreements",
+                               "RequiresRestart":  false,
+                               "NeedsManualInstall":  false,
+                               "DetectDisplayNameContains":  "7-Zip",
+                               "DetectExecutable":  "7zFM"
+                           },
+        "LinuxInstall":  {
+                             "Command":  "sudo apt-get install -y p7zip-full",
+                             "SilentCommand":  "sudo apt-get install -y p7zip-full",
+                             "RequiresRestart":  false,
+                             "NeedsManualInstall":  false,
+                             "DetectExecutable":  "7z"
+                         },
+        "SupportsSilentInstall":  true,
+        "MacOSInstall":  {
+                             "Command":  "brew install p7zip",
+                             "SilentCommand":  "brew install p7zip",
+                             "RequiresRestart":  false,
+                             "NeedsManualInstall":  false,
+                             "DetectExecutable":  "7z"
+                         },
+        "logoUrl":  null
     },
-    "LinuxInstall": {
-      "Command": "sudo apt-get install -y steam",
-      "SilentCommand": "sudo apt-get install -y steam",
-      "RequiresRestart": false,
-      "NeedsManualInstall": false,
-      "DetectExecutable": "steam"
+    {
+        "Id":  "cpu-z-portable",
+        "Name":  "CPU-Z Portable",
+        "Category":  "Portable Tools",
+        "PublisherName":  "CPUID",
+        "Version":  "2.19",
+        "License":  "Freeware",
+        "ReleaseNotesUrl":  "https://www.cpuid.com/softwares/cpu-z.html",
+        "Tags":  [
+                     "portable",
+                     "hardware",
+                     "cpu",
+                     "diagnostics"
+                 ],
+        "HomepageUrl":  "https://www.cpuid.com/softwares/cpu-z.html",
+        "Description":  "Portable CPU and hardware information utility.",
+        "IconPath":  "",
+        "SupportedPlatforms":  {
+                                   "Windows":  true,
+                                   "Linux":  false,
+                                   "macOS":  false
+                               },
+        "IsPortable":  true,
+        "WindowsInstall":  {
+                               "PortableArchiveUrl":  "https://www.cpuid.com/downloads/cpu-z/cpu-z_2.19-en.zip",
+                               "PortableExecutable":  "cpuz_x64.exe",
+                               "PortableArchiveType":  "zip",
+                               "PortableSubfolder":  "",
+                               "VirusTotalUrl":  "https://www.virustotal.com/gui/file/08579E8756E429A357FDD7CAA3B1642F32FDE4FB",
+                               "VirusTotalRatio":  "0/22",
+                               "VirusTotalScanDate":  "2026-03-28T00:00:00Z",
+                               "DetectExecutable":  "cpuz_x64.exe"
+                           },
+        "SupportsSilentInstall":  true,
+        "logoUrl":  null
     },
-    "SupportsSilentInstall": true
-  },
-  {
-    "Id": "vscode",
-    "Name": "Visual Studio Code",
-    "Category": "Coding",
-    "PublisherName": "Microsoft",
-    "Version": "1.111.0",
-    "License": "MIT",
-    "ReleaseNotesUrl": "https://code.visualstudio.com/updates/v1_111",
-    "Tags": [
-      "editor",
-      "coding",
-      "ide",
-      "developer-tools"
-    ],
-    "HomepageUrl": "https://code.visualstudio.com/",
-    "Description": "Code editor for development workflows.",
-    "IconPath": "Assets/icons/vscode.png",
-    "SupportedPlatforms": {
-      "Windows": true,
-      "Linux": true
+    {
+        "Id":  "hwinfo-portable",
+        "Name":  "HWiNFO Portable",
+        "Category":  "Portable Tools",
+        "PublisherName":  "REALiX",
+        "Version":  "8.44",
+        "License":  "Freeware",
+        "ReleaseNotesUrl":  "https://www.hwinfo.com/version-history/",
+        "Tags":  [
+                     "portable",
+                     "hardware",
+                     "monitoring",
+                     "diagnostics"
+                 ],
+        "HomepageUrl":  "https://www.hwinfo.com/download/",
+        "Description":  "Portable system information and hardware monitoring tool.",
+        "IconPath":  "",
+        "SupportedPlatforms":  {
+                                   "Windows":  true,
+                                   "Linux":  false,
+                                   "macOS":  false
+                               },
+        "IsPortable":  true,
+        "WindowsInstall":  {
+                               "PortableArchiveUrl":  "https://www.hwinfo.com/files/hwi_844.zip",
+                               "PortableExecutable":  "HWiNFO64.exe",
+                               "PortableArchiveType":  "zip",
+                               "PortableSubfolder":  "",
+                               "VirusTotalUrl":  "https://www.virustotal.com/gui/file/72EA3FA91E6BDE264BE6DFFF75A30F15CB0FC43D9884ED4491B16EA4A3A37D9D",
+                               "VirusTotalRatio":  "0/72",
+                               "VirusTotalScanDate":  "2026-03-28T00:00:00Z",
+                               "DetectExecutable":  "HWiNFO64.exe"
+                           },
+        "SupportsSilentInstall":  true,
+        "logoUrl":  null
     },
-    "WindowsInstall": {
-      "InstallerUrl": "",
-      "InstallerUrl32": "",
-      "InstallerUrl64": "https://vscode.download.prss.microsoft.com/dbazure/download/stable/ce099c1ed25d9eb3076c11e4a280f3eb52b4fbeb/VSCodeUserSetup-x64-1.111.0.exe",
-      "InstallerUrlArm64": "https://code.visualstudio.com/sha/download?build=stable&os=win32-arm64-user",
-      "InstallerFileName": "VSCodeUserSetup.exe",
-      "Sha25664": "9696B363A5D1261C876DBC05F6777C042BF452426B4D48CCCF6229FACA5D8CAA",
-      "Architecture": "x64",
-      "HasArm64Support": true,
-      "Command": "winget install --id Microsoft.VisualStudioCode -e --accept-source-agreements --accept-package-agreements",
-      "SilentCommand": "winget install --id Microsoft.VisualStudioCode -e --silent --accept-source-agreements --accept-package-agreements",
-      "SilentArguments": "/VERYSILENT /NORESTART /MERGETASKS=!runcode",
-      "RequiresRestart": false,
-      "NeedsManualInstall": false,
-      "DetectDisplayNameContains": "Microsoft Visual Studio Code",
-      "DetectExecutable": "code"
+    {
+        "Id":  "notepadpp-portable",
+        "Name":  "Notepad++ Portable",
+        "Category":  "Portable Tools",
+        "PublisherName":  "Notepad++ Team",
+        "Version":  "8.9",
+        "License":  "GNU General Public License v3.0",
+        "ReleaseNotesUrl":  "https://github.com/notepad-plus-plus/notepad-plus-plus/releases",
+        "Tags":  [
+                     "portable",
+                     "editor",
+                     "text",
+                     "developer-tools"
+                 ],
+        "HomepageUrl":  "https://notepad-plus-plus.org/",
+        "Description":  "Portable text editor for editing code and plain text files.",
+        "IconPath":  "",
+        "SupportedPlatforms":  {
+                                   "Windows":  true,
+                                   "Linux":  false,
+                                   "macOS":  false
+                               },
+        "IsPortable":  true,
+        "WindowsInstall":  {
+                               "PortableArchiveUrl":  "https://github.com/notepad-plus-plus/notepad-plus-plus/releases/download/v8.9/npp.8.9.portable.x64.zip",
+                               "PortableExecutable":  "notepad++.exe",
+                               "PortableArchiveType":  "zip",
+                               "PortableSubfolder":  "",
+                               "VirusTotalUrl":  "https://www.virustotal.com/gui/file/78D0328C3D1CFECDB6B978F69D833B66FBE3C297E2E10491F5D87811A0A4A7FA",
+                               "VirusTotalRatio":  "0/22",
+                               "VirusTotalScanDate":  "2026-03-28T00:00:00Z",
+                               "DetectExecutable":  "notepad++.exe"
+                           },
+        "SupportsSilentInstall":  true,
+        "logoUrl":  null
     },
-    "LinuxInstall": {
-      "Command": "sudo apt-get install -y code",
-      "SilentCommand": "sudo apt-get install -y code",
-      "RequiresRestart": false,
-      "NeedsManualInstall": false,
-      "DetectExecutable": "code"
+    {
+        "Id":  "dotnet-runtime-8",
+        "Name":  ".NET Runtime 8",
+        "Category":  "Dependencies",
+        "PublisherName":  "Microsoft",
+        "HomepageUrl":  "https://dotnet.microsoft.com/en-us/download/dotnet/8.0",
+        "Description":  ".NET 8 runtime used by apps that require the .NET runtime to already exist on the machine.",
+        "SupportedPlatforms":  {
+                                   "Windows":  true,
+                                   "Linux":  false,
+                                   "macOS":  false
+                               },
+        "WindowsInstall":  {
+                               "Command":  "winget install --id Microsoft.DotNet.Runtime.8 -e --accept-source-agreements --accept-package-agreements",
+                               "SilentCommand":  "winget install --id Microsoft.DotNet.Runtime.8 -e --silent --accept-source-agreements --accept-package-agreements",
+                               "RequiresRestart":  false,
+                               "NeedsManualInstall":  false,
+                               "DetectDisplayNameContains":  ".NET Runtime 8",
+                               "DetectExecutable":  "dotnet"
+                           },
+        "SupportsSilentInstall":  true,
+        "IsHidden":  true,
+        "logoUrl":  "https://cdn.simpleicons.org/dotnet"
     },
-    "SupportsSilentInstall": true
-  },
-  {
-    "Id": "git",
-    "Name": "Git",
-    "Category": "Coding",
-    "PublisherName": "Git Project",
-    "Version": "2.53.0",
-    "License": "GNU General Public License v2.0",
-    "ReleaseNotesUrl": "https://git-scm.com/docs/git/2.53.0",
-    "Tags": [
-      "git",
-      "version-control",
-      "developer-tools",
-      "coding"
-    ],
-    "HomepageUrl": "https://git-scm.com/",
-    "Description": "Version control system.",
-    "IconPath": "Assets/icons/git.png",
-    "SupportedPlatforms": {
-      "Windows": true,
-      "Linux": true
+    {
+        "Id":  "vcredist-2022",
+        "Name":  "VC++ Redistributable 2022",
+        "Category":  "Dependencies",
+        "PublisherName":  "Microsoft",
+        "HomepageUrl":  "https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist",
+        "Description":  "Microsoft Visual C++ 2022 Redistributable runtime.",
+        "SupportedPlatforms":  {
+                                   "Windows":  true,
+                                   "Linux":  false,
+                                   "macOS":  false
+                               },
+        "WindowsInstall":  {
+                               "Command":  "winget install --id Microsoft.VCRedist.2022.x64 -e --accept-source-agreements --accept-package-agreements",
+                               "SilentCommand":  "winget install --id Microsoft.VCRedist.2022.x64 -e --silent --accept-source-agreements --accept-package-agreements",
+                               "RequiresRestart":  false,
+                               "NeedsManualInstall":  false,
+                               "DetectDisplayNameContains":  "Microsoft Visual C++ 2022",
+                               "DetectExecutable":  ""
+                           },
+        "SupportsSilentInstall":  true,
+        "IsHidden":  true,
+        "logoUrl":  "https://cdn.simpleicons.org/microsoft"
     },
-    "WindowsInstall": {
-      "InstallerUrl": "",
-      "InstallerUrl32": "",
-      "InstallerUrl64": "https://github.com/git-for-windows/git/releases/download/v2.53.0.windows.1/Git-2.53.0-64-bit.exe",
-      "InstallerUrlArm64": "https://github.com/git-for-windows/git/releases/download/v2.53.0.windows.1/Git-2.53.0-arm64.exe",
-      "InstallerFileName": "GitInstaller.exe",
-      "Sha25664": "3B4E1B127DBEBEA2931F2AE9DFAFA0C2343A488A1222009DEBFE78D5D335E6A9",
-      "Architecture": "x64",
-      "HasArm64Support": true,
-      "Command": "winget install --id Git.Git -e --accept-source-agreements --accept-package-agreements",
-      "SilentCommand": "winget install --id Git.Git -e --silent --accept-source-agreements --accept-package-agreements",
-      "SilentArguments": "/VERYSILENT /NORESTART /NOCANCEL /SP-",
-      "RequiresRestart": false,
-      "NeedsManualInstall": false,
-      "DetectDisplayNameContains": "Git",
-      "DetectExecutable": "git"
+    {
+        "Id":  "directx",
+        "Name":  "DirectX End-User Runtime",
+        "Category":  "Dependencies",
+        "PublisherName":  "Microsoft",
+        "HomepageUrl":  "https://www.microsoft.com/en-us/download/details.aspx?id=35",
+        "Description":  "DirectX runtime components used by apps and games that require the DirectX end-user runtime.",
+        "SupportedPlatforms":  {
+                                   "Windows":  true,
+                                   "Linux":  false,
+                                   "macOS":  false
+                               },
+        "WindowsInstall":  {
+                               "Command":  "winget install --id Microsoft.DirectX -e --accept-source-agreements --accept-package-agreements",
+                               "SilentCommand":  "winget install --id Microsoft.DirectX -e --silent --accept-source-agreements --accept-package-agreements",
+                               "RequiresRestart":  false,
+                               "NeedsManualInstall":  false,
+                               "DetectDisplayNameContains":  "DirectX",
+                               "DetectExecutable":  ""
+                           },
+        "SupportsSilentInstall":  true,
+        "IsHidden":  true,
+        "logoUrl":  null
     },
-    "LinuxInstall": {
-      "Command": "sudo apt-get install -y git",
-      "SilentCommand": "sudo apt-get install -y git",
-      "RequiresRestart": false,
-      "NeedsManualInstall": false,
-      "DetectExecutable": "git"
+    {
+        "Id":  "spotify",
+        "Name":  "Spotify",
+        "Category":  "Media",
+        "PublisherName":  "Spotify",
+        "Version":  "1.2.64.408",
+        "License":  "Freeware",
+        "ReleaseNotesUrl":  "https://community.spotify.com/t5/Desktop-Windows/bd-p/desktop_windows",
+        "Tags":  [
+                     "music",
+                     "streaming",
+                     "media",
+                     "audio"
+                 ],
+        "HomepageUrl":  "https://www.spotify.com/",
+        "Description":  "Music streaming desktop app.",
+        "IconPath":  "",
+        "SupportedPlatforms":  {
+                                   "Windows":  true,
+                                   "Linux":  true,
+                                   "macOS":  true
+                               },
+        "WindowsInstall":  {
+                               "Command":  "winget install --id Spotify.Spotify -e --accept-source-agreements --accept-package-agreements",
+                               "SilentCommand":  "winget install --id Spotify.Spotify -e --silent --accept-source-agreements --accept-package-agreements",
+                               "RequiresRestart":  false,
+                               "NeedsManualInstall":  false,
+                               "DetectDisplayNameContains":  "Spotify",
+                               "DetectExecutable":  "spotify"
+                           },
+        "LinuxInstall":  {
+                             "Command":  "sudo snap install spotify",
+                             "SilentCommand":  "sudo snap install spotify",
+                             "RequiresRestart":  false,
+                             "NeedsManualInstall":  false,
+                             "DetectExecutable":  "spotify"
+                         },
+        "MacOSInstall":  {
+                             "Command":  "brew install --cask spotify",
+                             "SilentCommand":  "brew install --cask spotify",
+                             "RequiresRestart":  false,
+                             "NeedsManualInstall":  false,
+                             "DetectExecutable":  ""
+                         },
+        "SupportsSilentInstall":  true,
+        "logoUrl":  "https://cdn.simpleicons.org/spotify"
     },
-    "SupportsSilentInstall": true
-  },
-  {
-    "Id": "nvidia-app",
-    "Name": "NVIDIA App",
-    "Category": "Drivers",
-    "PublisherName": "NVIDIA",
-    "Version": "11.0.6.383",
-    "License": "Freeware",
-    "ReleaseNotesUrl": "https://www.nvidia.com/en-in/software/nvidia-app/release-highlights/",
-    "Tags": [
-      "drivers",
-      "gpu",
-      "nvidia",
-      "gaming"
-    ],
-    "HomepageUrl": "https://www.nvidia.com/software/nvidia-app/",
-    "Description": "Driver and gaming tools for NVIDIA GPUs.",
-    "IconPath": "Assets/icons/nvidia.png",
-    "SupportedPlatforms": {
-      "Windows": true,
-      "Linux": false
+    {
+        "Id":  "brave-browser",
+        "Name":  "Brave Browser",
+        "Category":  "Browsers",
+        "PublisherName":  "Brave Software",
+        "Version":  "",
+        "License":  "",
+        "ReleaseNotesUrl":  "",
+        "Tags":  [
+                     "browser",
+                     "privacy",
+                     "web"
+                 ],
+        "HomepageUrl":  "",
+        "Description":  "Privacy-focused browser with built-in ad blocking.",
+        "IconPath":  "",
+        "logoUrl":  "https://cdn.simpleicons.org/brave",
+        "WingetId":  "Brave.Brave",
+        "SupportedPlatforms":  {
+                                   "Windows":  true,
+                                   "Linux":  true,
+                                   "macOS":  true
+                               },
+        "WindowsInstall":  {
+                               "Command":  "winget install --id Brave.Brave -e --accept-source-agreements --accept-package-agreements",
+                               "SilentCommand":  "winget install --id Brave.Brave -e --accept-source-agreements --accept-package-agreements --silent",
+                               "RequiresRestart":  false,
+                               "NeedsManualInstall":  false,
+                               "DetectDisplayNameContains":  "Brave",
+                               "DetectExecutable":  "brave"
+                           },
+        "LinuxInstall":  {
+                             "Command":  "sudo snap install brave",
+                             "SilentCommand":  "sudo snap install brave",
+                             "RequiresRestart":  false,
+                             "NeedsManualInstall":  false,
+                             "DetectExecutable":  "brave"
+                         },
+        "MacOSInstall":  {
+                             "Command":  "brew install --cask brave-browser",
+                             "SilentCommand":  "brew install --cask brave-browser",
+                             "RequiresRestart":  false,
+                             "NeedsManualInstall":  false,
+                             "DetectExecutable":  ""
+                         },
+        "SupportsSilentInstall":  true
     },
-    "WindowsInstall": {
-      "InstallerUrl": "https://us.download.nvidia.com/nvapp/client/11.0.6.383/NVIDIA_app_v11.0.6.383.exe",
-      "InstallerUrl32": "",
-      "InstallerUrl64": "https://us.download.nvidia.com/nvapp/client/11.0.6.383/NVIDIA_app_v11.0.6.383.exe",
-      "InstallerFileName": "NVIDIA_app.exe",
-      "Architecture": "x64",
-      "Command": "winget install --id NVIDIA.NVIDIAApp -e --accept-source-agreements --accept-package-agreements",
-      "SilentCommand": "winget install --id NVIDIA.NVIDIAApp -e --silent --accept-source-agreements --accept-package-agreements",
-      "RequiresRestart": true,
-      "RequiresElevation": true,
-      "NeedsManualInstall": false,
-      "DetectDisplayNameContains": "NVIDIA App",
-      "DetectExecutable": "nvidia-smi"
+    {
+        "Id":  "opera",
+        "Name":  "Opera",
+        "Category":  "Browsers",
+        "PublisherName":  "Opera Software",
+        "Version":  "",
+        "License":  "",
+        "ReleaseNotesUrl":  "",
+        "Tags":  [
+                     "browser",
+                     "web"
+                 ],
+        "HomepageUrl":  "",
+        "Description":  "Feature-rich browser with built-in workspace and sidebar tools.",
+        "IconPath":  "",
+        "logoUrl":  "https://cdn.simpleicons.org/opera",
+        "WingetId":  "Opera.Opera",
+        "SupportedPlatforms":  {
+                                   "Windows":  true,
+                                   "Linux":  true,
+                                   "macOS":  true
+                               },
+        "WindowsInstall":  {
+                               "Command":  "winget install --id Opera.Opera -e --accept-source-agreements --accept-package-agreements",
+                               "SilentCommand":  "winget install --id Opera.Opera -e --accept-source-agreements --accept-package-agreements --silent",
+                               "RequiresRestart":  false,
+                               "NeedsManualInstall":  false,
+                               "DetectDisplayNameContains":  "Opera",
+                               "DetectExecutable":  "opera"
+                           },
+        "LinuxInstall":  {
+                             "Command":  "sudo snap install opera",
+                             "SilentCommand":  "sudo snap install opera",
+                             "RequiresRestart":  false,
+                             "NeedsManualInstall":  false,
+                             "DetectExecutable":  "opera"
+                         },
+        "MacOSInstall":  {
+                             "Command":  "brew install --cask opera",
+                             "SilentCommand":  "brew install --cask opera",
+                             "RequiresRestart":  false,
+                             "NeedsManualInstall":  false,
+                             "DetectExecutable":  ""
+                         },
+        "SupportsSilentInstall":  true
     },
-    "LinuxInstall": {
-      "Command": "",
-      "SilentCommand": "",
-      "RequiresRestart": false,
-      "NeedsManualInstall": true,
-      "DetectExecutable": "nvidia-smi"
+    {
+        "Id":  "microsoft-edge",
+        "Name":  "Microsoft Edge",
+        "Category":  "Browsers",
+        "PublisherName":  "Microsoft",
+        "Version":  "",
+        "License":  "",
+        "ReleaseNotesUrl":  "",
+        "Tags":  [
+                     "browser",
+                     "web",
+                     "microsoft"
+                 ],
+        "HomepageUrl":  "",
+        "Description":  "Chromium-based browser with Microsoft account and enterprise features.",
+        "IconPath":  "",
+        "logoUrl":  "https://cdn.simpleicons.org/microsoftedge",
+        "WingetId":  "Microsoft.Edge",
+        "SupportedPlatforms":  {
+                                   "Windows":  true,
+                                   "Linux":  true,
+                                   "macOS":  true
+                               },
+        "WindowsInstall":  {
+                               "Command":  "winget install --id Microsoft.Edge -e --accept-source-agreements --accept-package-agreements",
+                               "SilentCommand":  "winget install --id Microsoft.Edge -e --accept-source-agreements --accept-package-agreements --silent",
+                               "RequiresRestart":  false,
+                               "NeedsManualInstall":  false,
+                               "DetectDisplayNameContains":  "Microsoft Edge",
+                               "DetectExecutable":  "msedge"
+                           },
+        "LinuxInstall":  {
+                             "Command":  "sudo apt-get install -y microsoft-edge-stable",
+                             "SilentCommand":  "sudo apt-get install -y microsoft-edge-stable",
+                             "RequiresRestart":  false,
+                             "NeedsManualInstall":  true,
+                             "DetectExecutable":  "microsoft-edge"
+                         },
+        "MacOSInstall":  {
+                             "Command":  "brew install --cask microsoft-edge",
+                             "SilentCommand":  "brew install --cask microsoft-edge",
+                             "RequiresRestart":  false,
+                             "NeedsManualInstall":  false,
+                             "DetectExecutable":  ""
+                         },
+        "SupportsSilentInstall":  true
     },
-    "SupportsSilentInstall": false
-  },
-  {
-    "Id": "logitech-ghub",
-    "Name": "Logitech G HUB",
-    "Category": "Accessories",
-    "PublisherName": "Logitech",
-    "Version": "2026.1.828335",
-    "License": "Freeware",
-    "ReleaseNotesUrl": "https://support.logi.com/hc/en-us/articles/360048967733-G-HUB-Update-Release-Notes",
-    "Tags": [
-      "accessories",
-      "peripherals",
-      "gaming",
-      "logitech"
-    ],
-    "HomepageUrl": "https://www.logitechg.com/ghub",
-    "Description": "Accessory suite for Logitech devices.",
-    "IconPath": "Assets/icons/logitech.png",
-    "SupportedPlatforms": {
-      "Windows": true,
-      "Linux": false
+    {
+        "Id":  "vivaldi",
+        "Name":  "Vivaldi",
+        "Category":  "Browsers",
+        "PublisherName":  "Vivaldi Technologies",
+        "Version":  "",
+        "License":  "",
+        "ReleaseNotesUrl":  "",
+        "Tags":  [
+                     "browser",
+                     "web"
+                 ],
+        "HomepageUrl":  "",
+        "Description":  "Highly customizable browser for power users.",
+        "IconPath":  "",
+        "logoUrl":  "https://cdn.simpleicons.org/vivaldi",
+        "WingetId":  "VivaldiTechnologies.Vivaldi",
+        "SupportedPlatforms":  {
+                                   "Windows":  true,
+                                   "Linux":  true,
+                                   "macOS":  true
+                               },
+        "WindowsInstall":  {
+                               "Command":  "winget install --id VivaldiTechnologies.Vivaldi -e --accept-source-agreements --accept-package-agreements",
+                               "SilentCommand":  "winget install --id VivaldiTechnologies.Vivaldi -e --accept-source-agreements --accept-package-agreements --silent",
+                               "RequiresRestart":  false,
+                               "NeedsManualInstall":  false,
+                               "DetectDisplayNameContains":  "Vivaldi",
+                               "DetectExecutable":  "vivaldi"
+                           },
+        "LinuxInstall":  {
+                             "Command":  "sudo apt-get install -y vivaldi-stable",
+                             "SilentCommand":  "sudo apt-get install -y vivaldi-stable",
+                             "RequiresRestart":  false,
+                             "NeedsManualInstall":  true,
+                             "DetectExecutable":  "vivaldi-stable"
+                         },
+        "MacOSInstall":  {
+                             "Command":  "brew install --cask vivaldi",
+                             "SilentCommand":  "brew install --cask vivaldi",
+                             "RequiresRestart":  false,
+                             "NeedsManualInstall":  false,
+                             "DetectExecutable":  ""
+                         },
+        "SupportsSilentInstall":  true
     },
-    "WindowsInstall": {
-      "InstallerUrl": "https://download01.logi.com/web/ftp/pub/techsupport/gaming/lghub_installer.exe",
-      "InstallerUrl32": "",
-      "InstallerUrl64": "https://download01.logi.com/web/ftp/pub/techsupport/gaming/lghub_installer.exe",
-      "InstallerFileName": "lghub_installer.exe",
-      "Sha256": "FF561ACD94B159BBE6ABAF1277371A76C42A7899C895EB8C520E9C18C44C7469",
-      "Architecture": "x64",
-      "Command": "winget install --id Logitech.GHUB -e --accept-source-agreements --accept-package-agreements",
-      "SilentCommand": "winget install --id Logitech.GHUB -e --silent --accept-source-agreements --accept-package-agreements",
-      "RequiresRestart": false,
-      "RequiresElevation": true,
-      "NeedsManualInstall": false,
-      "VerificationTimeoutSeconds": 240,
-      "DetectDisplayNameContains": "Logitech G HUB",
-      "DetectExecutable": "lghub"
+    {
+        "Id":  "slack",
+        "Name":  "Slack",
+        "Category":  "Communication",
+        "PublisherName":  "Slack Technologies",
+        "Version":  "",
+        "License":  "",
+        "ReleaseNotesUrl":  "",
+        "Tags":  [
+                     "chat",
+                     "communication",
+                     "work"
+                 ],
+        "HomepageUrl":  "",
+        "Description":  "Team messaging and collaboration workspace.",
+        "IconPath":  "",
+        "logoUrl":  "https://cdn.simpleicons.org/slack",
+        "WingetId":  "SlackTechnologies.Slack",
+        "SupportedPlatforms":  {
+                                   "Windows":  true,
+                                   "Linux":  true,
+                                   "macOS":  true
+                               },
+        "WindowsInstall":  {
+                               "Command":  "winget install --id SlackTechnologies.Slack -e --accept-source-agreements --accept-package-agreements",
+                               "SilentCommand":  "winget install --id SlackTechnologies.Slack -e --accept-source-agreements --accept-package-agreements --silent",
+                               "RequiresRestart":  false,
+                               "NeedsManualInstall":  false,
+                               "DetectDisplayNameContains":  "Slack",
+                               "DetectExecutable":  ""
+                           },
+        "LinuxInstall":  {
+                             "Command":  "sudo snap install slack",
+                             "SilentCommand":  "sudo snap install slack",
+                             "RequiresRestart":  false,
+                             "NeedsManualInstall":  false,
+                             "DetectExecutable":  "slack"
+                         },
+        "MacOSInstall":  {
+                             "Command":  "brew install --cask slack",
+                             "SilentCommand":  "brew install --cask slack",
+                             "RequiresRestart":  false,
+                             "NeedsManualInstall":  false,
+                             "DetectExecutable":  ""
+                         },
+        "SupportsSilentInstall":  true
     },
-    "LinuxInstall": {
-      "Command": "",
-      "SilentCommand": "",
-      "RequiresRestart": false,
-      "NeedsManualInstall": true,
-      "DetectExecutable": ""
+    {
+        "Id":  "zoom",
+        "Name":  "Zoom",
+        "Category":  "Communication",
+        "PublisherName":  "Zoom",
+        "Version":  "",
+        "License":  "",
+        "ReleaseNotesUrl":  "",
+        "Tags":  [
+                     "meetings",
+                     "video",
+                     "communication"
+                 ],
+        "HomepageUrl":  "",
+        "Description":  "Video meetings and screen sharing client.",
+        "IconPath":  "",
+        "logoUrl":  "https://cdn.simpleicons.org/zoom",
+        "WingetId":  "Zoom.Zoom",
+        "SupportedPlatforms":  {
+                                   "Windows":  true,
+                                   "Linux":  true,
+                                   "macOS":  true
+                               },
+        "WindowsInstall":  {
+                               "Command":  "winget install --id Zoom.Zoom -e --accept-source-agreements --accept-package-agreements",
+                               "SilentCommand":  "winget install --id Zoom.Zoom -e --accept-source-agreements --accept-package-agreements --silent",
+                               "RequiresRestart":  false,
+                               "NeedsManualInstall":  false,
+                               "DetectDisplayNameContains":  "Zoom",
+                               "DetectExecutable":  ""
+                           },
+        "LinuxInstall":  {
+                             "Command":  "sudo snap install zoom-client",
+                             "SilentCommand":  "sudo snap install zoom-client",
+                             "RequiresRestart":  false,
+                             "NeedsManualInstall":  false,
+                             "DetectExecutable":  "zoom-client"
+                         },
+        "MacOSInstall":  {
+                             "Command":  "brew install --cask zoom",
+                             "SilentCommand":  "brew install --cask zoom",
+                             "RequiresRestart":  false,
+                             "NeedsManualInstall":  false,
+                             "DetectExecutable":  ""
+                         },
+        "SupportsSilentInstall":  true
     },
-    "SupportsSilentInstall": false
-  },
-  {
-    "Id": "htop",
-    "Name": "htop",
-    "Category": "Utilities",
-    "PublisherName": "htop dev team",
-    "Version": "3.4.1",
-    "License": "GNU General Public License v2.0",
-    "ReleaseNotesUrl": "https://github.com/htop-dev/htop/releases",
-    "Tags": [
-      "terminal",
-      "monitoring",
-      "system",
-      "linux"
-    ],
-    "HomepageUrl": "https://htop.dev/",
-    "Description": "Interactive process viewer for Linux.",
-    "IconPath": "Assets/icons/htop.png",
-    "SupportedPlatforms": {
-      "Windows": false,
-      "Linux": true
+    {
+        "Id":  "microsoft-teams",
+        "Name":  "Microsoft Teams",
+        "Category":  "Communication",
+        "PublisherName":  "Microsoft",
+        "Version":  "",
+        "License":  "",
+        "ReleaseNotesUrl":  "",
+        "Tags":  [
+                     "chat",
+                     "meetings",
+                     "microsoft"
+                 ],
+        "HomepageUrl":  "",
+        "Description":  "Work chat and meetings app for Microsoft 365.",
+        "IconPath":  "",
+        "logoUrl":  "https://cdn.simpleicons.org/microsoftteams",
+        "WingetId":  "Microsoft.Teams",
+        "SupportedPlatforms":  {
+                                   "Windows":  true,
+                                   "Linux":  false,
+                                   "macOS":  true
+                               },
+        "WindowsInstall":  {
+                               "Command":  "winget install --id Microsoft.Teams -e --accept-source-agreements --accept-package-agreements",
+                               "SilentCommand":  "winget install --id Microsoft.Teams -e --accept-source-agreements --accept-package-agreements --silent",
+                               "RequiresRestart":  false,
+                               "NeedsManualInstall":  false,
+                               "DetectDisplayNameContains":  "Microsoft Teams",
+                               "DetectExecutable":  ""
+                           },
+        "LinuxInstall":  null,
+        "MacOSInstall":  {
+                             "Command":  "brew install --cask microsoft-teams",
+                             "SilentCommand":  "brew install --cask microsoft-teams",
+                             "RequiresRestart":  false,
+                             "NeedsManualInstall":  false,
+                             "DetectExecutable":  ""
+                         },
+        "SupportsSilentInstall":  true
     },
-    "WindowsInstall": {
-      "InstallerUrl32": "",
-      "InstallerUrl64": "",
-      "Architecture": "",
-      "Command": "",
-      "SilentCommand": "",
-      "RequiresRestart": false,
-      "NeedsManualInstall": true,
-      "DetectExecutable": ""
+    {
+        "Id":  "telegram",
+        "Name":  "Telegram",
+        "Category":  "Communication",
+        "PublisherName":  "Telegram",
+        "Version":  "",
+        "License":  "",
+        "ReleaseNotesUrl":  "",
+        "Tags":  [
+                     "chat",
+                     "communication"
+                 ],
+        "HomepageUrl":  "",
+        "Description":  "Cloud-based messaging client with desktop sync.",
+        "IconPath":  "",
+        "logoUrl":  "https://cdn.simpleicons.org/telegram",
+        "WingetId":  "Telegram.TelegramDesktop",
+        "SupportedPlatforms":  {
+                                   "Windows":  true,
+                                   "Linux":  true,
+                                   "macOS":  true
+                               },
+        "WindowsInstall":  {
+                               "Command":  "winget install --id Telegram.TelegramDesktop -e --accept-source-agreements --accept-package-agreements",
+                               "SilentCommand":  "winget install --id Telegram.TelegramDesktop -e --accept-source-agreements --accept-package-agreements --silent",
+                               "RequiresRestart":  false,
+                               "NeedsManualInstall":  false,
+                               "DetectDisplayNameContains":  "Telegram",
+                               "DetectExecutable":  ""
+                           },
+        "LinuxInstall":  {
+                             "Command":  "sudo apt-get install -y telegram-desktop",
+                             "SilentCommand":  "sudo apt-get install -y telegram-desktop",
+                             "RequiresRestart":  false,
+                             "NeedsManualInstall":  false,
+                             "DetectExecutable":  "telegram-desktop"
+                         },
+        "MacOSInstall":  {
+                             "Command":  "brew install --cask telegram",
+                             "SilentCommand":  "brew install --cask telegram",
+                             "RequiresRestart":  false,
+                             "NeedsManualInstall":  false,
+                             "DetectExecutable":  ""
+                         },
+        "SupportsSilentInstall":  true
     },
-    "LinuxInstall": {
-      "InstallerUrl32": "",
-      "InstallerUrl64": "",
-      "Architecture": "",
-      "Command": "sudo apt-get install -y htop",
-      "SilentCommand": "sudo apt-get install -y htop",
-      "RequiresRestart": false,
-      "NeedsManualInstall": false,
-      "DetectExecutable": "htop"
+    {
+        "Id":  "signal",
+        "Name":  "Signal",
+        "Category":  "Communication",
+        "PublisherName":  "Signal Foundation",
+        "Version":  "",
+        "License":  "",
+        "ReleaseNotesUrl":  "",
+        "Tags":  [
+                     "chat",
+                     "privacy",
+                     "communication"
+                 ],
+        "HomepageUrl":  "",
+        "Description":  "Private encrypted messaging desktop app.",
+        "IconPath":  "",
+        "logoUrl":  "https://cdn.simpleicons.org/signal",
+        "WingetId":  "OpenWhisperSystems.Signal",
+        "SupportedPlatforms":  {
+                                   "Windows":  true,
+                                   "Linux":  true,
+                                   "macOS":  true
+                               },
+        "WindowsInstall":  {
+                               "Command":  "winget install --id OpenWhisperSystems.Signal -e --accept-source-agreements --accept-package-agreements",
+                               "SilentCommand":  "winget install --id OpenWhisperSystems.Signal -e --accept-source-agreements --accept-package-agreements --silent",
+                               "RequiresRestart":  false,
+                               "NeedsManualInstall":  false,
+                               "DetectDisplayNameContains":  "Signal",
+                               "DetectExecutable":  ""
+                           },
+        "LinuxInstall":  {
+                             "Command":  "sudo snap install signal-desktop",
+                             "SilentCommand":  "sudo snap install signal-desktop",
+                             "RequiresRestart":  false,
+                             "NeedsManualInstall":  false,
+                             "DetectExecutable":  "signal-desktop"
+                         },
+        "MacOSInstall":  {
+                             "Command":  "brew install --cask signal",
+                             "SilentCommand":  "brew install --cask signal",
+                             "RequiresRestart":  false,
+                             "NeedsManualInstall":  false,
+                             "DetectExecutable":  ""
+                         },
+        "SupportsSilentInstall":  true
     },
-    "SupportsSilentInstall": true
-  },
-  {
-    "Id": "vlc",
-    "Name": "VLC media player",
-    "Category": "Media",
-    "PublisherName": "VideoLAN",
-    "Version": "3.0.23",
-    "License": "GNU General Public License v2.0",
-    "ReleaseNotesUrl": "https://www.videolan.org/developers/vlc-branch/NEWS",
-    "Tags": [
-      "media",
-      "video",
-      "audio",
-      "player"
-    ],
-    "HomepageUrl": "https://www.videolan.org/vlc/",
-    "Description": "Open-source media player for video, audio, and streaming playback.",
-    "IconPath": "",
-    "SupportedPlatforms": {
-      "Windows": true,
-      "Linux": true
+    {
+        "Id":  "whatsapp",
+        "Name":  "WhatsApp",
+        "Category":  "Communication",
+        "PublisherName":  "WhatsApp",
+        "Version":  "",
+        "License":  "",
+        "ReleaseNotesUrl":  "",
+        "Tags":  [
+                     "chat",
+                     "communication"
+                 ],
+        "HomepageUrl":  "",
+        "Description":  "Desktop client for WhatsApp messaging.",
+        "IconPath":  "",
+        "logoUrl":  "https://cdn.simpleicons.org/whatsapp",
+        "WingetId":  "9NKSQGP7F2NH",
+        "SupportedPlatforms":  {
+                                   "Windows":  true,
+                                   "Linux":  false,
+                                   "macOS":  true
+                               },
+        "WindowsInstall":  {
+                               "Command":  "winget install --id 9NKSQGP7F2NH -e --accept-source-agreements --accept-package-agreements",
+                               "SilentCommand":  "winget install --id 9NKSQGP7F2NH -e --accept-source-agreements --accept-package-agreements --silent",
+                               "RequiresRestart":  false,
+                               "NeedsManualInstall":  false,
+                               "DetectDisplayNameContains":  "WhatsApp",
+                               "DetectExecutable":  ""
+                           },
+        "LinuxInstall":  null,
+        "MacOSInstall":  {
+                             "Command":  "brew install --cask whatsapp",
+                             "SilentCommand":  "brew install --cask whatsapp",
+                             "RequiresRestart":  false,
+                             "NeedsManualInstall":  false,
+                             "DetectExecutable":  ""
+                         },
+        "SupportsSilentInstall":  true
     },
-    "WindowsInstall": {
-      "VirusTotalUrl": "https://www.virustotal.com/gui/file/4DA1996FD534EFC1145014209C4C631D85BA14CCC2CC23224943DB4CFFF89E2E",
-      "VirusTotalRatio": "0/22",
-      "VirusTotalScanDate": "2026-03-28T00:00:00Z",
-      "Command": "winget install --id VideoLAN.VLC -e --accept-source-agreements --accept-package-agreements",
-      "SilentCommand": "winget install --id VideoLAN.VLC -e --silent --accept-source-agreements --accept-package-agreements",
-      "RequiresRestart": false,
-      "NeedsManualInstall": false,
-      "DetectDisplayNameContains": "VLC media player",
-      "DetectExecutable": "vlc"
+    {
+        "Id":  "github-desktop",
+        "Name":  "GitHub Desktop",
+        "Category":  "Development Tools",
+        "PublisherName":  "GitHub",
+        "Version":  "",
+        "License":  "",
+        "ReleaseNotesUrl":  "",
+        "Tags":  [
+                     "git",
+                     "development",
+                     "github"
+                 ],
+        "HomepageUrl":  "",
+        "Description":  "Graphical Git client for GitHub workflows.",
+        "IconPath":  "",
+        "logoUrl":  "https://cdn.simpleicons.org/github",
+        "WingetId":  "GitHub.GitHubDesktop",
+        "SupportedPlatforms":  {
+                                   "Windows":  true,
+                                   "Linux":  false,
+                                   "macOS":  true
+                               },
+        "WindowsInstall":  {
+                               "Command":  "winget install --id GitHub.GitHubDesktop -e --accept-source-agreements --accept-package-agreements",
+                               "SilentCommand":  "winget install --id GitHub.GitHubDesktop -e --accept-source-agreements --accept-package-agreements --silent",
+                               "RequiresRestart":  false,
+                               "NeedsManualInstall":  false,
+                               "DetectDisplayNameContains":  "GitHub Desktop",
+                               "DetectExecutable":  ""
+                           },
+        "LinuxInstall":  null,
+        "MacOSInstall":  {
+                             "Command":  "brew install --cask github",
+                             "SilentCommand":  "brew install --cask github",
+                             "RequiresRestart":  false,
+                             "NeedsManualInstall":  false,
+                             "DetectExecutable":  ""
+                         },
+        "SupportsSilentInstall":  true
     },
-    "LinuxInstall": {
-      "Command": "sudo apt-get install -y vlc",
-      "SilentCommand": "sudo apt-get install -y vlc",
-      "RequiresRestart": false,
-      "NeedsManualInstall": false,
-      "DetectExecutable": "vlc"
+    {
+        "Id":  "python",
+        "Name":  "Python",
+        "Category":  "Development Tools",
+        "PublisherName":  "Python Software Foundation",
+        "Version":  "",
+        "License":  "",
+        "ReleaseNotesUrl":  "",
+        "Tags":  [
+                     "python",
+                     "development",
+                     "runtime"
+                 ],
+        "HomepageUrl":  "",
+        "Description":  "General-purpose programming language and runtime.",
+        "IconPath":  "",
+        "logoUrl":  "https://cdn.simpleicons.org/python",
+        "WingetId":  "Python.Python.3",
+        "SupportedPlatforms":  {
+                                   "Windows":  true,
+                                   "Linux":  true,
+                                   "macOS":  true
+                               },
+        "WindowsInstall":  {
+                               "Command":  "winget install --id Python.Python.3 -e --accept-source-agreements --accept-package-agreements",
+                               "SilentCommand":  "winget install --id Python.Python.3 -e --accept-source-agreements --accept-package-agreements --silent",
+                               "RequiresRestart":  false,
+                               "NeedsManualInstall":  false,
+                               "DetectDisplayNameContains":  "Python",
+                               "DetectExecutable":  "python"
+                           },
+        "LinuxInstall":  {
+                             "Command":  "sudo apt-get install -y python3 python3-pip",
+                             "SilentCommand":  "sudo apt-get install -y python3 python3-pip",
+                             "RequiresRestart":  false,
+                             "NeedsManualInstall":  false,
+                             "DetectExecutable":  "python3"
+                         },
+        "MacOSInstall":  {
+                             "Command":  "brew install python",
+                             "SilentCommand":  "brew install python",
+                             "RequiresRestart":  false,
+                             "NeedsManualInstall":  false,
+                             "DetectExecutable":  "python3"
+                         },
+        "SupportsSilentInstall":  true
     },
-    "SupportsSilentInstall": true
-  },
-  {
-    "Id": "7zip",
-    "Name": "7-Zip",
-    "Category": "Utilities",
-    "PublisherName": "Igor Pavlov",
-    "Version": "25.01",
-    "License": "GNU LGPL",
-    "ReleaseNotesUrl": "https://www.7-zip.org/history.txt",
-    "Tags": [
-      "archive",
-      "compression",
-      "zip",
-      "utility"
-    ],
-    "HomepageUrl": "https://www.7-zip.org/",
-    "Description": "File archiver with high compression ratio.",
-    "IconPath": "",
-    "SupportedPlatforms": {
-      "Windows": true,
-      "Linux": true
+    {
+        "Id":  "nodejs",
+        "Name":  "Node.js",
+        "Category":  "Development Tools",
+        "PublisherName":  "OpenJS Foundation",
+        "Version":  "",
+        "License":  "",
+        "ReleaseNotesUrl":  "",
+        "Tags":  [
+                     "node",
+                     "javascript",
+                     "development"
+                 ],
+        "HomepageUrl":  "",
+        "Description":  "JavaScript runtime for tooling and backend development.",
+        "IconPath":  "",
+        "logoUrl":  "https://cdn.simpleicons.org/nodedotjs",
+        "WingetId":  "OpenJS.NodeJS",
+        "SupportedPlatforms":  {
+                                   "Windows":  true,
+                                   "Linux":  true,
+                                   "macOS":  true
+                               },
+        "WindowsInstall":  {
+                               "Command":  "winget install --id OpenJS.NodeJS -e --accept-source-agreements --accept-package-agreements",
+                               "SilentCommand":  "winget install --id OpenJS.NodeJS -e --accept-source-agreements --accept-package-agreements --silent",
+                               "RequiresRestart":  false,
+                               "NeedsManualInstall":  false,
+                               "DetectDisplayNameContains":  "Node.js",
+                               "DetectExecutable":  "node"
+                           },
+        "LinuxInstall":  {
+                             "Command":  "sudo apt-get install -y nodejs npm",
+                             "SilentCommand":  "sudo apt-get install -y nodejs npm",
+                             "RequiresRestart":  false,
+                             "NeedsManualInstall":  false,
+                             "DetectExecutable":  "node"
+                         },
+        "MacOSInstall":  {
+                             "Command":  "brew install node",
+                             "SilentCommand":  "brew install node",
+                             "RequiresRestart":  false,
+                             "NeedsManualInstall":  false,
+                             "DetectExecutable":  "node"
+                         },
+        "SupportsSilentInstall":  true
     },
-    "WindowsInstall": {
-      "VirusTotalUrl": "https://www.virustotal.com/gui/file/78AFA2A1C773CAF3CF7EDF62F857D2A8A5DA55FB0FFF5DA416074C0D28B2B55F",
-      "VirusTotalRatio": "0/71",
-      "VirusTotalScanDate": "2026-03-28T00:00:00Z",
-      "Command": "winget install --id 7zip.7zip -e --accept-source-agreements --accept-package-agreements",
-      "SilentCommand": "winget install --id 7zip.7zip -e --silent --accept-source-agreements --accept-package-agreements",
-      "RequiresRestart": false,
-      "NeedsManualInstall": false,
-      "DetectDisplayNameContains": "7-Zip",
-      "DetectExecutable": "7zFM"
+    {
+        "Id":  "docker",
+        "Name":  "Docker Desktop",
+        "Category":  "Development Tools",
+        "PublisherName":  "Docker",
+        "Version":  "",
+        "License":  "",
+        "ReleaseNotesUrl":  "",
+        "Tags":  [
+                     "containers",
+                     "development"
+                 ],
+        "HomepageUrl":  "",
+        "Description":  "Desktop container development environment.",
+        "IconPath":  "",
+        "logoUrl":  "https://cdn.simpleicons.org/docker",
+        "WingetId":  "Docker.DockerDesktop",
+        "SupportedPlatforms":  {
+                                   "Windows":  true,
+                                   "Linux":  false,
+                                   "macOS":  true
+                               },
+        "WindowsInstall":  {
+                               "Command":  "winget install --id Docker.DockerDesktop -e --accept-source-agreements --accept-package-agreements",
+                               "SilentCommand":  "winget install --id Docker.DockerDesktop -e --accept-source-agreements --accept-package-agreements --silent",
+                               "RequiresRestart":  false,
+                               "NeedsManualInstall":  false,
+                               "DetectDisplayNameContains":  "Docker Desktop",
+                               "DetectExecutable":  "docker"
+                           },
+        "LinuxInstall":  null,
+        "MacOSInstall":  {
+                             "Command":  "brew install --cask docker",
+                             "SilentCommand":  "brew install --cask docker",
+                             "RequiresRestart":  false,
+                             "NeedsManualInstall":  false,
+                             "DetectExecutable":  ""
+                         },
+        "SupportsSilentInstall":  true
     },
-    "LinuxInstall": {
-      "Command": "sudo apt-get install -y p7zip-full",
-      "SilentCommand": "sudo apt-get install -y p7zip-full",
-      "RequiresRestart": false,
-      "NeedsManualInstall": false,
-      "DetectExecutable": "7z"
+    {
+        "Id":  "postman",
+        "Name":  "Postman",
+        "Category":  "Development Tools",
+        "PublisherName":  "Postman",
+        "Version":  "",
+        "License":  "",
+        "ReleaseNotesUrl":  "",
+        "Tags":  [
+                     "api",
+                     "development"
+                 ],
+        "HomepageUrl":  "",
+        "Description":  "API client and workspace for HTTP development.",
+        "IconPath":  "",
+        "logoUrl":  "https://cdn.simpleicons.org/postman",
+        "WingetId":  "Postman.Postman",
+        "SupportedPlatforms":  {
+                                   "Windows":  true,
+                                   "Linux":  true,
+                                   "macOS":  true
+                               },
+        "WindowsInstall":  {
+                               "Command":  "winget install --id Postman.Postman -e --accept-source-agreements --accept-package-agreements",
+                               "SilentCommand":  "winget install --id Postman.Postman -e --accept-source-agreements --accept-package-agreements --silent",
+                               "RequiresRestart":  false,
+                               "NeedsManualInstall":  false,
+                               "DetectDisplayNameContains":  "Postman",
+                               "DetectExecutable":  ""
+                           },
+        "LinuxInstall":  {
+                             "Command":  "sudo snap install postman",
+                             "SilentCommand":  "sudo snap install postman",
+                             "RequiresRestart":  false,
+                             "NeedsManualInstall":  false,
+                             "DetectExecutable":  "postman"
+                         },
+        "MacOSInstall":  {
+                             "Command":  "brew install --cask postman",
+                             "SilentCommand":  "brew install --cask postman",
+                             "RequiresRestart":  false,
+                             "NeedsManualInstall":  false,
+                             "DetectExecutable":  ""
+                         },
+        "SupportsSilentInstall":  true
     },
-    "SupportsSilentInstall": true
-  },
-  {
-    "Id": "cpu-z-portable",
-    "Name": "CPU-Z Portable",
-    "Category": "Portable Tools",
-    "PublisherName": "CPUID",
-    "Version": "2.19",
-    "License": "Freeware",
-    "ReleaseNotesUrl": "https://www.cpuid.com/softwares/cpu-z.html",
-    "Tags": [
-      "portable",
-      "hardware",
-      "cpu",
-      "diagnostics"
-    ],
-    "HomepageUrl": "https://www.cpuid.com/softwares/cpu-z.html",
-    "Description": "Portable CPU and hardware information utility.",
-    "IconPath": "",
-    "SupportedPlatforms": {
-      "Windows": true,
-      "Linux": false,
-      "MacOS": false
+    {
+        "Id":  "windows-terminal",
+        "Name":  "Windows Terminal",
+        "Category":  "Development Tools",
+        "PublisherName":  "Microsoft",
+        "Version":  "",
+        "License":  "",
+        "ReleaseNotesUrl":  "",
+        "Tags":  [
+                     "terminal",
+                     "development",
+                     "microsoft"
+                 ],
+        "HomepageUrl":  "",
+        "Description":  "Tabbed terminal for PowerShell, Command Prompt, and WSL.",
+        "IconPath":  "",
+        "logoUrl":  "https://cdn.simpleicons.org/windowsterminal",
+        "WingetId":  "Microsoft.WindowsTerminal",
+        "SupportedPlatforms":  {
+                                   "Windows":  true,
+                                   "Linux":  false,
+                                   "macOS":  false
+                               },
+        "WindowsInstall":  {
+                               "Command":  "winget install --id Microsoft.WindowsTerminal -e --accept-source-agreements --accept-package-agreements",
+                               "SilentCommand":  "winget install --id Microsoft.WindowsTerminal -e --accept-source-agreements --accept-package-agreements --silent",
+                               "RequiresRestart":  false,
+                               "NeedsManualInstall":  false,
+                               "DetectDisplayNameContains":  "Windows Terminal",
+                               "DetectExecutable":  ""
+                           },
+        "LinuxInstall":  null,
+        "MacOSInstall":  null,
+        "SupportsSilentInstall":  true
     },
-    "IsPortable": true,
-    "WindowsInstall": {
-      "PortableArchiveUrl": "https://www.cpuid.com/downloads/cpu-z/cpu-z_2.19-en.zip",
-      "PortableExecutable": "cpuz_x64.exe",
-      "PortableArchiveType": "zip",
-      "PortableSubfolder": "",
-      "VirusTotalUrl": "https://www.virustotal.com/gui/file/08579E8756E429A357FDD7CAA3B1642F32FDE4FB",
-      "VirusTotalRatio": "0/22",
-      "VirusTotalScanDate": "2026-03-28T00:00:00Z",
-      "DetectExecutable": "cpuz_x64.exe"
+    {
+        "Id":  "visual-studio",
+        "Name":  "Visual Studio 2022 Community",
+        "Category":  "Development Tools",
+        "PublisherName":  "Microsoft",
+        "Version":  "",
+        "License":  "",
+        "ReleaseNotesUrl":  "",
+        "Tags":  [
+                     "ide",
+                     "development",
+                     "dotnet"
+                 ],
+        "HomepageUrl":  "",
+        "Description":  "Full IDE for .NET, C++, and desktop development.",
+        "IconPath":  "",
+        "logoUrl":  "https://cdn.simpleicons.org/visualstudio",
+        "WingetId":  "Microsoft.VisualStudio.2022.Community",
+        "SupportedPlatforms":  {
+                                   "Windows":  true,
+                                   "Linux":  false,
+                                   "macOS":  false
+                               },
+        "WindowsInstall":  {
+                               "Command":  "winget install --id Microsoft.VisualStudio.2022.Community -e --accept-source-agreements --accept-package-agreements",
+                               "SilentCommand":  "winget install --id Microsoft.VisualStudio.2022.Community -e --accept-source-agreements --accept-package-agreements --silent",
+                               "RequiresRestart":  false,
+                               "NeedsManualInstall":  false,
+                               "DetectDisplayNameContains":  "Visual Studio Community 2022",
+                               "DetectExecutable":  ""
+                           },
+        "LinuxInstall":  null,
+        "MacOSInstall":  null,
+        "SupportsSilentInstall":  true
     },
-    "SupportsSilentInstall": true
-  },
-  {
-    "Id": "hwinfo-portable",
-    "Name": "HWiNFO Portable",
-    "Category": "Portable Tools",
-    "PublisherName": "REALiX",
-    "Version": "8.44",
-    "License": "Freeware",
-    "ReleaseNotesUrl": "https://www.hwinfo.com/version-history/",
-    "Tags": [
-      "portable",
-      "hardware",
-      "monitoring",
-      "diagnostics"
-    ],
-    "HomepageUrl": "https://www.hwinfo.com/download/",
-    "Description": "Portable system information and hardware monitoring tool.",
-    "IconPath": "",
-    "SupportedPlatforms": {
-      "Windows": true,
-      "Linux": false,
-      "MacOS": false
+    {
+        "Id":  "mpc-hc",
+        "Name":  "MPC-HC",
+        "Category":  "Media",
+        "PublisherName":  "MPC-HC Team",
+        "Version":  "",
+        "License":  "",
+        "ReleaseNotesUrl":  "",
+        "Tags":  [
+                     "media",
+                     "video"
+                 ],
+        "HomepageUrl":  "",
+        "Description":  "Classic lightweight media player for Windows.",
+        "IconPath":  "",
+        "logoUrl":  null,
+        "WingetId":  "clsid2.mpc-hc",
+        "SupportedPlatforms":  {
+                                   "Windows":  true,
+                                   "Linux":  false,
+                                   "macOS":  false
+                               },
+        "WindowsInstall":  {
+                               "Command":  "winget install --id clsid2.mpc-hc -e --accept-source-agreements --accept-package-agreements",
+                               "SilentCommand":  "winget install --id clsid2.mpc-hc -e --accept-source-agreements --accept-package-agreements --silent",
+                               "RequiresRestart":  false,
+                               "NeedsManualInstall":  false,
+                               "DetectDisplayNameContains":  "MPC-HC",
+                               "DetectExecutable":  ""
+                           },
+        "LinuxInstall":  null,
+        "MacOSInstall":  null,
+        "SupportsSilentInstall":  true
     },
-    "IsPortable": true,
-    "WindowsInstall": {
-      "PortableArchiveUrl": "https://www.hwinfo.com/files/hwi_844.zip",
-      "PortableExecutable": "HWiNFO64.exe",
-      "PortableArchiveType": "zip",
-      "PortableSubfolder": "",
-      "VirusTotalUrl": "https://www.virustotal.com/gui/file/72EA3FA91E6BDE264BE6DFFF75A30F15CB0FC43D9884ED4491B16EA4A3A37D9D",
-      "VirusTotalRatio": "0/72",
-      "VirusTotalScanDate": "2026-03-28T00:00:00Z",
-      "DetectExecutable": "HWiNFO64.exe"
+    {
+        "Id":  "handbrake",
+        "Name":  "HandBrake",
+        "Category":  "Media",
+        "PublisherName":  "HandBrake",
+        "Version":  "",
+        "License":  "",
+        "ReleaseNotesUrl":  "",
+        "Tags":  [
+                     "media",
+                     "video"
+                 ],
+        "HomepageUrl":  "",
+        "Description":  "Video transcoder for converting media files.",
+        "IconPath":  "",
+        "logoUrl":  "https://cdn.simpleicons.org/handbrake",
+        "WingetId":  "HandBrake.HandBrake",
+        "SupportedPlatforms":  {
+                                   "Windows":  true,
+                                   "Linux":  true,
+                                   "macOS":  true
+                               },
+        "WindowsInstall":  {
+                               "Command":  "winget install --id HandBrake.HandBrake -e --accept-source-agreements --accept-package-agreements",
+                               "SilentCommand":  "winget install --id HandBrake.HandBrake -e --accept-source-agreements --accept-package-agreements --silent",
+                               "RequiresRestart":  false,
+                               "NeedsManualInstall":  false,
+                               "DetectDisplayNameContains":  "HandBrake",
+                               "DetectExecutable":  ""
+                           },
+        "LinuxInstall":  {
+                             "Command":  "sudo apt-get install -y handbrake",
+                             "SilentCommand":  "sudo apt-get install -y handbrake",
+                             "RequiresRestart":  false,
+                             "NeedsManualInstall":  false,
+                             "DetectExecutable":  "HandBrake"
+                         },
+        "MacOSInstall":  {
+                             "Command":  "brew install --cask handbrake",
+                             "SilentCommand":  "brew install --cask handbrake",
+                             "RequiresRestart":  false,
+                             "NeedsManualInstall":  false,
+                             "DetectExecutable":  ""
+                         },
+        "SupportsSilentInstall":  true
     },
-    "SupportsSilentInstall": true
-  },
-  {
-    "Id": "notepadpp-portable",
-    "Name": "Notepad++ Portable",
-    "Category": "Portable Tools",
-    "PublisherName": "Notepad++ Team",
-    "Version": "8.9",
-    "License": "GNU General Public License v3.0",
-    "ReleaseNotesUrl": "https://github.com/notepad-plus-plus/notepad-plus-plus/releases",
-    "Tags": [
-      "portable",
-      "editor",
-      "text",
-      "developer-tools"
-    ],
-    "HomepageUrl": "https://notepad-plus-plus.org/",
-    "Description": "Portable text editor for editing code and plain text files.",
-    "IconPath": "",
-    "SupportedPlatforms": {
-      "Windows": true,
-      "Linux": false,
-      "MacOS": false
+    {
+        "Id":  "obs-studio",
+        "Name":  "OBS Studio",
+        "Category":  "Media",
+        "PublisherName":  "OBS Project",
+        "Version":  "",
+        "License":  "",
+        "ReleaseNotesUrl":  "",
+        "Tags":  [
+                     "streaming",
+                     "recording",
+                     "media"
+                 ],
+        "HomepageUrl":  "",
+        "Description":  "Streaming and recording software.",
+        "IconPath":  "",
+        "logoUrl":  "https://cdn.simpleicons.org/obsstudio",
+        "WingetId":  "OBSProject.OBSStudio",
+        "SupportedPlatforms":  {
+                                   "Windows":  true,
+                                   "Linux":  true,
+                                   "macOS":  true
+                               },
+        "WindowsInstall":  {
+                               "Command":  "winget install --id OBSProject.OBSStudio -e --accept-source-agreements --accept-package-agreements",
+                               "SilentCommand":  "winget install --id OBSProject.OBSStudio -e --accept-source-agreements --accept-package-agreements --silent",
+                               "RequiresRestart":  false,
+                               "NeedsManualInstall":  false,
+                               "DetectDisplayNameContains":  "OBS Studio",
+                               "DetectExecutable":  "obs64"
+                           },
+        "LinuxInstall":  {
+                             "Command":  "sudo apt-get install -y obs-studio",
+                             "SilentCommand":  "sudo apt-get install -y obs-studio",
+                             "RequiresRestart":  false,
+                             "NeedsManualInstall":  false,
+                             "DetectExecutable":  "obs"
+                         },
+        "MacOSInstall":  {
+                             "Command":  "brew install --cask obs",
+                             "SilentCommand":  "brew install --cask obs",
+                             "RequiresRestart":  false,
+                             "NeedsManualInstall":  false,
+                             "DetectExecutable":  ""
+                         },
+        "SupportsSilentInstall":  true
     },
-    "IsPortable": true,
-    "WindowsInstall": {
-      "PortableArchiveUrl": "https://github.com/notepad-plus-plus/notepad-plus-plus/releases/download/v8.9/npp.8.9.portable.x64.zip",
-      "PortableExecutable": "notepad++.exe",
-      "PortableArchiveType": "zip",
-      "PortableSubfolder": "",
-      "VirusTotalUrl": "https://www.virustotal.com/gui/file/78D0328C3D1CFECDB6B978F69D833B66FBE3C297E2E10491F5D87811A0A4A7FA",
-      "VirusTotalRatio": "0/22",
-      "VirusTotalScanDate": "2026-03-28T00:00:00Z",
-      "DetectExecutable": "notepad++.exe"
+    {
+        "Id":  "audacity",
+        "Name":  "Audacity",
+        "Category":  "Media",
+        "PublisherName":  "Audacity",
+        "Version":  "",
+        "License":  "",
+        "ReleaseNotesUrl":  "",
+        "Tags":  [
+                     "audio",
+                     "media"
+                 ],
+        "HomepageUrl":  "",
+        "Description":  "Audio editor and recorder.",
+        "IconPath":  "",
+        "logoUrl":  "https://cdn.simpleicons.org/audacity",
+        "WingetId":  "Audacity.Audacity",
+        "SupportedPlatforms":  {
+                                   "Windows":  true,
+                                   "Linux":  true,
+                                   "macOS":  true
+                               },
+        "WindowsInstall":  {
+                               "Command":  "winget install --id Audacity.Audacity -e --accept-source-agreements --accept-package-agreements",
+                               "SilentCommand":  "winget install --id Audacity.Audacity -e --accept-source-agreements --accept-package-agreements --silent",
+                               "RequiresRestart":  false,
+                               "NeedsManualInstall":  false,
+                               "DetectDisplayNameContains":  "Audacity",
+                               "DetectExecutable":  ""
+                           },
+        "LinuxInstall":  {
+                             "Command":  "sudo apt-get install -y audacity",
+                             "SilentCommand":  "sudo apt-get install -y audacity",
+                             "RequiresRestart":  false,
+                             "NeedsManualInstall":  false,
+                             "DetectExecutable":  "audacity"
+                         },
+        "MacOSInstall":  {
+                             "Command":  "brew install --cask audacity",
+                             "SilentCommand":  "brew install --cask audacity",
+                             "RequiresRestart":  false,
+                             "NeedsManualInstall":  false,
+                             "DetectExecutable":  ""
+                         },
+        "SupportsSilentInstall":  true
     },
-    "SupportsSilentInstall": true
-  },
-  {
-    "Id": "dotnet-runtime-8",
-    "Name": ".NET Runtime 8",
-    "Category": "Dependencies",
-    "PublisherName": "Microsoft",
-    "HomepageUrl": "https://dotnet.microsoft.com/en-us/download/dotnet/8.0",
-    "Description": ".NET 8 runtime used by apps that require the .NET runtime to already exist on the machine.",
-    "SupportedPlatforms": {
-      "Windows": true,
-      "Linux": false
+    {
+        "Id":  "foobar2000",
+        "Name":  "foobar2000",
+        "Category":  "Media",
+        "PublisherName":  "Peter Pawlowski",
+        "Version":  "",
+        "License":  "",
+        "ReleaseNotesUrl":  "",
+        "Tags":  [
+                     "audio",
+                     "media"
+                 ],
+        "HomepageUrl":  "",
+        "Description":  "Lightweight music player for Windows.",
+        "IconPath":  "",
+        "logoUrl":  null,
+        "WingetId":  "PeterPawlowski.foobar2000",
+        "SupportedPlatforms":  {
+                                   "Windows":  true,
+                                   "Linux":  false,
+                                   "macOS":  false
+                               },
+        "WindowsInstall":  {
+                               "Command":  "winget install --id PeterPawlowski.foobar2000 -e --accept-source-agreements --accept-package-agreements",
+                               "SilentCommand":  "winget install --id PeterPawlowski.foobar2000 -e --accept-source-agreements --accept-package-agreements --silent",
+                               "RequiresRestart":  false,
+                               "NeedsManualInstall":  false,
+                               "DetectDisplayNameContains":  "foobar2000",
+                               "DetectExecutable":  ""
+                           },
+        "LinuxInstall":  null,
+        "MacOSInstall":  null,
+        "SupportsSilentInstall":  true
     },
-    "WindowsInstall": {
-      "Command": "winget install --id Microsoft.DotNet.Runtime.8 -e --accept-source-agreements --accept-package-agreements",
-      "SilentCommand": "winget install --id Microsoft.DotNet.Runtime.8 -e --silent --accept-source-agreements --accept-package-agreements",
-      "RequiresRestart": false,
-      "NeedsManualInstall": false,
-      "DetectDisplayNameContains": ".NET Runtime 8",
-      "DetectExecutable": "dotnet"
+    {
+        "Id":  "plex",
+        "Name":  "Plex",
+        "Category":  "Media",
+        "PublisherName":  "Plex",
+        "Version":  "",
+        "License":  "",
+        "ReleaseNotesUrl":  "",
+        "Tags":  [
+                     "media",
+                     "streaming"
+                 ],
+        "HomepageUrl":  "",
+        "Description":  "Desktop client for Plex media playback.",
+        "IconPath":  "",
+        "logoUrl":  "https://cdn.simpleicons.org/plex",
+        "WingetId":  "Plex.Plex",
+        "SupportedPlatforms":  {
+                                   "Windows":  true,
+                                   "Linux":  false,
+                                   "macOS":  true
+                               },
+        "WindowsInstall":  {
+                               "Command":  "winget install --id Plex.Plex -e --accept-source-agreements --accept-package-agreements",
+                               "SilentCommand":  "winget install --id Plex.Plex -e --accept-source-agreements --accept-package-agreements --silent",
+                               "RequiresRestart":  false,
+                               "NeedsManualInstall":  false,
+                               "DetectDisplayNameContains":  "Plex",
+                               "DetectExecutable":  ""
+                           },
+        "LinuxInstall":  null,
+        "MacOSInstall":  {
+                             "Command":  "brew install --cask plex",
+                             "SilentCommand":  "brew install --cask plex",
+                             "RequiresRestart":  false,
+                             "NeedsManualInstall":  false,
+                             "DetectExecutable":  ""
+                         },
+        "SupportsSilentInstall":  true
     },
-    "SupportsSilentInstall": true,
-    "IsHidden": true
-  },
-  {
-    "Id": "vcredist-2022",
-    "Name": "VC++ Redistributable 2022",
-    "Category": "Dependencies",
-    "PublisherName": "Microsoft",
-    "HomepageUrl": "https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist",
-    "Description": "Microsoft Visual C++ 2022 Redistributable runtime.",
-    "SupportedPlatforms": {
-      "Windows": true,
-      "Linux": false
+    {
+        "Id":  "winrar",
+        "Name":  "WinRAR",
+        "Category":  "Utilities",
+        "PublisherName":  "RARLab",
+        "Version":  "",
+        "License":  "",
+        "ReleaseNotesUrl":  "",
+        "Tags":  [
+                     "archive",
+                     "utilities"
+                 ],
+        "HomepageUrl":  "",
+        "Description":  "Archive manager for RAR and ZIP files.",
+        "IconPath":  "",
+        "logoUrl":  null,
+        "WingetId":  "RARLab.WinRAR",
+        "SupportedPlatforms":  {
+                                   "Windows":  true,
+                                   "Linux":  false,
+                                   "macOS":  false
+                               },
+        "WindowsInstall":  {
+                               "Command":  "winget install --id RARLab.WinRAR -e --accept-source-agreements --accept-package-agreements",
+                               "SilentCommand":  "winget install --id RARLab.WinRAR -e --accept-source-agreements --accept-package-agreements --silent",
+                               "RequiresRestart":  false,
+                               "NeedsManualInstall":  false,
+                               "DetectDisplayNameContains":  "WinRAR",
+                               "DetectExecutable":  ""
+                           },
+        "LinuxInstall":  null,
+        "MacOSInstall":  null,
+        "SupportsSilentInstall":  true
     },
-    "WindowsInstall": {
-      "Command": "winget install --id Microsoft.VCRedist.2022.x64 -e --accept-source-agreements --accept-package-agreements",
-      "SilentCommand": "winget install --id Microsoft.VCRedist.2022.x64 -e --silent --accept-source-agreements --accept-package-agreements",
-      "RequiresRestart": false,
-      "NeedsManualInstall": false,
-      "DetectDisplayNameContains": "Microsoft Visual C++ 2022",
-      "DetectExecutable": ""
+    {
+        "Id":  "everything",
+        "Name":  "Everything Search",
+        "Category":  "Utilities",
+        "PublisherName":  "voidtools",
+        "Version":  "",
+        "License":  "",
+        "ReleaseNotesUrl":  "",
+        "Tags":  [
+                     "search",
+                     "utilities"
+                 ],
+        "HomepageUrl":  "",
+        "Description":  "Instant file name search for Windows.",
+        "IconPath":  "",
+        "logoUrl":  null,
+        "WingetId":  "voidtools.Everything",
+        "SupportedPlatforms":  {
+                                   "Windows":  true,
+                                   "Linux":  false,
+                                   "macOS":  false
+                               },
+        "WindowsInstall":  {
+                               "Command":  "winget install --id voidtools.Everything -e --accept-source-agreements --accept-package-agreements",
+                               "SilentCommand":  "winget install --id voidtools.Everything -e --accept-source-agreements --accept-package-agreements --silent",
+                               "RequiresRestart":  false,
+                               "NeedsManualInstall":  false,
+                               "DetectDisplayNameContains":  "Everything",
+                               "DetectExecutable":  ""
+                           },
+        "LinuxInstall":  null,
+        "MacOSInstall":  null,
+        "SupportsSilentInstall":  true
     },
-    "SupportsSilentInstall": true,
-    "IsHidden": true
-  },
-  {
-    "Id": "directx",
-    "Name": "DirectX End-User Runtime",
-    "Category": "Dependencies",
-    "PublisherName": "Microsoft",
-    "HomepageUrl": "https://www.microsoft.com/en-us/download/details.aspx?id=35",
-    "Description": "DirectX runtime components used by apps and games that require the DirectX end-user runtime.",
-    "SupportedPlatforms": {
-      "Windows": true,
-      "Linux": false
+    {
+        "Id":  "powertoys",
+        "Name":  "PowerToys",
+        "Category":  "Utilities",
+        "PublisherName":  "Microsoft",
+        "Version":  "",
+        "License":  "",
+        "ReleaseNotesUrl":  "",
+        "Tags":  [
+                     "utilities",
+                     "microsoft"
+                 ],
+        "HomepageUrl":  "",
+        "Description":  "Microsoft utilities for advanced Windows workflows.",
+        "IconPath":  "",
+        "logoUrl":  "https://cdn.simpleicons.org/microsoft",
+        "WingetId":  "Microsoft.PowerToys",
+        "SupportedPlatforms":  {
+                                   "Windows":  true,
+                                   "Linux":  false,
+                                   "macOS":  false
+                               },
+        "WindowsInstall":  {
+                               "Command":  "winget install --id Microsoft.PowerToys -e --accept-source-agreements --accept-package-agreements",
+                               "SilentCommand":  "winget install --id Microsoft.PowerToys -e --accept-source-agreements --accept-package-agreements --silent",
+                               "RequiresRestart":  false,
+                               "NeedsManualInstall":  false,
+                               "DetectDisplayNameContains":  "PowerToys",
+                               "DetectExecutable":  ""
+                           },
+        "LinuxInstall":  null,
+        "MacOSInstall":  null,
+        "SupportsSilentInstall":  true
     },
-    "WindowsInstall": {
-      "Command": "winget install --id Microsoft.DirectX -e --accept-source-agreements --accept-package-agreements",
-      "SilentCommand": "winget install --id Microsoft.DirectX -e --silent --accept-source-agreements --accept-package-agreements",
-      "RequiresRestart": false,
-      "NeedsManualInstall": false,
-      "DetectDisplayNameContains": "DirectX",
-      "DetectExecutable": ""
+    {
+        "Id":  "sharex",
+        "Name":  "ShareX",
+        "Category":  "Utilities",
+        "PublisherName":  "ShareX Team",
+        "Version":  "",
+        "License":  "",
+        "ReleaseNotesUrl":  "",
+        "Tags":  [
+                     "capture",
+                     "utilities"
+                 ],
+        "HomepageUrl":  "",
+        "Description":  "Screen capture, recording, and sharing utility.",
+        "IconPath":  "",
+        "logoUrl":  null,
+        "WingetId":  "ShareX.ShareX",
+        "SupportedPlatforms":  {
+                                   "Windows":  true,
+                                   "Linux":  false,
+                                   "macOS":  false
+                               },
+        "WindowsInstall":  {
+                               "Command":  "winget install --id ShareX.ShareX -e --accept-source-agreements --accept-package-agreements",
+                               "SilentCommand":  "winget install --id ShareX.ShareX -e --accept-source-agreements --accept-package-agreements --silent",
+                               "RequiresRestart":  false,
+                               "NeedsManualInstall":  false,
+                               "DetectDisplayNameContains":  "ShareX",
+                               "DetectExecutable":  ""
+                           },
+        "LinuxInstall":  null,
+        "MacOSInstall":  null,
+        "SupportsSilentInstall":  true
     },
-    "SupportsSilentInstall": true,
-    "IsHidden": true
-  }
+    {
+        "Id":  "greenshot",
+        "Name":  "Greenshot",
+        "Category":  "Utilities",
+        "PublisherName":  "Greenshot",
+        "Version":  "",
+        "License":  "",
+        "ReleaseNotesUrl":  "",
+        "Tags":  [
+                     "capture",
+                     "utilities"
+                 ],
+        "HomepageUrl":  "",
+        "Description":  "Lightweight screenshot and annotation utility.",
+        "IconPath":  "",
+        "logoUrl":  null,
+        "WingetId":  "Greenshot.Greenshot",
+        "SupportedPlatforms":  {
+                                   "Windows":  true,
+                                   "Linux":  false,
+                                   "macOS":  false
+                               },
+        "WindowsInstall":  {
+                               "Command":  "winget install --id Greenshot.Greenshot -e --accept-source-agreements --accept-package-agreements",
+                               "SilentCommand":  "winget install --id Greenshot.Greenshot -e --accept-source-agreements --accept-package-agreements --silent",
+                               "RequiresRestart":  false,
+                               "NeedsManualInstall":  false,
+                               "DetectDisplayNameContains":  "Greenshot",
+                               "DetectExecutable":  ""
+                           },
+        "LinuxInstall":  null,
+        "MacOSInstall":  null,
+        "SupportsSilentInstall":  true
+    },
+    {
+        "Id":  "treesize-free",
+        "Name":  "TreeSize Free",
+        "Category":  "Utilities",
+        "PublisherName":  "JAM Software",
+        "Version":  "",
+        "License":  "",
+        "ReleaseNotesUrl":  "",
+        "Tags":  [
+                     "disk",
+                     "utilities"
+                 ],
+        "HomepageUrl":  "",
+        "Description":  "Disk usage visualizer and storage cleanup tool.",
+        "IconPath":  "",
+        "logoUrl":  null,
+        "WingetId":  "JAMSoftware.TreeSize.Free",
+        "SupportedPlatforms":  {
+                                   "Windows":  true,
+                                   "Linux":  false,
+                                   "macOS":  false
+                               },
+        "WindowsInstall":  {
+                               "Command":  "winget install --id JAMSoftware.TreeSize.Free -e --accept-source-agreements --accept-package-agreements",
+                               "SilentCommand":  "winget install --id JAMSoftware.TreeSize.Free -e --accept-source-agreements --accept-package-agreements --silent",
+                               "RequiresRestart":  false,
+                               "NeedsManualInstall":  false,
+                               "DetectDisplayNameContains":  "TreeSize Free",
+                               "DetectExecutable":  ""
+                           },
+        "LinuxInstall":  null,
+        "MacOSInstall":  null,
+        "SupportsSilentInstall":  true
+    },
+    {
+        "Id":  "bitwarden",
+        "Name":  "Bitwarden",
+        "Category":  "Utilities",
+        "PublisherName":  "Bitwarden",
+        "Version":  "",
+        "License":  "",
+        "ReleaseNotesUrl":  "",
+        "Tags":  [
+                     "security",
+                     "passwords",
+                     "utilities"
+                 ],
+        "HomepageUrl":  "",
+        "Description":  "Password manager and secure vault.",
+        "IconPath":  "",
+        "logoUrl":  "https://cdn.simpleicons.org/bitwarden",
+        "WingetId":  "Bitwarden.Bitwarden",
+        "SupportedPlatforms":  {
+                                   "Windows":  true,
+                                   "Linux":  true,
+                                   "macOS":  true
+                               },
+        "WindowsInstall":  {
+                               "Command":  "winget install --id Bitwarden.Bitwarden -e --accept-source-agreements --accept-package-agreements",
+                               "SilentCommand":  "winget install --id Bitwarden.Bitwarden -e --accept-source-agreements --accept-package-agreements --silent",
+                               "RequiresRestart":  false,
+                               "NeedsManualInstall":  false,
+                               "DetectDisplayNameContains":  "Bitwarden",
+                               "DetectExecutable":  ""
+                           },
+        "LinuxInstall":  {
+                             "Command":  "sudo snap install bitwarden",
+                             "SilentCommand":  "sudo snap install bitwarden",
+                             "RequiresRestart":  false,
+                             "NeedsManualInstall":  false,
+                             "DetectExecutable":  "bitwarden"
+                         },
+        "MacOSInstall":  {
+                             "Command":  "brew install --cask bitwarden",
+                             "SilentCommand":  "brew install --cask bitwarden",
+                             "RequiresRestart":  false,
+                             "NeedsManualInstall":  false,
+                             "DetectExecutable":  ""
+                         },
+        "SupportsSilentInstall":  true
+    },
+    {
+        "Id":  "keepass",
+        "Name":  "KeePass",
+        "Category":  "Utilities",
+        "PublisherName":  "Dominik Reichl",
+        "Version":  "",
+        "License":  "",
+        "ReleaseNotesUrl":  "",
+        "Tags":  [
+                     "security",
+                     "passwords",
+                     "utilities"
+                 ],
+        "HomepageUrl":  "",
+        "Description":  "Local password manager database app.",
+        "IconPath":  "",
+        "logoUrl":  "https://cdn.simpleicons.org/keepass",
+        "WingetId":  "DominikReichl.KeePass",
+        "SupportedPlatforms":  {
+                                   "Windows":  true,
+                                   "Linux":  false,
+                                   "macOS":  false
+                               },
+        "WindowsInstall":  {
+                               "Command":  "winget install --id DominikReichl.KeePass -e --accept-source-agreements --accept-package-agreements",
+                               "SilentCommand":  "winget install --id DominikReichl.KeePass -e --accept-source-agreements --accept-package-agreements --silent",
+                               "RequiresRestart":  false,
+                               "NeedsManualInstall":  false,
+                               "DetectDisplayNameContains":  "KeePass",
+                               "DetectExecutable":  ""
+                           },
+        "LinuxInstall":  null,
+        "MacOSInstall":  null,
+        "SupportsSilentInstall":  true
+    },
+    {
+        "Id":  "winscp",
+        "Name":  "WinSCP",
+        "Category":  "Utilities",
+        "PublisherName":  "WinSCP",
+        "Version":  "",
+        "License":  "",
+        "ReleaseNotesUrl":  "",
+        "Tags":  [
+                     "ftp",
+                     "utilities"
+                 ],
+        "HomepageUrl":  "",
+        "Description":  "SFTP, SCP, and FTP client for Windows.",
+        "IconPath":  "",
+        "logoUrl":  null,
+        "WingetId":  "WinSCP.WinSCP",
+        "SupportedPlatforms":  {
+                                   "Windows":  true,
+                                   "Linux":  false,
+                                   "macOS":  false
+                               },
+        "WindowsInstall":  {
+                               "Command":  "winget install --id WinSCP.WinSCP -e --accept-source-agreements --accept-package-agreements",
+                               "SilentCommand":  "winget install --id WinSCP.WinSCP -e --accept-source-agreements --accept-package-agreements --silent",
+                               "RequiresRestart":  false,
+                               "NeedsManualInstall":  false,
+                               "DetectDisplayNameContains":  "WinSCP",
+                               "DetectExecutable":  ""
+                           },
+        "LinuxInstall":  null,
+        "MacOSInstall":  null,
+        "SupportsSilentInstall":  true
+    },
+    {
+        "Id":  "putty",
+        "Name":  "PuTTY",
+        "Category":  "Utilities",
+        "PublisherName":  "PuTTY",
+        "Version":  "",
+        "License":  "",
+        "ReleaseNotesUrl":  "",
+        "Tags":  [
+                     "ssh",
+                     "terminal",
+                     "utilities"
+                 ],
+        "HomepageUrl":  "",
+        "Description":  "SSH and serial terminal client.",
+        "IconPath":  "",
+        "logoUrl":  null,
+        "WingetId":  "PuTTY.PuTTY",
+        "SupportedPlatforms":  {
+                                   "Windows":  true,
+                                   "Linux":  false,
+                                   "macOS":  false
+                               },
+        "WindowsInstall":  {
+                               "Command":  "winget install --id PuTTY.PuTTY -e --accept-source-agreements --accept-package-agreements",
+                               "SilentCommand":  "winget install --id PuTTY.PuTTY -e --accept-source-agreements --accept-package-agreements --silent",
+                               "RequiresRestart":  false,
+                               "NeedsManualInstall":  false,
+                               "DetectDisplayNameContains":  "PuTTY",
+                               "DetectExecutable":  "putty"
+                           },
+        "LinuxInstall":  null,
+        "MacOSInstall":  null,
+        "SupportsSilentInstall":  true
+    },
+    {
+        "Id":  "epic-games",
+        "Name":  "Epic Games Launcher",
+        "Category":  "Gaming",
+        "PublisherName":  "Epic Games",
+        "Version":  "",
+        "License":  "",
+        "ReleaseNotesUrl":  "",
+        "Tags":  [
+                     "gaming",
+                     "launcher"
+                 ],
+        "HomepageUrl":  "",
+        "Description":  "Game launcher and store client for Epic titles.",
+        "IconPath":  "",
+        "logoUrl":  "https://cdn.simpleicons.org/epicgames",
+        "WingetId":  "EpicGames.EpicGamesLauncher",
+        "SupportedPlatforms":  {
+                                   "Windows":  true,
+                                   "Linux":  false,
+                                   "macOS":  false
+                               },
+        "WindowsInstall":  {
+                               "Command":  "winget install --id EpicGames.EpicGamesLauncher -e --accept-source-agreements --accept-package-agreements",
+                               "SilentCommand":  "winget install --id EpicGames.EpicGamesLauncher -e --accept-source-agreements --accept-package-agreements --silent",
+                               "RequiresRestart":  false,
+                               "NeedsManualInstall":  false,
+                               "DetectDisplayNameContains":  "Epic Games Launcher",
+                               "DetectExecutable":  ""
+                           },
+        "LinuxInstall":  null,
+        "MacOSInstall":  null,
+        "SupportsSilentInstall":  true
+    },
+    {
+        "Id":  "gog-galaxy",
+        "Name":  "GOG Galaxy",
+        "Category":  "Gaming",
+        "PublisherName":  "GOG",
+        "Version":  "",
+        "License":  "",
+        "ReleaseNotesUrl":  "",
+        "Tags":  [
+                     "gaming",
+                     "launcher"
+                 ],
+        "HomepageUrl":  "",
+        "Description":  "Launcher and library manager for GOG games.",
+        "IconPath":  "",
+        "logoUrl":  null,
+        "WingetId":  "GOG.Galaxy",
+        "SupportedPlatforms":  {
+                                   "Windows":  true,
+                                   "Linux":  false,
+                                   "macOS":  false
+                               },
+        "WindowsInstall":  {
+                               "Command":  "winget install --id GOG.Galaxy -e --accept-source-agreements --accept-package-agreements",
+                               "SilentCommand":  "winget install --id GOG.Galaxy -e --accept-source-agreements --accept-package-agreements --silent",
+                               "RequiresRestart":  false,
+                               "NeedsManualInstall":  false,
+                               "DetectDisplayNameContains":  "GOG Galaxy",
+                               "DetectExecutable":  ""
+                           },
+        "LinuxInstall":  null,
+        "MacOSInstall":  null,
+        "SupportsSilentInstall":  true
+    },
+    {
+        "Id":  "ea-app",
+        "Name":  "EA App",
+        "Category":  "Gaming",
+        "PublisherName":  "Electronic Arts",
+        "Version":  "",
+        "License":  "",
+        "ReleaseNotesUrl":  "",
+        "Tags":  [
+                     "gaming",
+                     "launcher"
+                 ],
+        "HomepageUrl":  "",
+        "Description":  "EA game launcher and account client.",
+        "IconPath":  "",
+        "logoUrl":  "https://cdn.simpleicons.org/ea",
+        "WingetId":  "ElectronicArts.EADesktop",
+        "SupportedPlatforms":  {
+                                   "Windows":  true,
+                                   "Linux":  false,
+                                   "macOS":  false
+                               },
+        "WindowsInstall":  {
+                               "Command":  "winget install --id ElectronicArts.EADesktop -e --accept-source-agreements --accept-package-agreements",
+                               "SilentCommand":  "winget install --id ElectronicArts.EADesktop -e --accept-source-agreements --accept-package-agreements --silent",
+                               "RequiresRestart":  false,
+                               "NeedsManualInstall":  false,
+                               "DetectDisplayNameContains":  "EA app",
+                               "DetectExecutable":  ""
+                           },
+        "LinuxInstall":  null,
+        "MacOSInstall":  null,
+        "SupportsSilentInstall":  true
+    },
+    {
+        "Id":  "ubisoft-connect",
+        "Name":  "Ubisoft Connect",
+        "Category":  "Gaming",
+        "PublisherName":  "Ubisoft",
+        "Version":  "",
+        "License":  "",
+        "ReleaseNotesUrl":  "",
+        "Tags":  [
+                     "gaming",
+                     "launcher"
+                 ],
+        "HomepageUrl":  "",
+        "Description":  "Launcher and services client for Ubisoft games.",
+        "IconPath":  "",
+        "logoUrl":  "https://cdn.simpleicons.org/ubisoft",
+        "WingetId":  "Ubisoft.Connect",
+        "SupportedPlatforms":  {
+                                   "Windows":  true,
+                                   "Linux":  false,
+                                   "macOS":  false
+                               },
+        "WindowsInstall":  {
+                               "Command":  "winget install --id Ubisoft.Connect -e --accept-source-agreements --accept-package-agreements",
+                               "SilentCommand":  "winget install --id Ubisoft.Connect -e --accept-source-agreements --accept-package-agreements --silent",
+                               "RequiresRestart":  false,
+                               "NeedsManualInstall":  false,
+                               "DetectDisplayNameContains":  "Ubisoft Connect",
+                               "DetectExecutable":  ""
+                           },
+        "LinuxInstall":  null,
+        "MacOSInstall":  null,
+        "SupportsSilentInstall":  true
+    },
+    {
+        "Id":  "battlenet",
+        "Name":  "Battle.net",
+        "Category":  "Gaming",
+        "PublisherName":  "Blizzard Entertainment",
+        "Version":  "",
+        "License":  "",
+        "ReleaseNotesUrl":  "",
+        "Tags":  [
+                     "gaming",
+                     "launcher"
+                 ],
+        "HomepageUrl":  "",
+        "Description":  "Blizzard launcher and account client.",
+        "IconPath":  "",
+        "logoUrl":  null,
+        "WingetId":  "Blizzard.BattleNet",
+        "SupportedPlatforms":  {
+                                   "Windows":  true,
+                                   "Linux":  false,
+                                   "macOS":  false
+                               },
+        "WindowsInstall":  {
+                               "Command":  "winget install --id Blizzard.BattleNet -e --accept-source-agreements --accept-package-agreements",
+                               "SilentCommand":  "winget install --id Blizzard.BattleNet -e --accept-source-agreements --accept-package-agreements --silent",
+                               "RequiresRestart":  false,
+                               "NeedsManualInstall":  false,
+                               "DetectDisplayNameContains":  "Battle.net",
+                               "DetectExecutable":  ""
+                           },
+        "LinuxInstall":  null,
+        "MacOSInstall":  null,
+        "SupportsSilentInstall":  true
+    },
+    {
+        "Id":  "playnite",
+        "Name":  "Playnite",
+        "Category":  "Gaming",
+        "PublisherName":  "Playnite",
+        "Version":  "",
+        "License":  "",
+        "ReleaseNotesUrl":  "",
+        "Tags":  [
+                     "gaming",
+                     "launcher"
+                 ],
+        "HomepageUrl":  "",
+        "Description":  "Unified game library manager and launcher.",
+        "IconPath":  "",
+        "logoUrl":  null,
+        "WingetId":  "Playnite.Playnite",
+        "SupportedPlatforms":  {
+                                   "Windows":  true,
+                                   "Linux":  false,
+                                   "macOS":  false
+                               },
+        "WindowsInstall":  {
+                               "Command":  "winget install --id Playnite.Playnite -e --accept-source-agreements --accept-package-agreements",
+                               "SilentCommand":  "winget install --id Playnite.Playnite -e --accept-source-agreements --accept-package-agreements --silent",
+                               "RequiresRestart":  false,
+                               "NeedsManualInstall":  false,
+                               "DetectDisplayNameContains":  "Playnite",
+                               "DetectExecutable":  ""
+                           },
+        "LinuxInstall":  null,
+        "MacOSInstall":  null,
+        "SupportsSilentInstall":  true
+    },
+    {
+        "Id":  "gimp",
+        "Name":  "GIMP",
+        "Category":  "Creative",
+        "PublisherName":  "GIMP",
+        "Version":  "",
+        "License":  "",
+        "ReleaseNotesUrl":  "",
+        "Tags":  [
+                     "creative",
+                     "image-editing"
+                 ],
+        "HomepageUrl":  "",
+        "Description":  "Open-source image editor.",
+        "IconPath":  "",
+        "logoUrl":  "https://cdn.simpleicons.org/gimp",
+        "WingetId":  "GIMP.GIMP",
+        "SupportedPlatforms":  {
+                                   "Windows":  true,
+                                   "Linux":  true,
+                                   "macOS":  true
+                               },
+        "WindowsInstall":  {
+                               "Command":  "winget install --id GIMP.GIMP -e --accept-source-agreements --accept-package-agreements",
+                               "SilentCommand":  "winget install --id GIMP.GIMP -e --accept-source-agreements --accept-package-agreements --silent",
+                               "RequiresRestart":  false,
+                               "NeedsManualInstall":  false,
+                               "DetectDisplayNameContains":  "GIMP",
+                               "DetectExecutable":  ""
+                           },
+        "LinuxInstall":  {
+                             "Command":  "sudo apt-get install -y gimp",
+                             "SilentCommand":  "sudo apt-get install -y gimp",
+                             "RequiresRestart":  false,
+                             "NeedsManualInstall":  false,
+                             "DetectExecutable":  "gimp"
+                         },
+        "MacOSInstall":  {
+                             "Command":  "brew install --cask gimp",
+                             "SilentCommand":  "brew install --cask gimp",
+                             "RequiresRestart":  false,
+                             "NeedsManualInstall":  false,
+                             "DetectExecutable":  ""
+                         },
+        "SupportsSilentInstall":  true
+    },
+    {
+        "Id":  "inkscape",
+        "Name":  "Inkscape",
+        "Category":  "Creative",
+        "PublisherName":  "Inkscape",
+        "Version":  "",
+        "License":  "",
+        "ReleaseNotesUrl":  "",
+        "Tags":  [
+                     "creative",
+                     "vector"
+                 ],
+        "HomepageUrl":  "",
+        "Description":  "Vector graphics editor for SVG artwork.",
+        "IconPath":  "",
+        "logoUrl":  "https://cdn.simpleicons.org/inkscape",
+        "WingetId":  "Inkscape.Inkscape",
+        "SupportedPlatforms":  {
+                                   "Windows":  true,
+                                   "Linux":  true,
+                                   "macOS":  true
+                               },
+        "WindowsInstall":  {
+                               "Command":  "winget install --id Inkscape.Inkscape -e --accept-source-agreements --accept-package-agreements",
+                               "SilentCommand":  "winget install --id Inkscape.Inkscape -e --accept-source-agreements --accept-package-agreements --silent",
+                               "RequiresRestart":  false,
+                               "NeedsManualInstall":  false,
+                               "DetectDisplayNameContains":  "Inkscape",
+                               "DetectExecutable":  ""
+                           },
+        "LinuxInstall":  {
+                             "Command":  "sudo apt-get install -y inkscape",
+                             "SilentCommand":  "sudo apt-get install -y inkscape",
+                             "RequiresRestart":  false,
+                             "NeedsManualInstall":  false,
+                             "DetectExecutable":  "inkscape"
+                         },
+        "MacOSInstall":  {
+                             "Command":  "brew install --cask inkscape",
+                             "SilentCommand":  "brew install --cask inkscape",
+                             "RequiresRestart":  false,
+                             "NeedsManualInstall":  false,
+                             "DetectExecutable":  ""
+                         },
+        "SupportsSilentInstall":  true
+    },
+    {
+        "Id":  "blender",
+        "Name":  "Blender",
+        "Category":  "Creative",
+        "PublisherName":  "Blender Foundation",
+        "Version":  "",
+        "License":  "",
+        "ReleaseNotesUrl":  "",
+        "Tags":  [
+                     "creative",
+                     "3d"
+                 ],
+        "HomepageUrl":  "",
+        "Description":  "3D modeling, animation, and rendering suite.",
+        "IconPath":  "",
+        "logoUrl":  "https://cdn.simpleicons.org/blender",
+        "WingetId":  "BlenderFoundation.Blender",
+        "SupportedPlatforms":  {
+                                   "Windows":  true,
+                                   "Linux":  true,
+                                   "macOS":  true
+                               },
+        "WindowsInstall":  {
+                               "Command":  "winget install --id BlenderFoundation.Blender -e --accept-source-agreements --accept-package-agreements",
+                               "SilentCommand":  "winget install --id BlenderFoundation.Blender -e --accept-source-agreements --accept-package-agreements --silent",
+                               "RequiresRestart":  false,
+                               "NeedsManualInstall":  false,
+                               "DetectDisplayNameContains":  "Blender",
+                               "DetectExecutable":  ""
+                           },
+        "LinuxInstall":  {
+                             "Command":  "sudo snap install blender --classic",
+                             "SilentCommand":  "sudo snap install blender --classic",
+                             "RequiresRestart":  false,
+                             "NeedsManualInstall":  false,
+                             "DetectExecutable":  "blender"
+                         },
+        "MacOSInstall":  {
+                             "Command":  "brew install --cask blender",
+                             "SilentCommand":  "brew install --cask blender",
+                             "RequiresRestart":  false,
+                             "NeedsManualInstall":  false,
+                             "DetectExecutable":  ""
+                         },
+        "SupportsSilentInstall":  true
+    },
+    {
+        "Id":  "krita",
+        "Name":  "Krita",
+        "Category":  "Creative",
+        "PublisherName":  "KDE",
+        "Version":  "",
+        "License":  "",
+        "ReleaseNotesUrl":  "",
+        "Tags":  [
+                     "creative",
+                     "painting"
+                 ],
+        "HomepageUrl":  "",
+        "Description":  "Digital painting and illustration application.",
+        "IconPath":  "",
+        "logoUrl":  "https://cdn.simpleicons.org/krita",
+        "WingetId":  "KDE.Krita",
+        "SupportedPlatforms":  {
+                                   "Windows":  true,
+                                   "Linux":  true,
+                                   "macOS":  true
+                               },
+        "WindowsInstall":  {
+                               "Command":  "winget install --id KDE.Krita -e --accept-source-agreements --accept-package-agreements",
+                               "SilentCommand":  "winget install --id KDE.Krita -e --accept-source-agreements --accept-package-agreements --silent",
+                               "RequiresRestart":  false,
+                               "NeedsManualInstall":  false,
+                               "DetectDisplayNameContains":  "Krita",
+                               "DetectExecutable":  ""
+                           },
+        "LinuxInstall":  {
+                             "Command":  "sudo apt-get install -y krita",
+                             "SilentCommand":  "sudo apt-get install -y krita",
+                             "RequiresRestart":  false,
+                             "NeedsManualInstall":  false,
+                             "DetectExecutable":  "krita"
+                         },
+        "MacOSInstall":  {
+                             "Command":  "brew install --cask krita",
+                             "SilentCommand":  "brew install --cask krita",
+                             "RequiresRestart":  false,
+                             "NeedsManualInstall":  false,
+                             "DetectExecutable":  ""
+                         },
+        "SupportsSilentInstall":  true
+    },
+    {
+        "Id":  "davinci-resolve",
+        "Name":  "DaVinci Resolve",
+        "Category":  "Creative",
+        "PublisherName":  "Blackmagic Design",
+        "Version":  "",
+        "License":  "",
+        "ReleaseNotesUrl":  "",
+        "Tags":  [
+                     "creative",
+                     "video-editing"
+                 ],
+        "HomepageUrl":  "",
+        "Description":  "Professional video editing and color grading suite.",
+        "IconPath":  "",
+        "logoUrl":  "https://cdn.simpleicons.org/davinciresolve",
+        "WingetId":  "BlackmagicDesign.DaVinciResolve",
+        "SupportedPlatforms":  {
+                                   "Windows":  true,
+                                   "Linux":  false,
+                                   "macOS":  true
+                               },
+        "WindowsInstall":  {
+                               "Command":  "winget install --id BlackmagicDesign.DaVinciResolve -e --accept-source-agreements --accept-package-agreements",
+                               "SilentCommand":  "winget install --id BlackmagicDesign.DaVinciResolve -e --accept-source-agreements --accept-package-agreements --silent",
+                               "RequiresRestart":  false,
+                               "NeedsManualInstall":  false,
+                               "DetectDisplayNameContains":  "DaVinci Resolve",
+                               "DetectExecutable":  ""
+                           },
+        "LinuxInstall":  null,
+        "MacOSInstall":  {
+                             "Command":  "brew install --cask davinci-resolve",
+                             "SilentCommand":  "brew install --cask davinci-resolve",
+                             "RequiresRestart":  false,
+                             "NeedsManualInstall":  false,
+                             "DetectExecutable":  ""
+                         },
+        "SupportsSilentInstall":  true
+    },
+    {
+        "Id":  "libreoffice",
+        "Name":  "LibreOffice",
+        "Category":  "Office / Productivity",
+        "PublisherName":  "The Document Foundation",
+        "Version":  "",
+        "License":  "",
+        "ReleaseNotesUrl":  "",
+        "Tags":  [
+                     "office",
+                     "productivity"
+                 ],
+        "HomepageUrl":  "",
+        "Description":  "Open-source office productivity suite.",
+        "IconPath":  "",
+        "logoUrl":  "https://cdn.simpleicons.org/libreoffice",
+        "WingetId":  "TheDocumentFoundation.LibreOffice",
+        "SupportedPlatforms":  {
+                                   "Windows":  true,
+                                   "Linux":  true,
+                                   "macOS":  true
+                               },
+        "WindowsInstall":  {
+                               "Command":  "winget install --id TheDocumentFoundation.LibreOffice -e --accept-source-agreements --accept-package-agreements",
+                               "SilentCommand":  "winget install --id TheDocumentFoundation.LibreOffice -e --accept-source-agreements --accept-package-agreements --silent",
+                               "RequiresRestart":  false,
+                               "NeedsManualInstall":  false,
+                               "DetectDisplayNameContains":  "LibreOffice",
+                               "DetectExecutable":  ""
+                           },
+        "LinuxInstall":  {
+                             "Command":  "sudo apt-get install -y libreoffice",
+                             "SilentCommand":  "sudo apt-get install -y libreoffice",
+                             "RequiresRestart":  false,
+                             "NeedsManualInstall":  false,
+                             "DetectExecutable":  "libreoffice"
+                         },
+        "MacOSInstall":  {
+                             "Command":  "brew install --cask libreoffice",
+                             "SilentCommand":  "brew install --cask libreoffice",
+                             "RequiresRestart":  false,
+                             "NeedsManualInstall":  false,
+                             "DetectExecutable":  ""
+                         },
+        "SupportsSilentInstall":  true
+    },
+    {
+        "Id":  "notion",
+        "Name":  "Notion",
+        "Category":  "Office / Productivity",
+        "PublisherName":  "Notion Labs",
+        "Version":  "",
+        "License":  "",
+        "ReleaseNotesUrl":  "",
+        "Tags":  [
+                     "productivity",
+                     "notes"
+                 ],
+        "HomepageUrl":  "",
+        "Description":  "Workspace for docs, tasks, and project planning.",
+        "IconPath":  "",
+        "logoUrl":  "https://cdn.simpleicons.org/notion",
+        "WingetId":  "Notion.Notion",
+        "SupportedPlatforms":  {
+                                   "Windows":  true,
+                                   "Linux":  false,
+                                   "macOS":  true
+                               },
+        "WindowsInstall":  {
+                               "Command":  "winget install --id Notion.Notion -e --accept-source-agreements --accept-package-agreements",
+                               "SilentCommand":  "winget install --id Notion.Notion -e --accept-source-agreements --accept-package-agreements --silent",
+                               "RequiresRestart":  false,
+                               "NeedsManualInstall":  false,
+                               "DetectDisplayNameContains":  "Notion",
+                               "DetectExecutable":  ""
+                           },
+        "LinuxInstall":  null,
+        "MacOSInstall":  {
+                             "Command":  "brew install --cask notion",
+                             "SilentCommand":  "brew install --cask notion",
+                             "RequiresRestart":  false,
+                             "NeedsManualInstall":  false,
+                             "DetectExecutable":  ""
+                         },
+        "SupportsSilentInstall":  true
+    },
+    {
+        "Id":  "obsidian",
+        "Name":  "Obsidian",
+        "Category":  "Office / Productivity",
+        "PublisherName":  "Obsidian",
+        "Version":  "",
+        "License":  "",
+        "ReleaseNotesUrl":  "",
+        "Tags":  [
+                     "productivity",
+                     "notes"
+                 ],
+        "HomepageUrl":  "",
+        "Description":  "Markdown knowledge base and note-taking app.",
+        "IconPath":  "",
+        "logoUrl":  "https://cdn.simpleicons.org/obsidian",
+        "WingetId":  "Obsidian.Obsidian",
+        "SupportedPlatforms":  {
+                                   "Windows":  true,
+                                   "Linux":  true,
+                                   "macOS":  true
+                               },
+        "WindowsInstall":  {
+                               "Command":  "winget install --id Obsidian.Obsidian -e --accept-source-agreements --accept-package-agreements",
+                               "SilentCommand":  "winget install --id Obsidian.Obsidian -e --accept-source-agreements --accept-package-agreements --silent",
+                               "RequiresRestart":  false,
+                               "NeedsManualInstall":  false,
+                               "DetectDisplayNameContains":  "Obsidian",
+                               "DetectExecutable":  ""
+                           },
+        "LinuxInstall":  {
+                             "Command":  "sudo snap install obsidian --classic",
+                             "SilentCommand":  "sudo snap install obsidian --classic",
+                             "RequiresRestart":  false,
+                             "NeedsManualInstall":  false,
+                             "DetectExecutable":  "obsidian"
+                         },
+        "MacOSInstall":  {
+                             "Command":  "brew install --cask obsidian",
+                             "SilentCommand":  "brew install --cask obsidian",
+                             "RequiresRestart":  false,
+                             "NeedsManualInstall":  false,
+                             "DetectExecutable":  ""
+                         },
+        "SupportsSilentInstall":  true
+    },
+    {
+        "Id":  "thunderbird",
+        "Name":  "Thunderbird",
+        "Category":  "Office / Productivity",
+        "PublisherName":  "Mozilla",
+        "Version":  "",
+        "License":  "",
+        "ReleaseNotesUrl":  "",
+        "Tags":  [
+                     "email",
+                     "productivity"
+                 ],
+        "HomepageUrl":  "",
+        "Description":  "Email client from Mozilla.",
+        "IconPath":  "",
+        "logoUrl":  "https://cdn.simpleicons.org/thunderbird",
+        "WingetId":  "Mozilla.Thunderbird",
+        "SupportedPlatforms":  {
+                                   "Windows":  true,
+                                   "Linux":  true,
+                                   "macOS":  true
+                               },
+        "WindowsInstall":  {
+                               "Command":  "winget install --id Mozilla.Thunderbird -e --accept-source-agreements --accept-package-agreements",
+                               "SilentCommand":  "winget install --id Mozilla.Thunderbird -e --accept-source-agreements --accept-package-agreements --silent",
+                               "RequiresRestart":  false,
+                               "NeedsManualInstall":  false,
+                               "DetectDisplayNameContains":  "Thunderbird",
+                               "DetectExecutable":  ""
+                           },
+        "LinuxInstall":  {
+                             "Command":  "sudo apt-get install -y thunderbird",
+                             "SilentCommand":  "sudo apt-get install -y thunderbird",
+                             "RequiresRestart":  false,
+                             "NeedsManualInstall":  false,
+                             "DetectExecutable":  "thunderbird"
+                         },
+        "MacOSInstall":  {
+                             "Command":  "brew install --cask thunderbird",
+                             "SilentCommand":  "brew install --cask thunderbird",
+                             "RequiresRestart":  false,
+                             "NeedsManualInstall":  false,
+                             "DetectExecutable":  ""
+                         },
+        "SupportsSilentInstall":  true
+    }
 ]

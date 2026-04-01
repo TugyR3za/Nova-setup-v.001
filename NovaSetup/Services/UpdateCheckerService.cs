@@ -5,7 +5,7 @@ namespace NovaSetup.Services;
 
 public sealed class UpdateCheckerService
 {
-    private const string VersionUrl = "https://raw.githubusercontent.com/TugyR3za/Nova-setup-v.001/main/version.json";
+    private const string VersionUrl = AppConstants.VersionCheckUrl;
 
     private readonly LoggingService? _loggingService;
 
@@ -68,9 +68,29 @@ public sealed class UpdateCheckerService
                 remoteInfo.DownloadUrl ?? string.Empty,
                 remoteInfo.ReleaseNotesUrl ?? string.Empty);
         }
+        catch (HttpRequestException ex)
+        {
+            _loggingService?.LogWarning($"[UpdateChecker] Network error during update check: {ex.Message}");
+            return new UpdateCheckResult(false, string.Empty, string.Empty, string.Empty);
+        }
+        catch (JsonException ex)
+        {
+            _loggingService?.LogWarning($"[UpdateChecker] Failed to parse remote version payload: {ex.Message}");
+            return new UpdateCheckResult(false, string.Empty, string.Empty, string.Empty);
+        }
+        catch (TaskCanceledException)
+        {
+            _loggingService?.LogWarning("[UpdateChecker] Update check timed out after 6 seconds.");
+            return new UpdateCheckResult(false, string.Empty, string.Empty, string.Empty);
+        }
+        catch (FormatException ex)
+        {
+            _loggingService?.LogWarning($"[UpdateChecker] Version string could not be parsed: {ex.Message}");
+            return new UpdateCheckResult(false, string.Empty, string.Empty, string.Empty);
+        }
         catch (Exception ex)
         {
-            _loggingService?.LogWarning($"[UpdateChecker] Update check failed: {ex.Message}");
+            _loggingService?.LogWarning($"[UpdateChecker] Unexpected error during update check: {ex.GetType().Name} — {ex.Message}");
             return new UpdateCheckResult(false, string.Empty, string.Empty, string.Empty);
         }
     }

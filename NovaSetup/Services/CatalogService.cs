@@ -6,13 +6,14 @@ namespace NovaSetup.Services;
 
 public sealed class CatalogService
 {
-    private const string RemoteCatalogUrl = "https://raw.githubusercontent.com/TugyR3za/Nova-setup-v.001/main/NovaSetup/Configs/apps.json";
+    private const string RemoteCatalogUrl = AppConstants.RemoteCatalogUrl;
     private static readonly HttpClient _httpClient = new() { Timeout = TimeSpan.FromSeconds(8) };
     private static readonly Regex WingetIdRegex =
         new(@"--id\s+(?:""(?<id>[^""]+)""|(?<id>\S+))", RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
     private readonly PlatformService _platformService;
     private readonly LoggingService? _loggingService;
+    private Task? _backgroundRefreshTask;
     private readonly JsonSerializerOptions _jsonOptions = new()
     {
         PropertyNameCaseInsensitive = true,
@@ -99,23 +100,31 @@ public sealed class CatalogService
         }
         else
         {
-            // Fire-and-forget background refresh from remote
-            _ = Task.Run(async () =>
+            // Tracked background refresh with its own timeout so it can't hang indefinitely
+            if (_backgroundRefreshTask is null || _backgroundRefreshTask.IsCompleted)
             {
-                try
+                _backgroundRefreshTask = Task.Run(async () =>
                 {
-                    var remoteJson = await _httpClient.GetStringAsync(RemoteCatalogUrl);
-                    var cacheDirectory = Path.GetDirectoryName(CacheFilePath);
-                    if (!string.IsNullOrWhiteSpace(cacheDirectory))
-                        Directory.CreateDirectory(cacheDirectory);
-                    await File.WriteAllTextAsync(CacheFilePath, remoteJson);
-                    _loggingService?.Info("Background catalog refresh completed.");
-                }
-                catch (Exception ex)
-                {
-                    _loggingService?.Warn($"Background catalog refresh failed: {ex.Message}");
-                }
-            });
+                    try
+                    {
+                        using var refreshCts = new CancellationTokenSource(TimeSpan.FromSeconds(15));
+                        var remoteJson = await _httpClient.GetStringAsync(RemoteCatalogUrl, refreshCts.Token);
+                        var cacheDirectory = Path.GetDirectoryName(CacheFilePath);
+                        if (!string.IsNullOrWhiteSpace(cacheDirectory))
+                            Directory.CreateDirectory(cacheDirectory);
+                        await File.WriteAllTextAsync(CacheFilePath, remoteJson, refreshCts.Token);
+                        _loggingService?.Info("Background catalog refresh completed.");
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        _loggingService?.Warn("Background catalog refresh timed out.");
+                    }
+                    catch (Exception ex)
+                    {
+                        _loggingService?.Warn($"Background catalog refresh failed: {ex.Message}");
+                    }
+                });
+            }
         }
 
         return localApps;
@@ -135,6 +144,7 @@ public sealed class CatalogService
         app.HomepageUrl ??= string.Empty;
         app.Description ??= string.Empty;
         app.IconPath ??= string.Empty;
+        app.LogoUrl = string.IsNullOrWhiteSpace(app.LogoUrl) ? null : app.LogoUrl;
         app.WingetId ??= string.Empty;
         app.Version ??= string.Empty;
         app.License ??= string.Empty;
@@ -145,6 +155,7 @@ public sealed class CatalogService
         app.SupportedPlatforms ??= new PlatformSupport();
         NormalizeInstallDefinition(app.WindowsInstall);
         NormalizeInstallDefinition(app.LinuxInstall);
+        NormalizeInstallDefinition(app.MacOSInstall);
 
         if (string.IsNullOrWhiteSpace(app.WingetId))
         {

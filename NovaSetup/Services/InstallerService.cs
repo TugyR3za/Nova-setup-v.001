@@ -527,9 +527,12 @@ public sealed class InstallerService
 
             ReportQueueProgress(queueProgress, action.App.Id, InstallQueueStatus.Installing, "Installing...", 0.6);
 
-            command = currentPlatform == PlatformService.Windows
-                ? BuildWindowsInstallCommand(action, installerPath)
-                : BuildLinuxInstallCommand(action, installerPath);
+            command = currentPlatform switch
+            {
+                PlatformService.Windows => BuildWindowsInstallCommand(action, installerPath),
+                PlatformService.MacOS => BuildMacOSInstallCommand(action),
+                _ => BuildLinuxInstallCommand(action, installerPath)
+            };
             installMethod = DetermineInstallMethod(command, installerPath);
 
             if (string.IsNullOrWhiteSpace(command))
@@ -1365,6 +1368,21 @@ public sealed class InstallerService
         return action.InstallDefinition.Command;
     }
 
+    private string BuildMacOSInstallCommand(InstallAction action)
+    {
+        if (action.UseSilent && !string.IsNullOrWhiteSpace(action.InstallDefinition.SilentCommand))
+        {
+            return action.InstallDefinition.SilentCommand;
+        }
+
+        if (!string.IsNullOrWhiteSpace(action.InstallDefinition.Command))
+        {
+            return action.InstallDefinition.Command;
+        }
+
+        return $"brew install {action.App.Id}";
+    }
+
     private bool DetermineIfRestartNeeded(InstallAction action, int exitCode)
     {
         return action.InstallDefinition.RequiresRestart ||
@@ -1439,6 +1457,7 @@ public sealed class InstallerService
         {
             PlatformService.Windows => app.WindowsInstall,
             PlatformService.Linux => app.LinuxInstall,
+            PlatformService.MacOS => app.MacOSInstall,
             _ => null
         };
     }
@@ -1825,7 +1844,15 @@ public sealed class InstallerService
 
     private static string TrimForLog(string value)
     {
-        return value.Length <= 300 ? value : value[..300] + "...";
+        if (value.Length <= 300)
+            return value;
+
+        // Avoid splitting UTF-16 surrogate pairs (emoji, CJK extension, etc.)
+        var end = 300;
+        if (end < value.Length && char.IsLowSurrogate(value[end]))
+            end--;
+
+        return string.Concat(value.AsSpan(0, end), "...");
     }
 
     private string ResolveDownloadRoot(string downloadLocationMode, string customDownloadFolder)
