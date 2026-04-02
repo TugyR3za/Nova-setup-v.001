@@ -41,39 +41,56 @@ public sealed class CatalogService
 
     public async Task<List<AppItem>> LoadAppsAsync(string currentPlatform)
     {
-        // Try local cache first for instant startup
-        List<AppItem>? localApps = null;
+        var configPath = ResolveConfigPath("apps.json");
+        var cacheCatalog = await TryLoadCatalogFromFileAsync(CacheFilePath, currentPlatform, "local cache");
+        var bundledCatalog = await TryLoadCatalogFromFileAsync(configPath, currentPlatform, "bundled fallback");
 
-        if (File.Exists(CacheFilePath))
+        List<AppItem>? localApps = null;
+        string? localJson = null;
+        string? selectedSource = null;
+
+        if (bundledCatalog.Apps is not null && cacheCatalog.Apps is not null)
         {
-            try
+            var bundledWriteTime = GetFileWriteTimeUtc(configPath);
+            var cacheWriteTime = GetFileWriteTimeUtc(CacheFilePath);
+            var useBundledCatalog =
+                bundledWriteTime >= cacheWriteTime ||
+                bundledCatalog.Apps.Count > cacheCatalog.Apps.Count;
+
+            if (useBundledCatalog)
             {
-                var cacheJson = await File.ReadAllTextAsync(CacheFilePath);
-                localApps = ParseAndNormalize(cacheJson, currentPlatform);
-                _loggingService?.Info($"Loaded catalog from local cache ({localApps.Count} apps).");
+                localApps = bundledCatalog.Apps;
+                localJson = bundledCatalog.Json;
+                selectedSource = "bundled fallback";
             }
-            catch (Exception ex)
+            else
             {
-                _loggingService?.Warn($"Local cache could not be parsed: {ex.Message}");
+                localApps = cacheCatalog.Apps;
+                localJson = cacheCatalog.Json;
+                selectedSource = "local cache";
             }
         }
-
-        if (localApps is null)
+        else if (bundledCatalog.Apps is not null)
         {
-            // No cache — try bundled fallback
-            var configPath = ResolveConfigPath("apps.json");
-            if (File.Exists(configPath))
+            localApps = bundledCatalog.Apps;
+            localJson = bundledCatalog.Json;
+            selectedSource = "bundled fallback";
+        }
+        else if (cacheCatalog.Apps is not null)
+        {
+            localApps = cacheCatalog.Apps;
+            localJson = cacheCatalog.Json;
+            selectedSource = "local cache";
+        }
+
+        if (localApps is not null && !string.IsNullOrWhiteSpace(selectedSource))
+        {
+            _loggingService?.Info($"Loaded catalog from {selectedSource} ({localApps.Count} apps).");
+
+            if (string.Equals(selectedSource, "bundled fallback", StringComparison.OrdinalIgnoreCase) &&
+                !string.IsNullOrWhiteSpace(localJson))
             {
-                try
-                {
-                    var bundledJson = await File.ReadAllTextAsync(configPath);
-                    localApps = ParseAndNormalize(bundledJson, currentPlatform);
-                    _loggingService?.Info($"Loaded catalog from bundled fallback ({localApps.Count} apps).");
-                }
-                catch (Exception ex)
-                {
-                    _loggingService?.Warn($"Bundled apps.json could not be parsed: {ex.Message}");
-                }
+                await TryWriteCacheAsync(localJson);
             }
         }
 
@@ -128,6 +145,58 @@ public sealed class CatalogService
         }
 
         return localApps;
+    }
+
+    private async Task<(List<AppItem>? Apps, string? Json)> TryLoadCatalogFromFileAsync(
+        string path,
+        string currentPlatform,
+        string sourceName)
+    {
+        if (!File.Exists(path))
+        {
+            return (null, null);
+        }
+
+        try
+        {
+            var json = await File.ReadAllTextAsync(path);
+            return (ParseAndNormalize(json, currentPlatform), json);
+        }
+        catch (Exception ex)
+        {
+            _loggingService?.Warn($"{sourceName} could not be parsed: {ex.Message}");
+            return (null, null);
+        }
+    }
+
+    private static DateTime GetFileWriteTimeUtc(string path)
+    {
+        try
+        {
+            return File.Exists(path) ? File.GetLastWriteTimeUtc(path) : DateTime.MinValue;
+        }
+        catch
+        {
+            return DateTime.MinValue;
+        }
+    }
+
+    private static async Task TryWriteCacheAsync(string json)
+    {
+        try
+        {
+            var cacheDirectory = Path.GetDirectoryName(CacheFilePath);
+            if (!string.IsNullOrWhiteSpace(cacheDirectory))
+            {
+                Directory.CreateDirectory(cacheDirectory);
+            }
+
+            await File.WriteAllTextAsync(CacheFilePath, json);
+        }
+        catch
+        {
+            // Cache sync is best-effort only.
+        }
     }
 
     public IEnumerable<AppItem> FilterSupportedApps(IEnumerable<AppItem> apps)
