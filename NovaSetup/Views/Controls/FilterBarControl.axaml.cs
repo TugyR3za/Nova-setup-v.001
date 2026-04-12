@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Data;
@@ -9,6 +11,17 @@ public partial class FilterBarControl : UserControl
     public static readonly StyledProperty<string?> SearchTextProperty =
         AvaloniaProperty.Register<FilterBarControl, string?>(
             nameof(SearchText),
+            defaultBindingMode: BindingMode.TwoWay);
+
+    public static readonly StyledProperty<IReadOnlyList<string>> AvailableCategoriesProperty =
+        AvaloniaProperty.Register<FilterBarControl, IReadOnlyList<string>>(
+            nameof(AvailableCategories),
+            Array.Empty<string>());
+
+    public static readonly StyledProperty<string> SelectedCategoryProperty =
+        AvaloniaProperty.Register<FilterBarControl, string>(
+            nameof(SelectedCategory),
+            "All",
             defaultBindingMode: BindingMode.TwoWay);
 
     public static readonly StyledProperty<bool> IsAllFilterProperty =
@@ -76,6 +89,18 @@ public partial class FilterBarControl : UserControl
     {
         get => GetValue(SearchTextProperty);
         set => SetValue(SearchTextProperty, value);
+    }
+
+    public IReadOnlyList<string> AvailableCategories
+    {
+        get => GetValue(AvailableCategoriesProperty);
+        set => SetValue(AvailableCategoriesProperty, value);
+    }
+
+    public string SelectedCategory
+    {
+        get => GetValue(SelectedCategoryProperty);
+        set => SetValue(SelectedCategoryProperty, value);
     }
 
     public bool IsAllFilter

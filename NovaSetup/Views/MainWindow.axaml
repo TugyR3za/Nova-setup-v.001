@@ -27,6 +27,7 @@
         <converters:LogLevelToBrushConverter x:Key="LogLevelToBrushConverter" />
         <converters:InstallQueueStatusToBrushConverter x:Key="InstallQueueStatusToBrushConverter" />
         <converters:InstallQueueStatusToProgressVisibilityConverter x:Key="InstallQueueStatusToProgressVisibilityConverter" />
+        <converters:StringHasValueConverter x:Key="StringHasValueConverter" />
     </Window.Resources>
 
     <Window.Styles>
@@ -312,9 +313,93 @@
                                 Classes="card"
                                 IsVisible="{Binding IsDashboardUnselected}"
                                 Padding="12">
-                            <Grid RowDefinitions="Auto,*,Auto" RowSpacing="8">
-                        <controls:FilterBarControl Grid.Row="0"
+                            <Grid RowDefinitions="Auto,Auto,*,Auto" RowSpacing="8">
+                                <StackPanel Grid.Row="0"
+                                            Spacing="8"
+                                            IsVisible="{Binding IsAppsSelected}">
+                                    <Border IsVisible="{Binding PresetAppliedText, Converter={StaticResource StringHasValueConverter}}"
+                                            Background="{DynamicResource AccentSoftBrush}"
+                                            BorderBrush="{DynamicResource AccentBrush}"
+                                            BorderThickness="1"
+                                            CornerRadius="14"
+                                            Padding="12,8">
+                                        <Grid ColumnDefinitions="*,Auto"
+                                              ColumnSpacing="10">
+                                            <TextBlock Text="{Binding PresetAppliedText}"
+                                                       VerticalAlignment="Center"
+                                                       FontWeight="SemiBold"
+                                                       TextWrapping="Wrap" />
+
+                                            <Button Grid.Column="1"
+                                                    Classes="ghost compact"
+                                                    Content="Dismiss"
+                                                    Command="{Binding DismissPresetAppliedCommand}" />
+                                        </Grid>
+                                    </Border>
+
+                                    <StackPanel Spacing="8">
+                                        <TextBlock Text="Quick Setup"
+                                                   FontSize="18"
+                                                   FontWeight="SemiBold" />
+
+                                        <ScrollViewer HorizontalScrollBarVisibility="Auto"
+                                                      VerticalScrollBarVisibility="Disabled">
+                                            <ItemsControl ItemsSource="{Binding AvailablePresets}">
+                                                <ItemsControl.ItemsPanel>
+                                                    <ItemsPanelTemplate>
+                                                        <StackPanel Orientation="Horizontal"
+                                                                    Spacing="12" />
+                                                    </ItemsPanelTemplate>
+                                                </ItemsControl.ItemsPanel>
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <Border Classes="card"
+                                                                Width="180"
+                                                                Padding="14">
+                                                            <StackPanel Spacing="10">
+                                                                <Border Width="54"
+                                                                        Height="54"
+                                                                        CornerRadius="27"
+                                                                        Background="{DynamicResource AccentSoftBrush}">
+                                                                    <TextBlock Text="{Binding Icon}"
+                                                                               HorizontalAlignment="Center"
+                                                                               VerticalAlignment="Center"
+                                                                               FontWeight="Bold"
+                                                                               Foreground="{DynamicResource AccentBrush}" />
+                                                                </Border>
+
+                                                                <StackPanel Spacing="3">
+                                                                    <TextBlock Text="{Binding Name}"
+                                                                               FontWeight="SemiBold"
+                                                                               TextWrapping="Wrap" />
+                                                                    <TextBlock Text="{Binding AppCountText}"
+                                                                               Foreground="{DynamicResource TextMutedBrush}"
+                                                                               FontSize="12" />
+                                                                    <TextBlock Text="{Binding Description}"
+                                                                               Foreground="{DynamicResource TextMutedBrush}"
+                                                                               FontSize="12"
+                                                                               TextWrapping="Wrap"
+                                                                               MaxLines="3"
+                                                                               TextTrimming="CharacterEllipsis" />
+                                                                </StackPanel>
+
+                                                                <Button Content="Apply"
+                                                                        HorizontalAlignment="Left"
+                                                                        Command="{Binding #RootWindow.DataContext.ApplyPresetCommand}"
+                                                                        CommandParameter="{Binding .}" />
+                                                            </StackPanel>
+                                                        </Border>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+                                        </ScrollViewer>
+                                    </StackPanel>
+                                </StackPanel>
+
+                                <controls:FilterBarControl Grid.Row="1"
                                                    SearchText="{Binding SearchText, Mode=TwoWay}"
+                                                   AvailableCategories="{Binding AvailableCategories}"
+                                                   SelectedCategory="{Binding SelectedCategory, Mode=TwoWay}"
                                                    IsAllFilter="{Binding IsAllFilter, Mode=TwoWay}"
                                                    IsGamesFilter="{Binding IsGamesFilter, Mode=TwoWay}"
                                                    IsDriversFilter="{Binding IsDriversFilter, Mode=TwoWay}"
@@ -328,7 +413,7 @@
                                                    RefreshCatalogCommand="{Binding RefreshCatalogCommand}"
                                                    ToggleViewModeCommand="{Binding ToggleViewModeCommand}" />
 
-                                <controls:AppListControl Grid.Row="1"
+                                <controls:AppListControl Grid.Row="2"
                                                          IsVisible="{Binding IsListViewActive}"
                                                          Items="{Binding VisibleApps}"
                                                          OpenPublisherCommand="{Binding OpenPublisherCommand}"
@@ -341,13 +426,13 @@
                                                          ToggleSilentInstallPreferenceCommand="{Binding ToggleSilentInstallPreferenceCommand}"
                                                          ToggleScanningPreferenceCommand="{Binding ToggleScanningPreferenceCommand}" />
 
-                                <controls:AppGridControl Grid.Row="1"
+                                <controls:AppGridControl Grid.Row="2"
                                                          IsVisible="{Binding IsGridViewActive}"
                                                          Items="{Binding VisibleApps}"
                                                          OpenPublisherCommand="{Binding OpenPublisherCommand}"
                                                          ShowAppDetailsCommand="{Binding ShowAppDetailsCommand}" />
 
-                                <controls:BottomBarControl Grid.Row="2"
+                                <controls:BottomBarControl Grid.Row="3"
                                                            SelectedAppsCount="{Binding SelectedAppsCount}"
                                                            SelectedAppsSizeMB="{Binding SelectedAppsSizeMB}"
                                                            SelectedAppsTimeMins="{Binding SelectedAppsTimeMins}"
@@ -869,35 +954,35 @@
                             Padding="14"
                             Background="{DynamicResource ElevatedCardBrush}"
                             BorderBrush="{DynamicResource CardBorderBrush}">
-                        <Grid RowDefinitions="Auto,*"
+                        <Grid RowDefinitions="*,Auto"
                               RowSpacing="12">
-                            <Grid ColumnDefinitions="*,Auto"
-                                  ColumnSpacing="10">
-                                <StackPanel Spacing="2">
-                                    <TextBlock Text="App details"
-                                               FontSize="20"
-                                               FontWeight="SemiBold" />
-                                    <TextBlock Text="{Binding SelectedDetailApp.Name}"
-                                               FontSize="13"
-                                               Foreground="{DynamicResource TextMutedBrush}"
-                                               TextWrapping="Wrap" />
-                                </StackPanel>
-
-                                <Button Grid.Column="1"
-                                        Classes="closeIcon"
-                                        Command="{Binding CloseAppDetailsCommand}">
-                                    <Viewbox Width="14"
-                                             Height="14">
-                                        <Path Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
-                                              Data="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z" />
-                                    </Viewbox>
-                                </Button>
-                            </Grid>
-
-                            <ScrollViewer Grid.Row="1"
+                            <ScrollViewer Grid.Row="0"
                                           VerticalScrollBarVisibility="Auto"
                                           HorizontalScrollBarVisibility="Disabled">
                                 <StackPanel Spacing="14">
+                                    <Grid ColumnDefinitions="*,Auto"
+                                          ColumnSpacing="10">
+                                        <StackPanel Spacing="2">
+                                            <TextBlock Text="App details"
+                                                       FontSize="20"
+                                                       FontWeight="SemiBold" />
+                                            <TextBlock Text="{Binding SelectedDetailApp.Name}"
+                                                       FontSize="13"
+                                                       Foreground="{DynamicResource TextMutedBrush}"
+                                                       TextWrapping="Wrap" />
+                                        </StackPanel>
+
+                                        <Button Grid.Column="1"
+                                                Classes="closeIcon"
+                                                Command="{Binding CloseAppDetailsCommand}">
+                                            <Viewbox Width="14"
+                                                     Height="14">
+                                                <Path Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                                                      Data="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z" />
+                                            </Viewbox>
+                                        </Button>
+                                    </Grid>
+
                                     <Grid ColumnDefinitions="Auto,*"
                                           ColumnSpacing="12">
                                         <Border Width="46"
@@ -949,6 +1034,11 @@
                                                        Foreground="{DynamicResource TextMutedBrush}"
                                                        TextWrapping="Wrap" />
                                         </Border>
+                                    </StackPanel>
+
+                                    <StackPanel Spacing="6">
+                                        <TextBlock Text="Version info"
+                                                   FontWeight="SemiBold" />
                                         <Border Classes="metaChip">
                                             <TextBlock Text="{Binding SelectedDetailCatalogVersionText}"
                                                        Foreground="{DynamicResource TextMutedBrush}"
@@ -967,11 +1057,39 @@
                                     </StackPanel>
 
                                     <StackPanel Spacing="6">
-                                        <TextBlock Text="Description"
+                                        <TextBlock Text="Details"
                                                    FontWeight="SemiBold" />
                                         <TextBlock Text="{Binding SelectedDetailDescription}"
                                                    Foreground="{DynamicResource TextSecondaryBrush}"
                                                    TextWrapping="Wrap" />
+                                        <TextBlock Text="{Binding SelectedDetailLicenseText}"
+                                                   IsVisible="{Binding SelectedDetailLicenseText, Converter={StaticResource StringHasValueConverter}}"
+                                                   Foreground="{DynamicResource TextMutedBrush}"
+                                                   TextWrapping="Wrap" />
+                                        <ItemsControl ItemsSource="{Binding SelectedDetailTags}"
+                                                      IsVisible="{Binding HasSelectedDetailTags}">
+                                            <ItemsControl.ItemsPanel>
+                                                <ItemsPanelTemplate>
+                                                    <WrapPanel Orientation="Horizontal" />
+                                                </ItemsPanelTemplate>
+                                            </ItemsControl.ItemsPanel>
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <Border Classes="metaChip"
+                                                            Margin="0,0,8,8">
+                                                        <TextBlock Text="{Binding .}"
+                                                                   Foreground="{DynamicResource TextMutedBrush}"
+                                                                   FontSize="12" />
+                                                    </Border>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                        <Button Classes="link compact"
+                                                Content="{Binding SelectedDetailReleaseNotesText}"
+                                                IsVisible="{Binding HasSelectedDetailReleaseNotes}"
+                                                Command="{Binding OpenSelectedDetailReleaseNotesCommand}"
+                                                HorizontalAlignment="Left"
+                                                Padding="0" />
                                     </StackPanel>
 
                                     <StackPanel Spacing="6"
@@ -991,6 +1109,28 @@
                                     </StackPanel>
 
                                     <StackPanel Spacing="6">
+                                        <TextBlock Text="Security"
+                                                   FontWeight="SemiBold"
+                                                   IsVisible="{Binding HasSelectedDetailVirusTotal}" />
+                                        <Button Classes="link compact"
+                                                Content="{Binding SelectedDetailApp.VirusTotalDisplayText}"
+                                                IsVisible="{Binding HasSelectedDetailVirusTotal}"
+                                                Command="{Binding OpenSelectedDetailVirusTotalCommand}"
+                                                HorizontalAlignment="Left"
+                                                Padding="0" />
+                                    </StackPanel>
+
+                                    <StackPanel Spacing="6">
+                                        <TextBlock Text="Install method"
+                                                   FontWeight="SemiBold" />
+                                        <Border Classes="metaChip">
+                                            <TextBlock Text="{Binding SelectedDetailInstallMethodText}"
+                                                       Foreground="{DynamicResource TextMutedBrush}"
+                                                       TextWrapping="Wrap" />
+                                        </Border>
+                                    </StackPanel>
+
+                                    <StackPanel Spacing="6">
                                         <TextBlock Text="Selection"
                                                    FontWeight="SemiBold" />
                                         <TextBlock Text="{Binding SelectedDetailApp.IsSelected, StringFormat='Selected: {0}'}"
@@ -1002,6 +1142,18 @@
                                     </StackPanel>
                                 </StackPanel>
                             </ScrollViewer>
+
+                            <Border Grid.Row="1"
+                                    BorderBrush="{DynamicResource CardBorderBrush}"
+                                    BorderThickness="0,1,0,0"
+                                    Padding="0,12,0,0">
+                                <Button Classes="primary"
+                                        Content="{Binding SelectedDetailPrimaryActionText}"
+                                        Command="{Binding SelectedDetailPrimaryActionCommand}"
+                                        CommandParameter="{Binding SelectedDetailApp}"
+                                        IsEnabled="{Binding IsSelectedDetailPrimaryActionEnabled}"
+                                        HorizontalAlignment="Stretch" />
+                            </Border>
                         </Grid>
                     </Border>
                 </Grid>

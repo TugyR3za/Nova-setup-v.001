@@ -45,6 +45,7 @@ public sealed class MainWindowViewModel : ObservableObject
     private readonly AppPreferencesService _appPreferencesService;
     private readonly DependencyResolverService _dependencyResolverService;
     private readonly AppUpdateService _appUpdateService;
+    private readonly PresetService _presetService;
     private ScheduledUpdateService? _scheduledUpdateService;
 
     private bool _isGridViewActive;
@@ -93,9 +94,13 @@ public sealed class MainWindowViewModel : ObservableObject
     private readonly RelayCommand _toggleScanningPreferenceCommand;
     private readonly RelayCommand _toggleInstallScriptsPreferenceCommand;
     private readonly RelayCommand _openPublisherCommand;
+    private readonly RelayCommand _openSelectedDetailReleaseNotesCommand;
+    private readonly RelayCommand _openSelectedDetailVirusTotalCommand;
     private readonly RelayCommand _openAboutGitHubCommand;
     private readonly RelayCommand _showAppDetailsCommand;
     private readonly RelayCommand _closeAppDetailsCommand;
+    private readonly RelayCommand _applyPresetCommand;
+    private readonly RelayCommand _dismissPresetAppliedCommand;
     private readonly RelayCommand _pauseInstallCommand;
     private readonly RelayCommand _clearQueueCommand;
     private readonly RelayCommand _exportReportCommand;
@@ -147,11 +152,14 @@ public sealed class MainWindowViewModel : ObservableObject
     private string _currentSection = SectionApps;
     private string _searchText = string.Empty;
     private string _selectedFilter = "All";
+    private IReadOnlyList<string> _availableCategories = Array.Empty<string>();
+    private string _selectedCategory = "All";
     private bool _isUpdateAvailable;
     private string _updateVersionText = string.Empty;
     private string _updateDownloadUrl = string.Empty;
     private bool _isDependencyInfoVisible;
     private string _dependencyInfoText = string.Empty;
+    private string _presetAppliedText = string.Empty;
     private string _aboutUpdateStatusText = string.Empty;
     private string _aboutRemoteVersionText = "Latest available: Not checked yet";
     private AppItem? _selectedDetailApp;
@@ -170,6 +178,7 @@ public sealed class MainWindowViewModel : ObservableObject
     private CancellationTokenSource? _settingsSaveCts;
     private CancellationTokenSource? _startupDetectionCts;
     private CancellationTokenSource? _dependencyInfoDismissCts;
+    private CancellationTokenSource? _presetAppliedDismissCts;
     private CancellationTokenSource? _installQueueCts;
 
     private static readonly IReadOnlyList<SettingChoice> RestartBehaviorChoices =
@@ -252,6 +261,7 @@ public sealed class MainWindowViewModel : ObservableObject
         _appPreferencesService = appPreferencesService;
         _dependencyResolverService = new DependencyResolverService(loggingService);
         _appUpdateService = new AppUpdateService(loggingService);
+        _presetService = new PresetService();
         _installerService.AppInstallStarted += HandleInstallerAppStarted;
         _installerService.AppInstallCompleted += HandleInstallerAppCompleted;
 
@@ -295,9 +305,13 @@ public sealed class MainWindowViewModel : ObservableObject
         _toggleScanningPreferenceCommand = new RelayCommand(ToggleScanningPreference, CanExecuteAppContextParameter);
         _toggleInstallScriptsPreferenceCommand = new RelayCommand(ToggleInstallScriptsPreference, CanExecuteAppContextParameter);
         _openPublisherCommand = new RelayCommand(OpenPublisherHomepage);
+        _openSelectedDetailReleaseNotesCommand = new RelayCommand(_ => OpenSelectedDetailReleaseNotes(), _ => HasSelectedDetailReleaseNotes);
+        _openSelectedDetailVirusTotalCommand = new RelayCommand(_ => OpenSelectedDetailVirusTotal(), _ => HasSelectedDetailVirusTotal);
         _openAboutGitHubCommand = new RelayCommand(_ => OpenAboutGitHub(), _ => !IsInstalling);
         _showAppDetailsCommand = new RelayCommand(ShowAppDetails);
         _closeAppDetailsCommand = new RelayCommand(_ => CloseAppDetails());
+        _applyPresetCommand = new RelayCommand(ApplyPreset, CanApplyPreset);
+        _dismissPresetAppliedCommand = new RelayCommand(_ => ClearPresetAppliedBanner(), _ => !string.IsNullOrWhiteSpace(PresetAppliedText));
         _pauseInstallCommand = new RelayCommand(_ => PauseInstallPlaceholder(), _ => IsInstalling);
         _clearQueueCommand = new RelayCommand(_ => ClearQueue(), _ => IsQueueVisible && !IsInstalling);
         _exportReportCommand = new RelayCommand(_ => ExportReportPlaceholder());
@@ -321,6 +335,7 @@ public sealed class MainWindowViewModel : ObservableObject
         _resetSettingsCommand = new AsyncRelayCommand(ResetSettingsAsync, () => !IsInstalling);
 
         HookCollectionNotifications();
+        AvailablePresets = _presetService.GetAllPresets();
         RefreshFilteredLiveLogs();
     }
 
@@ -329,6 +344,8 @@ public sealed class MainWindowViewModel : ObservableObject
     public HistoryViewModel HistoryViewModel { get; }
 
     public UpdatesViewModel UpdatesViewModel { get; }
+
+    public IReadOnlyList<AppPreset> AvailablePresets { get; }
 
     public string CurrentPlatform
     {
@@ -504,6 +521,18 @@ public sealed class MainWindowViewModel : ObservableObject
     {
         get => _dependencyInfoText;
         private set => SetProperty(ref _dependencyInfoText, value ?? string.Empty);
+    }
+
+    public string PresetAppliedText
+    {
+        get => _presetAppliedText;
+        private set
+        {
+            if (SetProperty(ref _presetAppliedText, value ?? string.Empty))
+            {
+                _dismissPresetAppliedCommand.RaiseCanExecuteChanged();
+            }
+        }
     }
 
     public string AboutUpdateStatusText
@@ -826,6 +855,25 @@ public sealed class MainWindowViewModel : ObservableObject
         private set => SetProperty(ref _selectedFilter, value);
     }
 
+    public IReadOnlyList<string> AvailableCategories
+    {
+        get => _availableCategories;
+        private set => SetProperty(ref _availableCategories, value ?? Array.Empty<string>());
+    }
+
+    public string SelectedCategory
+    {
+        get => _selectedCategory;
+        set
+        {
+            var normalizedValue = string.IsNullOrWhiteSpace(value) ? "All" : value.Trim();
+            if (SetProperty(ref _selectedCategory, normalizedValue))
+            {
+                ApplyVisibilityFilter();
+            }
+        }
+    }
+
     public bool IsAllFilter
     {
         get => _isAllFilter;
@@ -833,7 +881,7 @@ public sealed class MainWindowViewModel : ObservableObject
         {
             if (SetProperty(ref _isAllFilter, value) && value && !_updatingFilterFlags)
             {
-                SetCategoryFilter("All");
+                SetSelectedFilter("All");
             }
         }
     }
@@ -845,7 +893,7 @@ public sealed class MainWindowViewModel : ObservableObject
         {
             if (SetProperty(ref _isGamesFilter, value) && value && !_updatingFilterFlags)
             {
-                SetCategoryFilter("Games");
+                SetSelectedFilter("Games");
             }
         }
     }
@@ -857,7 +905,7 @@ public sealed class MainWindowViewModel : ObservableObject
         {
             if (SetProperty(ref _isDevToolsFilter, value) && value && !_updatingFilterFlags)
             {
-                SetCategoryFilter("Dev Tools");
+                SetSelectedFilter("Dev Tools");
             }
         }
     }
@@ -869,7 +917,7 @@ public sealed class MainWindowViewModel : ObservableObject
         {
             if (SetProperty(ref _isDriversFilter, value) && value && !_updatingFilterFlags)
             {
-                SetCategoryFilter("Drivers");
+                SetSelectedFilter("Drivers");
             }
         }
     }
@@ -881,7 +929,7 @@ public sealed class MainWindowViewModel : ObservableObject
         {
             if (SetProperty(ref _isRecommendedFilter, value) && value && !_updatingFilterFlags)
             {
-                SetCategoryFilter("Recommended");
+                SetSelectedFilter("Recommended");
             }
         }
     }
@@ -893,7 +941,7 @@ public sealed class MainWindowViewModel : ObservableObject
         {
             if (SetProperty(ref _isUtilitiesFilter, value) && value && !_updatingFilterFlags)
             {
-                SetCategoryFilter("Utilities");
+                SetSelectedFilter("Utilities");
             }
         }
     }
@@ -905,7 +953,7 @@ public sealed class MainWindowViewModel : ObservableObject
         {
             if (SetProperty(ref _isArm64Filter, value) && value && !_updatingFilterFlags)
             {
-                SetCategoryFilter("ARM64");
+                SetSelectedFilter("ARM64");
             }
         }
     }
@@ -917,7 +965,7 @@ public sealed class MainWindowViewModel : ObservableObject
         {
             if (SetProperty(ref _isUpdatesFilter, value) && value && !_updatingFilterFlags)
             {
-                SetCategoryFilter("Updates");
+                SetSelectedFilter("Updates");
             }
         }
     }
@@ -1077,13 +1125,13 @@ public sealed class MainWindowViewModel : ObservableObject
     public bool IsAppDetailsOpen
     {
         get => _isAppDetailsOpen;
-        private set => SetProperty(ref _isAppDetailsOpen, value);
+        set => SetProperty(ref _isAppDetailsOpen, value);
     }
 
     public AppItem? SelectedDetailApp
     {
         get => _selectedDetailApp;
-        private set
+        set
         {
             if (SetProperty(ref _selectedDetailApp, value))
             {
@@ -1162,6 +1210,149 @@ public sealed class MainWindowViewModel : ObservableObject
                 : SelectedDetailApp.IsInstalled
                     ? "Update status: up to date"
                     : "Update status: not installed";
+
+    public string SelectedDetailLicenseText =>
+        SelectedDetailApp is null || string.IsNullOrWhiteSpace(SelectedDetailApp.License)
+            ? string.Empty
+            : $"License: {SelectedDetailApp.License}";
+
+    public string SelectedDetailReleaseNotesText =>
+        HasSelectedDetailReleaseNotes
+            ? "View release notes"
+            : string.Empty;
+
+    public bool HasSelectedDetailReleaseNotes =>
+        !string.IsNullOrWhiteSpace(SelectedDetailApp?.ReleaseNotesUrl);
+
+    public bool HasSelectedDetailVirusTotal =>
+        SelectedDetailApp?.HasVirusTotalData == true &&
+        !string.IsNullOrWhiteSpace(SelectedDetailApp.CurrentVirusTotalUrl);
+
+    public string SelectedDetailInstallMethodText
+    {
+        get
+        {
+            var app = SelectedDetailApp;
+            if (app is null)
+            {
+                return string.Empty;
+            }
+
+            if (!app.IsSupportedOnCurrentPlatform)
+            {
+                return "Install method: not available on this platform";
+            }
+
+            var installDefinition = GetSelectedDetailInstallDefinition();
+            if (installDefinition is null)
+            {
+                return "Install method: not configured";
+            }
+
+            if (installDefinition.NeedsManualInstall)
+            {
+                return "Install method: manual install required";
+            }
+
+            if (app.IsPortable || !string.IsNullOrWhiteSpace(installDefinition.PortableArchiveUrl))
+            {
+                return "Install method: portable archive extraction";
+            }
+
+            var commandText = !string.IsNullOrWhiteSpace(installDefinition.Command)
+                ? installDefinition.Command
+                : installDefinition.SilentCommand;
+
+            if (string.Equals(_currentPlatformId, PlatformService.Windows, StringComparison.OrdinalIgnoreCase))
+            {
+                if (!string.IsNullOrWhiteSpace(app.WingetId) ||
+                    commandText.Contains("winget", StringComparison.OrdinalIgnoreCase))
+                {
+                    return "Install method: via winget";
+                }
+
+                if (commandText.Contains("choco", StringComparison.OrdinalIgnoreCase))
+                {
+                    return "Install method: via Chocolatey";
+                }
+
+                if (HasDirectInstallerUrl(installDefinition))
+                {
+                    return "Install method: direct download";
+                }
+            }
+
+            if (string.Equals(_currentPlatformId, PlatformService.Linux, StringComparison.OrdinalIgnoreCase))
+            {
+                if (commandText.Contains("apt", StringComparison.OrdinalIgnoreCase))
+                {
+                    return "Install method: via apt";
+                }
+
+                if (commandText.Contains("snap", StringComparison.OrdinalIgnoreCase))
+                {
+                    return "Install method: via snap";
+                }
+
+                if (commandText.Contains("flatpak", StringComparison.OrdinalIgnoreCase))
+                {
+                    return "Install method: via flatpak";
+                }
+
+                if (HasDirectInstallerUrl(installDefinition))
+                {
+                    return "Install method: direct download";
+                }
+            }
+
+            if (string.Equals(_currentPlatformId, PlatformService.MacOS, StringComparison.OrdinalIgnoreCase))
+            {
+                if (commandText.Contains("brew", StringComparison.OrdinalIgnoreCase))
+                {
+                    return "Install method: via Homebrew";
+                }
+
+                if (HasDirectInstallerUrl(installDefinition))
+                {
+                    return "Install method: direct download";
+                }
+            }
+
+            return "Install method: configured command";
+        }
+    }
+
+    public bool HasSelectedDetailTags => SelectedDetailApp?.Tags.Count > 0;
+
+    public IReadOnlyList<string> SelectedDetailTags =>
+        SelectedDetailApp?.Tags is { } tags
+            ? tags
+            : Array.Empty<string>();
+
+    public string SelectedDetailPrimaryActionText =>
+        SelectedDetailApp is null
+            ? "Install"
+            : !SelectedDetailApp.IsSupportedOnCurrentPlatform
+                ? AppItem.StatusUnsupportedOnCurrentOs
+                : SelectedDetailApp.HasUpdateAvailable
+                    ? "Update"
+                    : SelectedDetailApp.IsInstalled
+                        ? "Installed"
+                        : "Install";
+
+    public bool IsSelectedDetailPrimaryActionEnabled =>
+        SelectedDetailApp is not null &&
+        SelectedDetailApp.IsSupportedOnCurrentPlatform &&
+        (!SelectedDetailApp.IsInstalled || SelectedDetailApp.HasUpdateAvailable);
+
+    public ICommand? SelectedDetailPrimaryActionCommand =>
+        SelectedDetailApp is null || !SelectedDetailApp.IsSupportedOnCurrentPlatform
+            ? null
+            : SelectedDetailApp.HasUpdateAvailable
+                ? UpdateAppCommand
+                : !SelectedDetailApp.IsInstalled
+                    ? InstallAppCommand
+                    : null;
 
     public bool HasSelectedDetailRecommendation =>
         SelectedDetailApp?.IsRecommended == true &&
@@ -1245,11 +1436,19 @@ public sealed class MainWindowViewModel : ObservableObject
 
     public ICommand OpenPublisherCommand => _openPublisherCommand;
 
+    public ICommand OpenSelectedDetailReleaseNotesCommand => _openSelectedDetailReleaseNotesCommand;
+
+    public ICommand OpenSelectedDetailVirusTotalCommand => _openSelectedDetailVirusTotalCommand;
+
     public ICommand OpenAboutGitHubCommand => _openAboutGitHubCommand;
 
     public ICommand ShowAppDetailsCommand => _showAppDetailsCommand;
 
     public ICommand CloseAppDetailsCommand => _closeAppDetailsCommand;
+
+    public ICommand ApplyPresetCommand => _applyPresetCommand;
+
+    public ICommand DismissPresetAppliedCommand => _dismissPresetAppliedCommand;
 
     public ICommand PauseInstallCommand => _pauseInstallCommand;
 
@@ -1366,6 +1565,7 @@ public sealed class MainWindowViewModel : ObservableObject
                 _apps.Add(app);
             }
 
+            RefreshAvailableCategories();
             ApplyVisibilityFilter();
             NotifyAppSummaryStateChanged();
             NotifySettingsOptionBindingsChanged();
@@ -1648,6 +1848,37 @@ public sealed class MainWindowViewModel : ObservableObject
         UpdateCommandStates();
     }
 
+    private void RefreshAvailableCategories()
+    {
+        var categories = _apps
+            .Select(app => app.Category?.Trim())
+            .Where(category => !string.IsNullOrWhiteSpace(category))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .OrderBy(category => category, StringComparer.OrdinalIgnoreCase)
+            .Cast<string>()
+            .ToList();
+
+        categories.Insert(0, "All");
+        AvailableCategories = categories;
+
+        if (!AvailableCategories.Any(category =>
+                string.Equals(category, SelectedCategory, StringComparison.OrdinalIgnoreCase)))
+        {
+            SelectedCategory = "All";
+        }
+    }
+
+    private bool MatchesSelectedCategory(AppItem app)
+    {
+        if (string.IsNullOrWhiteSpace(SelectedCategory) ||
+            string.Equals(SelectedCategory, "All", StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+
+        return string.Equals(app.Category, SelectedCategory, StringComparison.OrdinalIgnoreCase);
+    }
+
     private void ApplySelectionProfile(SelectionConfig? selection)
     {
         if (selection is null)
@@ -1828,6 +2059,11 @@ public sealed class MainWindowViewModel : ObservableObject
                 continue;
             }
 
+            if (!MatchesSelectedCategory(app))
+            {
+                continue;
+            }
+
             if (!MatchesCurrentSection(app))
             {
                 continue;
@@ -1854,7 +2090,7 @@ public sealed class MainWindowViewModel : ObservableObject
         OnPropertyChanged(nameof(SelectedAppsTimeMins));
     }
 
-    private void SetCategoryFilter(string filter)
+    private void SetSelectedFilter(string filter)
     {
         if (string.Equals(SelectedFilter, filter, StringComparison.OrdinalIgnoreCase))
         {
@@ -1879,7 +2115,7 @@ public sealed class MainWindowViewModel : ObservableObject
             _updatingFilterFlags = false;
         }
 
-        _loggingService.LogInfo($"Category filter set to '{SelectedFilter}'.");
+        _loggingService.LogInfo($"Catalog filter set to '{SelectedFilter}'.");
         ApplyVisibilityFilter();
     }
 
@@ -1890,7 +2126,7 @@ public sealed class MainWindowViewModel : ObservableObject
             NavigateTo(SectionApps);
         }
 
-        SetCategoryFilter("Updates");
+        SetSelectedFilter("Updates");
     }
 
     private void ShowRecommendedFilter()
@@ -1900,7 +2136,7 @@ public sealed class MainWindowViewModel : ObservableObject
             NavigateTo(SectionApps);
         }
 
-        SetCategoryFilter("Recommended");
+        SetSelectedFilter("Recommended");
     }
 
     private bool MatchesSelectedFilter(AppItem app)
@@ -2030,7 +2266,7 @@ public sealed class MainWindowViewModel : ObservableObject
             NavigateTo(SectionApps);
         }
 
-        SetCategoryFilter("Drivers");
+        SetSelectedFilter("Drivers");
     }
 
     private void StartBackgroundStartupDetection()
@@ -2873,6 +3109,48 @@ public sealed class MainWindowViewModel : ObservableObject
         }
     }
 
+    private void OpenSelectedDetailReleaseNotes()
+    {
+        var url = SelectedDetailApp?.ReleaseNotesUrl;
+        if (!_browserService.OpenUrl(url))
+        {
+            StatusText = "Could not open release notes.";
+        }
+    }
+
+    private void OpenSelectedDetailVirusTotal()
+    {
+        var url = SelectedDetailApp?.CurrentVirusTotalUrl;
+        if (!_browserService.OpenUrl(url))
+        {
+            StatusText = "Could not open VirusTotal results.";
+        }
+    }
+
+    private InstallDefinition? GetSelectedDetailInstallDefinition()
+    {
+        if (SelectedDetailApp is null)
+        {
+            return null;
+        }
+
+        return _currentPlatformId switch
+        {
+            PlatformService.Windows => SelectedDetailApp.WindowsInstall,
+            PlatformService.Linux => SelectedDetailApp.LinuxInstall,
+            PlatformService.MacOS => SelectedDetailApp.MacOSInstall,
+            _ => SelectedDetailApp.WindowsInstall ?? SelectedDetailApp.LinuxInstall ?? SelectedDetailApp.MacOSInstall
+        };
+    }
+
+    private static bool HasDirectInstallerUrl(InstallDefinition installDefinition)
+    {
+        return !string.IsNullOrWhiteSpace(installDefinition.InstallerUrl) ||
+               !string.IsNullOrWhiteSpace(installDefinition.InstallerUrl32) ||
+               !string.IsNullOrWhiteSpace(installDefinition.InstallerUrl64) ||
+               !string.IsNullOrWhiteSpace(installDefinition.InstallerUrlArm64);
+    }
+
     private bool CanExecuteAppContextParameter(object? parameter)
     {
         return !IsInstalling && parameter is AppItem;
@@ -3388,6 +3666,76 @@ public sealed class MainWindowViewModel : ObservableObject
         _loggingService.LogInfo(StatusText);
     }
 
+    private bool CanApplyPreset(object? parameter)
+    {
+        return !IsInstalling && parameter is AppPreset;
+    }
+
+    private void ApplyPreset(object? parameter)
+    {
+        if (parameter is not AppPreset preset)
+        {
+            return;
+        }
+
+        var requestedIds = new HashSet<string>(
+            preset.AppIds.Where(id => !string.IsNullOrWhiteSpace(id)),
+            StringComparer.OrdinalIgnoreCase);
+        var appsById = _apps
+            .Where(app => !string.IsNullOrWhiteSpace(app.Id))
+            .GroupBy(app => app.Id, StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(group => group.Key, group => group.First(), StringComparer.OrdinalIgnoreCase);
+
+        var selectedCount = 0;
+        var skippedCount = 0;
+
+        _suppressAppSelectionHandling = true;
+        try
+        {
+            foreach (var app in _apps)
+            {
+                app.IsSelected = false;
+            }
+
+            foreach (var appId in requestedIds)
+            {
+                if (!appsById.TryGetValue(appId, out var app) || !app.IsSupportedOnCurrentPlatform)
+                {
+                    skippedCount++;
+                    continue;
+                }
+
+                app.IsSelected = true;
+                selectedCount++;
+            }
+
+            foreach (var app in _apps)
+            {
+                ApplyPlatformFlags(app);
+            }
+        }
+        finally
+        {
+            _suppressAppSelectionHandling = false;
+        }
+
+        ApplyVisibilityFilter();
+        NotifyAppSummaryStateChanged();
+        UpdateCommandStates();
+
+        PresetAppliedText = $"'{preset.Name}' preset applied - {selectedCount} apps selected";
+        StatusText = PresetAppliedText;
+        _loggingService.LogInfo($"[Preset] Applied preset '{preset.Name}': {selectedCount} apps selected ({skippedCount} skipped)");
+        _ = AutoDismissPresetAppliedAsync();
+
+        if (Settings.SaveProfilesAutomatically)
+        {
+            SaveCurrentList(showStatusMessage: false);
+            _ = _selectionService.SaveAutoProfileAsync(GetSelectedAppIds());
+            _ = RefreshSavedProfilesAsync();
+        }
+    }
+
     private async Task RefreshCatalogAsync()
     {
         if (IsInstalling || string.Equals(_currentPlatformId, PlatformService.Unknown, StringComparison.Ordinal))
@@ -3873,10 +4221,53 @@ public sealed class MainWindowViewModel : ObservableObject
         }
     }
 
+    private async Task AutoDismissPresetAppliedAsync()
+    {
+        _presetAppliedDismissCts?.Cancel();
+        _presetAppliedDismissCts?.Dispose();
+
+        if (string.IsNullOrWhiteSpace(PresetAppliedText))
+        {
+            return;
+        }
+
+        var cts = new CancellationTokenSource();
+        _presetAppliedDismissCts = cts;
+
+        try
+        {
+            await Task.Delay(TimeSpan.FromSeconds(4), cts.Token);
+            if (cts.IsCancellationRequested)
+            {
+                return;
+            }
+
+            ClearPresetAppliedBanner();
+        }
+        catch (OperationCanceledException)
+        {
+            // Intentionally ignored.
+        }
+        finally
+        {
+            if (ReferenceEquals(_presetAppliedDismissCts, cts))
+            {
+                _presetAppliedDismissCts = null;
+            }
+
+            cts.Dispose();
+        }
+    }
+
     private void ClearDependencyInfoBanner()
     {
         IsDependencyInfoVisible = false;
         DependencyInfoText = string.Empty;
+    }
+
+    private void ClearPresetAppliedBanner()
+    {
+        PresetAppliedText = string.Empty;
     }
 
     private void AddInstallResult(InstallResult result)
@@ -4089,6 +4480,8 @@ public sealed class MainWindowViewModel : ObservableObject
         {
             _suppressAppSelectionHandling = false;
         }
+
+        RefreshAvailableCategories();
 
         if (!wasDetailsOpen)
         {
@@ -4450,6 +4843,11 @@ public sealed class MainWindowViewModel : ObservableObject
         _copyToClipboardCommand.RaiseCanExecuteChanged();
         _toggleSilentInstallPreferenceCommand.RaiseCanExecuteChanged();
         _toggleScanningPreferenceCommand.RaiseCanExecuteChanged();
+        _toggleInstallScriptsPreferenceCommand.RaiseCanExecuteChanged();
+        _openSelectedDetailReleaseNotesCommand.RaiseCanExecuteChanged();
+        _openSelectedDetailVirusTotalCommand.RaiseCanExecuteChanged();
+        _applyPresetCommand.RaiseCanExecuteChanged();
+        _dismissPresetAppliedCommand.RaiseCanExecuteChanged();
         _pauseInstallCommand.RaiseCanExecuteChanged();
         _clearQueueCommand.RaiseCanExecuteChanged();
         _navigateDashboardCommand.RaiseCanExecuteChanged();
@@ -4498,7 +4896,19 @@ public sealed class MainWindowViewModel : ObservableObject
         OnPropertyChanged(nameof(SelectedDetailCatalogVersionText));
         OnPropertyChanged(nameof(SelectedDetailInstalledVersionText));
         OnPropertyChanged(nameof(SelectedDetailUpdateStatusText));
+        OnPropertyChanged(nameof(SelectedDetailLicenseText));
+        OnPropertyChanged(nameof(SelectedDetailReleaseNotesText));
+        OnPropertyChanged(nameof(HasSelectedDetailReleaseNotes));
+        OnPropertyChanged(nameof(HasSelectedDetailVirusTotal));
+        OnPropertyChanged(nameof(SelectedDetailInstallMethodText));
+        OnPropertyChanged(nameof(HasSelectedDetailTags));
+        OnPropertyChanged(nameof(SelectedDetailTags));
+        OnPropertyChanged(nameof(SelectedDetailPrimaryActionText));
+        OnPropertyChanged(nameof(IsSelectedDetailPrimaryActionEnabled));
+        OnPropertyChanged(nameof(SelectedDetailPrimaryActionCommand));
         OnPropertyChanged(nameof(HasSelectedDetailRecommendation));
+        _openSelectedDetailReleaseNotesCommand.RaiseCanExecuteChanged();
+        _openSelectedDetailVirusTotalCommand.RaiseCanExecuteChanged();
     }
 
     private static bool IsUnsupportedSkippedResult(InstallResult result)

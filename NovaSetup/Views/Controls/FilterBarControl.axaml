@@ -3,7 +3,7 @@
              x:Class="NovaSetup.Views.Controls.FilterBarControl"
              x:CompileBindings="False"
              x:Name="Root">
-  <Grid ColumnDefinitions="*,300,Auto,Auto"
+  <Grid ColumnDefinitions="*,160,300,Auto,Auto"
         ColumnSpacing="10"
         VerticalAlignment="Center">
     <ScrollViewer HorizontalScrollBarVisibility="Auto"
@@ -31,12 +31,25 @@
       </Border>
     </ScrollViewer>
 
-    <TextBox Grid.Column="1"
+    <ComboBox Grid.Column="1"
+              Width="160"
+              HorizontalAlignment="Left"
+              PlaceholderText="All categories"
+              ItemsSource="{Binding #Root.AvailableCategories}"
+              SelectedItem="{Binding #Root.SelectedCategory, Mode=TwoWay}">
+      <ComboBox.ItemTemplate>
+        <DataTemplate>
+          <TextBlock Text="{Binding .}" />
+        </DataTemplate>
+      </ComboBox.ItemTemplate>
+    </ComboBox>
+
+    <TextBox Grid.Column="2"
              Watermark="Search apps..."
              Text="{Binding #Root.SearchText, Mode=TwoWay}"
              HorizontalAlignment="Stretch" />
 
-    <Button Grid.Column="2"
+    <Button Grid.Column="3"
             Classes="icon outline"
             Command="{Binding #Root.RefreshCatalogCommand}"
             ToolTip.Tip="Refresh catalog">
@@ -45,7 +58,7 @@
       </Viewbox>
     </Button>
 
-    <Button Grid.Column="3"
+    <Button Grid.Column="4"
             Classes="outline icon"
             Command="{Binding #Root.ToggleViewModeCommand}">
       <Panel>
