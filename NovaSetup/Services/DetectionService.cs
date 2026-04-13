@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Text.Json;
 using System.Text;
 using System.Text.RegularExpressions;
 using Microsoft.Win32;
@@ -12,6 +13,7 @@ public sealed class DetectionService
     private static readonly string[] KnownAccessoryVendors = { "Logitech", "Razer", "Corsair", "SteelSeries" };
     private static readonly Regex WingetListSplitRegex = new(@"\s{2,}", RegexOptions.Compiled);
     private static readonly Regex AnsiEscapeRegex = new(@"\x1B\[[0-9;]*[A-Za-z]", RegexOptions.Compiled);
+    private static readonly TimeSpan DetectionCacheValidity = TimeSpan.FromMinutes(30);
     private const string ChromeClientRegistryKey = @"SOFTWARE\Google\Update\Clients\{8A69D345-D564-463C-AFF1-A69D9E530F96}";
 
     private readonly LoggingService? _loggingService;
@@ -190,15 +192,40 @@ public sealed class DetectionService
         return Task.Run(() => DetectInstalledApps(apps, currentPlatform));
     }
 
+    public void InvalidateDetectionCache()
+    {
+        try
+        {
+            var cachePath = GetDetectionCachePath();
+            if (File.Exists(cachePath))
+            {
+                File.Delete(cachePath);
+            }
+        }
+        catch
+        {
+            // Best-effort cache invalidation only.
+        }
+    }
+
     public IReadOnlyDictionary<string, InstalledAppState> DetectInstalledAppStates(IEnumerable<AppItem> apps, string currentPlatform)
     {
         var appList = apps?.ToList() ?? new List<AppItem>();
+        if (TryLoadDetectionCache(appList, currentPlatform, out var cachedStates))
+        {
+            _loggingService?.LogInfo(
+                $"Loaded installed app detection from cache. Platform={currentPlatform}, DetectedInstalledApps={cachedStates.Count}");
+            return cachedStates;
+        }
+
         IReadOnlyDictionary<string, InstalledAppState> detectedStates = currentPlatform switch
         {
             PlatformService.Windows => DetectWindowsInstalledAppStates(appList),
             PlatformService.MacOS => DetectMacOSInstalledAppStates(appList),
             _ => DetectCommandBasedInstalledAppStates(appList, currentPlatform)
         };
+
+        TryWriteDetectionCache(currentPlatform, detectedStates);
 
         var detectedCount = detectedStates.Count;
         _loggingService?.LogInfo(
@@ -389,6 +416,7 @@ public sealed class DetectionService
     private IReadOnlyDictionary<string, InstalledAppState> DetectWindowsInstalledAppStates(IReadOnlyList<AppItem> apps)
     {
         var detectionIndex = BuildWindowsInstallIndex(apps);
+        var wingetVersions = TryBatchGetWingetInstalledVersions(apps);
         var detectedStates = new Dictionary<string, InstalledAppState>(StringComparer.OrdinalIgnoreCase);
 
         foreach (var app in apps)
@@ -409,7 +437,7 @@ public sealed class DetectionService
                 continue;
             }
 
-            var detectionMatch = DetectWindowsApp(app, detectionIndex);
+            var detectionMatch = DetectWindowsApp(app, detectionIndex, wingetVersions);
             if (detectionMatch is null)
             {
                 continue;
@@ -466,14 +494,17 @@ public sealed class DetectionService
         return detectedStates;
     }
 
-    private WindowsInstallMatch? DetectWindowsApp(AppItem app, WindowsInstallIndex detectionIndex)
+    private WindowsInstallMatch? DetectWindowsApp(
+        AppItem app,
+        WindowsInstallIndex detectionIndex,
+        IReadOnlyDictionary<string, string>? wingetVersions = null)
     {
         var explicitDisplayNameMatch = FindExplicitDisplayNameMatch(app, detectionIndex.UninstallEntries);
         if (explicitDisplayNameMatch is not null)
         {
             return new WindowsInstallMatch(
                 "Windows registry",
-                ResolveDetectedVersion(app, explicitDisplayNameMatch));
+                ResolveDetectedVersion(app, explicitDisplayNameMatch, wingetVersions: wingetVersions));
         }
 
         var uninstallMatch = FindRegisteredUninstallEntry(app, detectionIndex.UninstallEntries);
@@ -481,18 +512,22 @@ public sealed class DetectionService
         {
             return new WindowsInstallMatch(
                 "Windows registry",
-                ResolveDetectedVersion(app, uninstallMatch));
+                ResolveDetectedVersion(app, uninstallMatch, wingetVersions: wingetVersions));
         }
 
         if (TryGetRegisteredAppPath(app, detectionIndex.AppPathExecutables, out var registeredAppPath))
         {
-            return new WindowsInstallMatch("App Paths", ResolveDetectedVersion(app, executablePath: registeredAppPath));
+            return new WindowsInstallMatch(
+                "App Paths",
+                ResolveDetectedVersion(app, executablePath: registeredAppPath, wingetVersions: wingetVersions));
         }
 
         var executableOnPath = TryGetExecutableOnPath(app, PlatformService.Windows);
         if (!string.IsNullOrWhiteSpace(executableOnPath))
         {
-            return new WindowsInstallMatch("PATH", ResolveDetectedVersion(app, executablePath: executableOnPath));
+            return new WindowsInstallMatch(
+                "PATH",
+                ResolveDetectedVersion(app, executablePath: executableOnPath, wingetVersions: wingetVersions));
         }
 
         var executableInKnownLocation = TryGetExecutableInKnownWindowsLocations(app);
@@ -500,7 +535,7 @@ public sealed class DetectionService
         {
             return new WindowsInstallMatch(
                 "Known install path",
-                ResolveDetectedVersion(app, executablePath: executableInKnownLocation));
+                ResolveDetectedVersion(app, executablePath: executableInKnownLocation, wingetVersions: wingetVersions));
         }
 
         return null;
@@ -1228,14 +1263,17 @@ public sealed class DetectionService
     private string ResolveDetectedVersion(
         AppItem app,
         WindowsInstalledEntry? entry = null,
-        string? executablePath = null)
+        string? executablePath = null,
+        IReadOnlyDictionary<string, string>? wingetVersions = null)
     {
         if (string.Equals(app.Id, "steam", StringComparison.OrdinalIgnoreCase))
         {
             return app.Version?.Trim() ?? string.Empty;
         }
 
-        var wingetVersion = TryGetWingetInstalledVersion(app);
+        var wingetVersion = wingetVersions is not null
+            ? TryGetCachedWingetInstalledVersion(app, wingetVersions) ?? string.Empty
+            : TryGetWingetInstalledVersion(app);
         if (!string.IsNullOrWhiteSpace(wingetVersion))
         {
             return wingetVersion;
@@ -1285,6 +1323,21 @@ public sealed class DetectionService
         }
 
         return string.Empty;
+    }
+
+    private static string? TryGetCachedWingetInstalledVersion(
+        AppItem app,
+        IReadOnlyDictionary<string, string>? wingetVersions)
+    {
+        if (wingetVersions is null ||
+            string.IsNullOrWhiteSpace(app.WingetId) ||
+            !wingetVersions.TryGetValue(app.WingetId, out var installedVersion) ||
+            string.IsNullOrWhiteSpace(installedVersion))
+        {
+            return null;
+        }
+
+        return installedVersion.Trim();
     }
 
     private static IEnumerable<string> GetExecutableProbePathsFromEntry(AppItem app, WindowsInstalledEntry entry)
@@ -1434,6 +1487,154 @@ public sealed class DetectionService
         return string.Empty;
     }
 
+    private Dictionary<string, string> TryBatchGetWingetInstalledVersions(IReadOnlyList<AppItem> apps)
+    {
+        var results = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        if (!OperatingSystem.IsWindows())
+        {
+            return results;
+        }
+
+        var wingetIds = apps
+            .Where(app => !string.IsNullOrWhiteSpace(app.WingetId))
+            .Select(app => app.WingetId.Trim())
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        if (wingetIds.Count == 0)
+        {
+            return results;
+        }
+
+        var wingetPath = ResolveWingetExecutable();
+        if (string.IsNullOrWhiteSpace(wingetPath))
+        {
+            return results;
+        }
+
+        try
+        {
+            using var process = new Process
+            {
+                StartInfo = new ProcessStartInfo
+                {
+                    FileName = wingetPath,
+                    Arguments = "list --accept-source-agreements --disable-interactivity",
+                    UseShellExecute = false,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    CreateNoWindow = true,
+                    StandardOutputEncoding = Encoding.UTF8,
+                    StandardErrorEncoding = Encoding.UTF8
+                }
+            };
+
+            process.Start();
+            var stdoutTask = process.StandardOutput.ReadToEndAsync();
+            var stderrTask = process.StandardError.ReadToEndAsync();
+
+            if (!process.WaitForExit(15000))
+            {
+                try
+                {
+                    process.Kill(entireProcessTree: true);
+                }
+                catch
+                {
+                    // Best-effort timeout cleanup only.
+                }
+
+                _loggingService?.LogDebug("Batch winget installed-version lookup timed out after 15 seconds.");
+                return results;
+            }
+
+            var output = string.Join(
+                Environment.NewLine,
+                new[]
+                {
+                    stdoutTask.GetAwaiter().GetResult(),
+                    stderrTask.GetAwaiter().GetResult()
+                }.Where(text => !string.IsNullOrWhiteSpace(text)));
+
+            results = ParseBatchWingetInstalledVersions(output, wingetIds);
+            _loggingService?.LogDebug(
+                $"Batch winget installed-version lookup resolved {results.Count} package version(s).");
+        }
+        catch (Exception ex)
+        {
+            _loggingService?.LogDebug($"Batch winget installed-version lookup failed: {ex.Message}");
+            return new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        }
+
+        return results;
+    }
+
+    private static Dictionary<string, string> ParseBatchWingetInstalledVersions(
+        string output,
+        IReadOnlySet<string> wingetIds)
+    {
+        var results = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        if (string.IsNullOrWhiteSpace(output) || wingetIds.Count == 0)
+        {
+            return results;
+        }
+
+        var sanitizedOutput = AnsiEscapeRegex.Replace(output, string.Empty);
+        var lines = sanitizedOutput.Split(
+            ['\r', '\n'],
+            StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+        foreach (var line in lines)
+        {
+            if (IsWingetNoiseLine(line))
+            {
+                continue;
+            }
+
+            var columns = WingetListSplitRegex
+                .Split(line)
+                .Where(column => !string.IsNullOrWhiteSpace(column))
+                .ToArray();
+            if (columns.Length < 3)
+            {
+                continue;
+            }
+
+            for (var index = 0; index < columns.Length - 1; index++)
+            {
+                var candidateId = columns[index].Trim();
+                if (!wingetIds.Contains(candidateId))
+                {
+                    continue;
+                }
+
+                var candidateVersion = columns[index + 1].Trim();
+                if (!string.IsNullOrWhiteSpace(candidateVersion))
+                {
+                    results[candidateId] = candidateVersion;
+                }
+
+                break;
+            }
+        }
+
+        return results;
+    }
+
+    private static bool IsWingetNoiseLine(string line)
+    {
+        if (string.IsNullOrWhiteSpace(line))
+        {
+            return true;
+        }
+
+        var trimmed = line.Trim();
+        return trimmed.StartsWith("Name", StringComparison.OrdinalIgnoreCase) ||
+               trimmed.StartsWith("No installed package", StringComparison.OrdinalIgnoreCase) ||
+               trimmed.Contains("package(s)", StringComparison.OrdinalIgnoreCase) ||
+               trimmed.Contains("upgrades available", StringComparison.OrdinalIgnoreCase) ||
+               trimmed.All(character => character == '-' || char.IsWhiteSpace(character));
+    }
+
     private static string ParseWingetInstalledVersion(string output, string wingetId)
     {
         if (string.IsNullOrWhiteSpace(output) || string.IsNullOrWhiteSpace(wingetId))
@@ -1518,6 +1719,101 @@ public sealed class DetectionService
         }
 
         return string.Empty;
+    }
+
+    private bool TryLoadDetectionCache(
+        IReadOnlyList<AppItem> apps,
+        string currentPlatform,
+        out IReadOnlyDictionary<string, InstalledAppState> detectedStates)
+    {
+        detectedStates = new Dictionary<string, InstalledAppState>(StringComparer.OrdinalIgnoreCase);
+        try
+        {
+            var cachePath = GetDetectionCachePath();
+            if (!File.Exists(cachePath))
+            {
+                return false;
+            }
+
+            var json = File.ReadAllText(cachePath);
+            if (string.IsNullOrWhiteSpace(json))
+            {
+                return false;
+            }
+
+            var cachePayload = JsonSerializer.Deserialize<DetectionCachePayload>(json);
+            if (cachePayload is null ||
+                cachePayload.CreatedUtc == DateTime.MinValue ||
+                DateTime.UtcNow - cachePayload.CreatedUtc > DetectionCacheValidity ||
+                !string.Equals(cachePayload.Platform, currentPlatform, StringComparison.OrdinalIgnoreCase) ||
+                cachePayload.States is null)
+            {
+                return false;
+            }
+
+            var appIds = apps
+                .Where(app => !string.IsNullOrWhiteSpace(app.Id))
+                .Select(app => app.Id)
+                .ToHashSet(StringComparer.OrdinalIgnoreCase);
+            var filteredStates = new Dictionary<string, InstalledAppState>(StringComparer.OrdinalIgnoreCase);
+            foreach (var (appId, state) in cachePayload.States)
+            {
+                if (!appIds.Contains(appId))
+                {
+                    continue;
+                }
+
+                filteredStates[appId] = state;
+            }
+
+            detectedStates = filteredStates;
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    private void TryWriteDetectionCache(string currentPlatform, IReadOnlyDictionary<string, InstalledAppState> detectedStates)
+    {
+        try
+        {
+            var cachePath = GetDetectionCachePath();
+            var cacheDirectory = Path.GetDirectoryName(cachePath);
+            if (!string.IsNullOrWhiteSpace(cacheDirectory))
+            {
+                Directory.CreateDirectory(cacheDirectory);
+            }
+
+            var payload = new DetectionCachePayload
+            {
+                Platform = currentPlatform,
+                CreatedUtc = DateTime.UtcNow,
+                States = detectedStates.ToDictionary(
+                    pair => pair.Key,
+                    pair => pair.Value,
+                    StringComparer.OrdinalIgnoreCase)
+            };
+
+            var json = JsonSerializer.Serialize(payload, new JsonSerializerOptions
+            {
+                WriteIndented = false
+            });
+            File.WriteAllText(cachePath, json);
+        }
+        catch
+        {
+            // Best-effort cache persistence only.
+        }
+    }
+
+    private static string GetDetectionCachePath()
+    {
+        return Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            "NovaSetup",
+            "detection_cache.json");
     }
 
     private static string TryGetDiscordInstalledVersion()
@@ -1688,6 +1984,15 @@ public sealed class DetectionService
 
         public HashSet<string> SearchTokens { get; }
     }
+}
+
+internal sealed class DetectionCachePayload
+{
+    public string Platform { get; set; } = string.Empty;
+
+    public DateTime CreatedUtc { get; set; } = DateTime.MinValue;
+
+    public Dictionary<string, InstalledAppState> States { get; set; } = new(StringComparer.OrdinalIgnoreCase);
 }
 
 public sealed record InstalledAppState(bool IsInstalled, string InstalledVersion);

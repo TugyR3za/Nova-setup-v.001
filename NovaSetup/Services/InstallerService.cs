@@ -717,8 +717,25 @@ public sealed class InstallerService
         IProgress<InstallQueueProgress>? queueProgress)
     {
         await RecordInstallHistoryAsync(app, currentPlatform, installMethod, result, elapsedMs);
+        if (result.Success)
+        {
+            TryInvalidateDetectionCache();
+        }
+
         ReportQueueFinalStatus(queueProgress, result);
         return result;
+    }
+
+    private void TryInvalidateDetectionCache()
+    {
+        try
+        {
+            _detectionService?.InvalidateDetectionCache();
+        }
+        catch
+        {
+            // Best-effort cache invalidation only.
+        }
     }
 
     private async Task RunInstallScriptAsync(

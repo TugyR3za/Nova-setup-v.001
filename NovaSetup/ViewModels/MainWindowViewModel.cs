@@ -3279,6 +3279,7 @@ public sealed class MainWindowViewModel : ObservableObject
 
             if (process.ExitCode == 0)
             {
+                _detectionService.InvalidateDetectionCache();
                 app.IsInstalled = false;
                 app.InstalledVersion = string.Empty;
                 app.HasInstallFailed = false;
@@ -3751,6 +3752,7 @@ public sealed class MainWindowViewModel : ObservableObject
 
         StatusText = "Refreshing catalog and app state...";
         _loggingService.LogInfo("Manual refresh started.");
+        _detectionService.InvalidateDetectionCache();
 
         var refreshedApps = await _catalogService.LoadAppsAsync(_currentPlatformId);
         await _appPreferencesService.ApplyToAppsAsync(refreshedApps);

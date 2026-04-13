@@ -6,6 +6,9 @@ namespace NovaSetup.Services;
 
 public sealed class PlatformService
 {
+    private static readonly object PackageManagerCacheLock = new();
+    private static string? s_cachedPackageManager;
+
     public enum PlatformKind
     {
         Unknown,
@@ -87,6 +90,25 @@ public sealed class PlatformService
     }
 
     public static string GetPackageManager()
+    {
+        if (!string.IsNullOrWhiteSpace(s_cachedPackageManager))
+        {
+            return s_cachedPackageManager;
+        }
+
+        lock (PackageManagerCacheLock)
+        {
+            if (!string.IsNullOrWhiteSpace(s_cachedPackageManager))
+            {
+                return s_cachedPackageManager;
+            }
+
+            s_cachedPackageManager = DetectPackageManager();
+            return s_cachedPackageManager;
+        }
+    }
+
+    private static string DetectPackageManager()
     {
         if (IsWindows())
         {

@@ -18,12 +18,14 @@ public partial class AppLogoControl : UserControl
         Timeout = TimeSpan.FromSeconds(8)
     };
 
+    private static readonly SemaphoreSlim DownloadThrottle = new(4, 4);
     private static readonly ConcurrentDictionary<string, Task<string?>> SvgPathCache = new(StringComparer.OrdinalIgnoreCase);
     private static readonly Regex PathRegex = new(
         "<path[^>]*d=[\"'](?<data>.*?)[\"']",
         RegexOptions.IgnoreCase | RegexOptions.Singleline | RegexOptions.Compiled);
 
     private int _loadVersion;
+    private CancellationTokenSource? _loadCts;
 
     public static readonly StyledProperty<string?> LogoUrlProperty =
         AvaloniaProperty.Register<AppLogoControl, string?>(nameof(LogoUrl));
@@ -82,9 +84,16 @@ public partial class AppLogoControl : UserControl
         }
     }
 
+    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        CancelPendingLoad();
+        base.OnDetachedFromVisualTree(e);
+    }
+
     private async Task LoadLogoAsync()
     {
         var currentVersion = Interlocked.Increment(ref _loadVersion);
+        ResetPendingLoadCancellation();
         var url = LogoUrl;
         if (string.IsNullOrWhiteSpace(url))
         {
@@ -95,7 +104,11 @@ public partial class AppLogoControl : UserControl
         string? pathData;
         try
         {
-            pathData = await SvgPathCache.GetOrAdd(url, DownloadSvgPathAsync);
+            pathData = await GetCachedSvgPathAsync(url, _loadCts?.Token ?? CancellationToken.None);
+        }
+        catch (OperationCanceledException)
+        {
+            return;
         }
         catch
         {
@@ -108,6 +121,51 @@ public partial class AppLogoControl : UserControl
         }
 
         await Dispatcher.UIThread.InvokeAsync(() => ApplyLogoPath(pathData));
+    }
+
+    private void ResetPendingLoadCancellation()
+    {
+        var next = new CancellationTokenSource();
+        var previous = Interlocked.Exchange(ref _loadCts, next);
+        if (previous is null)
+        {
+            return;
+        }
+
+        try
+        {
+            previous.Cancel();
+        }
+        catch
+        {
+            // Best-effort cancellation only.
+        }
+        finally
+        {
+            previous.Dispose();
+        }
+    }
+
+    private void CancelPendingLoad()
+    {
+        var current = Interlocked.Exchange(ref _loadCts, null);
+        if (current is null)
+        {
+            return;
+        }
+
+        try
+        {
+            current.Cancel();
+        }
+        catch
+        {
+            // Best-effort cancellation only.
+        }
+        finally
+        {
+            current.Dispose();
+        }
     }
 
     private void ApplySize()
@@ -150,6 +208,7 @@ public partial class AppLogoControl : UserControl
 
     private static async Task<string?> DownloadSvgPathAsync(string url)
     {
+        await DownloadThrottle.WaitAsync().ConfigureAwait(false);
         try
         {
             using var response = await HttpClient.GetAsync(url);
@@ -172,5 +231,15 @@ public partial class AppLogoControl : UserControl
         {
             return null;
         }
+        finally
+        {
+            DownloadThrottle.Release();
+        }
+    }
+
+    private static async Task<string?> GetCachedSvgPathAsync(string url, CancellationToken cancellationToken)
+    {
+        var sharedTask = SvgPathCache.GetOrAdd(url, DownloadSvgPathAsync);
+        return await sharedTask.WaitAsync(cancellationToken);
     }
 }
