@@ -88,13 +88,17 @@
         <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="4" HorizontalAlignment="Center" Margin="0,0,0,8">
           <Button Classes="ghost compact" Command="{Binding #Root.NavigateAboutCommand}" Padding="8,6">
             <StackPanel Orientation="Horizontal" Spacing="6">
-              <Path Data="{DynamicResource IconInfoGeometry}" Fill="{DynamicResource TextMutedBrush}" Width="12" Height="12" VerticalAlignment="Center" />
+              <Viewbox Width="14" Height="14" VerticalAlignment="Center">
+                <Path Data="{DynamicResource IconInfoGeometry}" Fill="{DynamicResource TextMutedBrush}" />
+              </Viewbox>
               <TextBlock Text="About" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center" />
             </StackPanel>
           </Button>
           <Button Classes="ghost compact" Command="{Binding #Root.NavigateHistoryCommand}" Padding="8,6">
             <StackPanel Orientation="Horizontal" Spacing="6">
-              <Path Data="{DynamicResource IconHistoryGeometry}" Fill="{DynamicResource TextMutedBrush}" Width="12" Height="12" VerticalAlignment="Center" />
+              <Viewbox Width="14" Height="14" VerticalAlignment="Center">
+                <Path Data="{DynamicResource IconHistoryGeometry}" Fill="{DynamicResource TextMutedBrush}" />
+              </Viewbox>
               <TextBlock Text="Downloads" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center" />
             </StackPanel>
           </Button>

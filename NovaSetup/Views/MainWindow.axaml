@@ -376,7 +376,7 @@
                                                                                Foreground="{DynamicResource TextMutedBrush}"
                                                                                FontSize="12" />
                                                                     <TextBlock Text="{Binding Description}"
-                                                                               Foreground="{DynamicResource TextMutedBrush}"
+                                                                               Foreground="{DynamicResource TextDescriptionBrush}"
                                                                                FontSize="12"
                                                                                TextWrapping="Wrap"
                                                                                MaxLines="3"

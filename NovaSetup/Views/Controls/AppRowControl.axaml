@@ -127,7 +127,8 @@
                 CommandParameter="{Binding #Root.Item.CurrentVirusTotalUrl}"
                 HorizontalAlignment="Left"
                 Padding="0"
-                IsVisible="{Binding #Root.Item.VirusTotalDisplayText, Converter={StaticResource StringHasValueConverter}}">
+                IsVisible="{Binding #Root.Item.VirusTotalDisplayText, Converter={StaticResource StringHasValueConverter}}"
+                ToolTip.Tip="VirusTotal scan result. The ratio shows detections vs. engines scanned (e.g. 0/17 means 0 detections out of 17 antivirus engines). Click to view the full report.">
           <TextBlock Text="{Binding #Root.Item.VirusTotalDisplayText}"
                      FontSize="11"
                      Foreground="{Binding #Root.Item.CurrentVirusTotalRatio, Converter={StaticResource VirusTotalRatioToBrushConverter}}"
