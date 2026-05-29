@@ -160,8 +160,9 @@ public sealed class ScheduledUpdateService
                 }
             }
 
-            var latestVersions = await Task.Run(
-                () => _appUpdateService.ResolveLatestCatalogVersions(appSnapshot, platformId),
+            var latestVersions = await _appUpdateService.ResolveLatestCatalogVersionsAsync(
+                appSnapshot,
+                platformId,
                 cancellationToken);
 
             foreach (var app in appSnapshot)

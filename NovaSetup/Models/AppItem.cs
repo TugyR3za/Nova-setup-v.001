@@ -41,6 +41,7 @@ public class AppItem : ObservableObject
     private InstallDefinition? _linuxInstall;
     private InstallDefinition? _macOSInstall;
     private bool _isSelected;
+    private bool _isSelectedForUpdate;
     private bool _isInstalled;
     private bool _isSupportedOnCurrentPlatform = true;
     private bool _willBeSkipped;
@@ -64,10 +65,15 @@ public class AppItem : ObservableObject
     private long _totalBytes;
     private string _downloadProgressText = string.Empty;
     private double _downloadProgressPercent;
+    private double _downloadProgress;
+    private bool _isDownloading;
     private bool _userDisabledSilentInstall;
     private bool _userDisabledScanning;
     private bool _userDisabledAutoUpdate;
     private bool _userTrustedInstallScripts;
+    private bool _hasUpdateAvailable;
+    private bool _isInstalling;
+    private string _statusMessage = string.Empty;
 
     public string Id
     {
@@ -145,7 +151,7 @@ public class AppItem : ObservableObject
         {
             if (SetProperty(ref _version, value))
             {
-                OnPropertyChanged(nameof(HasUpdateAvailable));
+                RefreshUpdateAvailability();
             }
         }
     }
@@ -158,7 +164,7 @@ public class AppItem : ObservableObject
         {
             if (SetProperty(ref _installedVersion, value))
             {
-                OnPropertyChanged(nameof(HasUpdateAvailable));
+                RefreshUpdateAvailability();
             }
         }
     }
@@ -253,6 +259,13 @@ public class AppItem : ObservableObject
         set => SetProperty(ref _isSelected, value);
     }
 
+    [JsonIgnore]
+    public bool IsSelectedForUpdate
+    {
+        get => _isSelectedForUpdate;
+        set => SetProperty(ref _isSelectedForUpdate, value);
+    }
+
     public bool IsInstalled
     {
         get => _isInstalled;
@@ -260,8 +273,10 @@ public class AppItem : ObservableObject
         {
             if (SetProperty(ref _isInstalled, value))
             {
-                OnPropertyChanged(nameof(HasUpdateAvailable));
+                RefreshUpdateAvailability();
                 OnPropertyChanged(nameof(CanInstallFromContextMenu));
+                OnPropertyChanged(nameof(CanRunInstallAction));
+                OnPropertyChanged(nameof(CanShowInstallActionButton));
                 OnPropertyChanged(nameof(CanShowPreferencesButton));
             }
         }
@@ -347,7 +362,13 @@ public class AppItem : ObservableObject
     public bool IsCancellable
     {
         get => _isCancellable;
-        set => SetProperty(ref _isCancellable, value);
+        set
+        {
+            if (SetProperty(ref _isCancellable, value))
+            {
+                OnPropertyChanged(nameof(CanShowInstallActionButton));
+            }
+        }
     }
 
     [JsonIgnore]
@@ -390,6 +411,40 @@ public class AppItem : ObservableObject
     {
         get => _downloadProgressPercent;
         set => SetProperty(ref _downloadProgressPercent, value);
+    }
+
+    [JsonIgnore]
+    public double DownloadProgress
+    {
+        get => _downloadProgress;
+        set => SetProperty(ref _downloadProgress, Math.Clamp(value, 0, 1));
+    }
+
+    [JsonIgnore]
+    public bool IsDownloading
+    {
+        get => _isDownloading;
+        set => SetProperty(ref _isDownloading, value);
+    }
+
+    [JsonIgnore]
+    public bool IsInstalling
+    {
+        get => _isInstalling;
+        set
+        {
+            if (SetProperty(ref _isInstalling, value))
+            {
+                OnPropertyChanged(nameof(CanShowInstallActionButton));
+            }
+        }
+    }
+
+    [JsonIgnore]
+    public string StatusMessage
+    {
+        get => _statusMessage;
+        set => SetProperty(ref _statusMessage, value ?? string.Empty);
     }
 
     [JsonIgnore]
@@ -482,6 +537,12 @@ public class AppItem : ObservableObject
     public bool CanInstallFromContextMenu => !IsInstalled;
 
     [JsonIgnore]
+    public bool CanRunInstallAction => !IsInstalled || HasUpdateAvailable;
+
+    [JsonIgnore]
+    public bool CanShowInstallActionButton => CanRunInstallAction && !IsCancellable && !IsInstalling;
+
+    [JsonIgnore]
     public string SilentInstallPreferenceMenuText =>
         UserDisabledSilentInstall
             ? "Enable silent install"
@@ -536,9 +597,23 @@ public class AppItem : ObservableObject
     public string VirusTotalDisplayText => HasVirusTotalData ? $"VT: {CurrentVirusTotalRatio}" : string.Empty;
 
     [JsonIgnore]
-    public bool HasUpdateAvailable =>
-        IsInstalled &&
-        IsCatalogVersionNewer(Version, InstalledVersion);
+    public bool HasUpdateAvailable
+    {
+        get => _hasUpdateAvailable;
+        set
+        {
+            if (SetProperty(ref _hasUpdateAvailable, value))
+            {
+                OnPropertyChanged(nameof(CanRunInstallAction));
+                OnPropertyChanged(nameof(CanShowInstallActionButton));
+            }
+        }
+    }
+
+    private void RefreshUpdateAvailability()
+    {
+        HasUpdateAvailable = IsInstalled && IsCatalogVersionNewer(Version, InstalledVersion);
+    }
 
     private static bool IsCatalogVersionNewer(string catalogVersionText, string installedVersionText)
     {

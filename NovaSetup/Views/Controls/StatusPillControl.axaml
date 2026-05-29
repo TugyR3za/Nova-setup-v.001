@@ -49,9 +49,12 @@
   <Border x:Name="PART_Pill"
           Classes="statusPill"
           VerticalAlignment="Center"
-          HorizontalAlignment="Left">
+          HorizontalAlignment="Left"
+          ClipToBounds="True">
     <TextBlock x:Name="PART_Label"
                Classes="statusPillLabel"
-               Text="{Binding #Root.Text}" />
+               Text="{Binding #Root.Text}"
+               TextWrapping="NoWrap"
+               TextTrimming="CharacterEllipsis" />
   </Border>
 </UserControl>

@@ -17,8 +17,8 @@
         TransparencyLevelHint="Mica, AcrylicBlur"
         Background="{DynamicResource ShellBackgroundBrush}"
         Foreground="{DynamicResource TextPrimaryBrush}"
-        MinWidth="1120"
-        MinHeight="720">
+        MinWidth="600"
+        MinHeight="450">
     <Design.DataContext>
         <design:MainWindowSampleData />
     </Design.DataContext>
@@ -91,7 +91,7 @@
                 Classes="shellPanel"
                 Padding="8"
                 Background="{DynamicResource ShellBackgroundBrush}">
-        <Grid ColumnDefinitions="220,*" ColumnSpacing="10">
+        <Grid ColumnDefinitions="1*,5*" ColumnSpacing="10">
             <controls:SidebarControl Grid.Column="0"
                                      CurrentProfileName="{Binding CurrentProfileName}"
                                      IsDashboardSelected="{Binding IsDashboardSelected}"
@@ -122,8 +122,8 @@
                     Padding="14">
                 <Grid RowDefinitions="*,Auto,Auto">
                     <Grid IsVisible="{Binding IsHomeScreenVisible}"
-                          RowDefinitions="Auto,Auto,Auto,*"
-                          RowSpacing="10">
+                          RowDefinitions="Auto,Auto,*"
+                          RowSpacing="0">
                         <controls:HeaderControl Grid.Row="0"
                                                 Title="{Binding HomeTitle}"
                                                 Subtitle="{Binding HomeSubtitle}"
@@ -134,7 +134,7 @@
                                                 HelpCommand="{Binding ShowHelpCommand}" />
 
 
-                        <Border Grid.Row="2"
+                        <Border Grid.Row="1"
                                 Classes="card"
                                 IsVisible="{Binding IsMyListsSelected}"
                                 Padding="12">
@@ -213,7 +213,7 @@
                             </StackPanel>
                         </Border>
 
-                        <ScrollViewer Grid.Row="3"
+                        <ScrollViewer Grid.Row="2"
                                       IsVisible="{Binding IsDashboardSelected}"
                                       VerticalScrollBarVisibility="Auto"
                                       HorizontalScrollBarVisibility="Disabled">
@@ -309,13 +309,14 @@
                             </StackPanel>
                         </ScrollViewer>
 
-                        <Border Grid.Row="3"
+                        <Border Grid.Row="2"
                                 Classes="card"
                                 IsVisible="{Binding IsDashboardUnselected}"
-                                Padding="12">
+                                Padding="8,8,12,12"
+                                ClipToBounds="True">
                             <Grid RowDefinitions="Auto,Auto,*,Auto" RowSpacing="8">
                                 <StackPanel Grid.Row="0"
-                                            Spacing="8"
+                                            Spacing="6"
                                             IsVisible="{Binding IsAppsSelected}">
                                     <Border IsVisible="{Binding PresetAppliedText, Converter={StaticResource StringHasValueConverter}}"
                                             Background="{DynamicResource AccentSoftBrush}"
@@ -337,29 +338,34 @@
                                         </Grid>
                                     </Border>
 
-                                    <StackPanel Spacing="8">
+                                    <StackPanel Spacing="6"
+                                                MaxHeight="180"
+                                                ClipToBounds="True">
                                         <TextBlock Text="Quick Setup"
                                                    FontSize="18"
                                                    FontWeight="SemiBold" />
 
                                         <ScrollViewer HorizontalScrollBarVisibility="Auto"
-                                                      VerticalScrollBarVisibility="Disabled">
-                                            <ItemsControl ItemsSource="{Binding AvailablePresets}">
+                                                      VerticalScrollBarVisibility="Disabled"
+                                                      MaxHeight="150">
+                                            <ItemsControl ItemsSource="{Binding AvailablePresets}"
+                                                          HorizontalAlignment="Stretch">
                                                 <ItemsControl.ItemsPanel>
                                                     <ItemsPanelTemplate>
-                                                        <StackPanel Orientation="Horizontal"
-                                                                    Spacing="12" />
+                                                        <WrapPanel Orientation="Horizontal" />
                                                     </ItemsPanelTemplate>
                                                 </ItemsControl.ItemsPanel>
                                                 <ItemsControl.ItemTemplate>
                                                     <DataTemplate>
                                                         <Border Classes="card"
-                                                                Width="180"
-                                                                Padding="14">
-                                                            <StackPanel Spacing="10">
-                                                                <Border Width="54"
-                                                                        Height="54"
-                                                                        CornerRadius="27"
+                                                                MinWidth="180"
+                                                                HorizontalAlignment="Stretch"
+                                                                Padding="8"
+                                                                Margin="0,0,12,8">
+                                                            <StackPanel Spacing="5">
+                                                                <Border Width="32"
+                                                                        Height="32"
+                                                                        CornerRadius="16"
                                                                         Background="{DynamicResource AccentSoftBrush}">
                                                                     <TextBlock Text="{Binding Icon}"
                                                                                HorizontalAlignment="Center"
@@ -371,7 +377,8 @@
                                                                 <StackPanel Spacing="3">
                                                                     <TextBlock Text="{Binding Name}"
                                                                                FontWeight="SemiBold"
-                                                                               TextWrapping="Wrap" />
+                                                                               TextWrapping="NoWrap"
+                                                                               TextTrimming="CharacterEllipsis" />
                                                                     <TextBlock Text="{Binding AppCountText}"
                                                                                Foreground="{DynamicResource TextMutedBrush}"
                                                                                FontSize="12" />
@@ -379,7 +386,7 @@
                                                                                Foreground="{DynamicResource TextDescriptionBrush}"
                                                                                FontSize="12"
                                                                                TextWrapping="Wrap"
-                                                                               MaxLines="3"
+                                                                               MaxLines="2"
                                                                                TextTrimming="CharacterEllipsis" />
                                                                 </StackPanel>
 
@@ -415,6 +422,7 @@
 
                                 <controls:AppListControl Grid.Row="2"
                                                          IsVisible="{Binding IsListViewActive}"
+                                                         MinHeight="0"
                                                          Items="{Binding VisibleApps}"
                                                          OpenPublisherCommand="{Binding OpenPublisherCommand}"
                                                          ShowAppDetailsCommand="{Binding ShowAppDetailsCommand}"
@@ -428,6 +436,7 @@
 
                                 <controls:AppGridControl Grid.Row="2"
                                                          IsVisible="{Binding IsGridViewActive}"
+                                                         MinHeight="0"
                                                          Items="{Binding VisibleApps}"
                                                          OpenPublisherCommand="{Binding OpenPublisherCommand}"
                                                          ShowAppDetailsCommand="{Binding ShowAppDetailsCommand}" />
@@ -1284,6 +1293,11 @@
                                                     <StackPanel Spacing="0">
                                                         <CheckBox IsChecked="{Binding Settings.AutoDetectInstalledAppsOnStartup}" Content="Scan PC on startup" />
                                                         <TextBlock Text="Auto-detect existing apps." FontSize="12" Foreground="{DynamicResource TextMutedBrush}" TextWrapping="Wrap" Margin="24,2,0,0" />
+                                                    </StackPanel>
+                                                    <Border Height="1" Background="{DynamicResource CardBorderBrush}" Margin="-16,0" />
+                                                    <StackPanel Spacing="0">
+                                                        <CheckBox IsChecked="{Binding Settings.AutoSelectDrivers}" Content="Automatically select drivers" />
+                                                        <TextBlock Text="Allow hardware detection to select driver recommendations." FontSize="12" Foreground="{DynamicResource TextMutedBrush}" TextWrapping="Wrap" Margin="24,2,0,0" />
                                                     </StackPanel>
                                                 </StackPanel>
                                             </Border>

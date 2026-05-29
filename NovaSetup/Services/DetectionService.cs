@@ -345,17 +345,19 @@ public sealed class DetectionService
     public RecommendationSummary ApplyRecommendations(
         IList<AppItem> apps,
         string currentPlatform,
-        bool autoSelectSupportedApps = true)
+        bool autoSelectSupportedApps = true,
+        Func<AppItem, bool>? canAutoSelectApp = null)
     {
         var detectionResult = DetectHardware(currentPlatform);
-        return ApplyRecommendations(apps, currentPlatform, detectionResult, autoSelectSupportedApps);
+        return ApplyRecommendations(apps, currentPlatform, detectionResult, autoSelectSupportedApps, canAutoSelectApp);
     }
 
     public RecommendationSummary ApplyRecommendations(
         IList<AppItem> apps,
         string currentPlatform,
         HardwareDetectionResult detectionResult,
-        bool autoSelectSupportedApps = true)
+        bool autoSelectSupportedApps = true,
+        Func<AppItem, bool>? canAutoSelectApp = null)
     {
         // Reset existing recommendation flags. Any new recommendations are reapplied from current detection.
         foreach (var app in apps)
@@ -381,7 +383,8 @@ public sealed class DetectionService
             var supportedOnCurrentPlatform = IsSupportedOnPlatform(matchedApp, currentPlatform);
 
             var autoSelected = false;
-            if (supportedOnCurrentPlatform && autoSelectSupportedApps && !matchedApp.IsSelected)
+            var canAutoSelect = canAutoSelectApp?.Invoke(matchedApp) ?? true;
+            if (supportedOnCurrentPlatform && autoSelectSupportedApps && canAutoSelect && !matchedApp.IsSelected)
             {
                 matchedApp.IsSelected = true;
                 autoSelected = true;

@@ -3,11 +3,13 @@
              x:Class="NovaSetup.Views.Controls.FilterBarControl"
              x:CompileBindings="False"
              x:Name="Root">
-  <Grid ColumnDefinitions="*,160,300,Auto,Auto"
-        ColumnSpacing="10"
+  <Grid ColumnDefinitions="Auto,Auto,*,Auto,Auto"
+        ColumnSpacing="0"
         VerticalAlignment="Center">
     <ScrollViewer HorizontalScrollBarVisibility="Auto"
-                  VerticalScrollBarVisibility="Disabled">
+                  VerticalScrollBarVisibility="Disabled"
+                  VerticalAlignment="Center"
+                  Margin="4,0">
       <Border Background="{DynamicResource InputBrush}"
               BorderBrush="Transparent"
               BorderThickness="0"
@@ -32,8 +34,10 @@
     </ScrollViewer>
 
     <ComboBox Grid.Column="1"
-              Width="160"
+              MinWidth="120"
               HorizontalAlignment="Left"
+              VerticalAlignment="Center"
+              Margin="4,0"
               PlaceholderText="All categories"
               ItemsSource="{Binding #Root.AvailableCategories}"
               SelectedItem="{Binding #Root.SelectedCategory, Mode=TwoWay}">
@@ -47,11 +51,16 @@
     <TextBox Grid.Column="2"
              Watermark="Search apps..."
              Text="{Binding #Root.SearchText, Mode=TwoWay}"
-             HorizontalAlignment="Stretch" />
+             HorizontalAlignment="Stretch"
+             VerticalAlignment="Center"
+             MinWidth="120"
+             Margin="4,0" />
 
     <Button Grid.Column="3"
             Classes="icon outline"
             Command="{Binding #Root.RefreshCatalogCommand}"
+            VerticalAlignment="Center"
+            Margin="4,0"
             ToolTip.Tip="Refresh catalog">
       <Viewbox Width="16" Height="16">
         <Path Data="{DynamicResource IconRefreshGeometry}" Fill="{DynamicResource TextSecondaryBrush}" />
@@ -60,7 +69,9 @@
 
     <Button Grid.Column="4"
             Classes="outline icon"
-            Command="{Binding #Root.ToggleViewModeCommand}">
+            Command="{Binding #Root.ToggleViewModeCommand}"
+            VerticalAlignment="Center"
+            Margin="4,0">
       <Panel>
         <TextBlock Text="Grid" IsVisible="{Binding !#Root.IsGridViewActive}" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="11" />
         <TextBlock Text="List" IsVisible="{Binding #Root.IsGridViewActive}" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="11" />

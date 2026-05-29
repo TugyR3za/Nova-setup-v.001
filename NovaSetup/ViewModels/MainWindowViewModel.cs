@@ -51,6 +51,7 @@ public sealed class MainWindowViewModel : ObservableObject
     private bool _isGridViewActive;
     private readonly ObservableCollection<AppItem> _apps = new();
     private readonly ObservableCollection<AppItem> _visibleApps = new();
+    private NotifyCollectionChangedEventHandler? _visibleAppsCollectionChangedHandler;
     private readonly ObservableCollection<InstallQueueItem> _installQueue = new();
     private readonly ObservableCollection<NovaProfile> _savedProfiles = new();
     private readonly ObservableCollection<LogEntry> _filteredLiveLogs = new();
@@ -1614,7 +1615,7 @@ public sealed class MainWindowViewModel : ObservableObject
         _skippedResults.CollectionChanged += (_, _) => OnPropertyChanged(nameof(HasSkippedResults));
         _restartRequiredResults.CollectionChanged += (_, _) => OnPropertyChanged(nameof(HasRestartRequiredResults));
         _unsupportedSkippedResults.CollectionChanged += (_, _) => OnPropertyChanged(nameof(HasUnsupportedSkippedResults));
-        _visibleApps.CollectionChanged += (_, _) =>
+        _visibleAppsCollectionChangedHandler = (_, _) =>
         {
             OnPropertyChanged(nameof(VisibleAppCount));
             OnPropertyChanged(nameof(SelectedFooterText));
@@ -1622,6 +1623,7 @@ public sealed class MainWindowViewModel : ObservableObject
             OnPropertyChanged(nameof(SelectedAppsSizeMB));
             OnPropertyChanged(nameof(SelectedAppsTimeMins));
         };
+        _visibleApps.CollectionChanged += _visibleAppsCollectionChangedHandler;
         _installQueue.CollectionChanged += HandleInstallQueueCollectionChanged;
         _savedProfiles.CollectionChanged += (_, _) =>
         {
@@ -2033,7 +2035,7 @@ public sealed class MainWindowViewModel : ObservableObject
     private void ApplyVisibilityFilter()
     {
         var query = SearchText.Trim();
-        _visibleApps.Clear();
+        var newVisible = new List<AppItem>();
 
         foreach (var app in _apps)
         {
@@ -2080,7 +2082,37 @@ public sealed class MainWindowViewModel : ObservableObject
                 }
             }
 
-            _visibleApps.Add(app);
+            newVisible.Add(app);
+        }
+
+        var changed = _visibleApps.Count != newVisible.Count;
+        if (!changed)
+        {
+            for (var i = 0; i < newVisible.Count; i++)
+            {
+                if (!ReferenceEquals(_visibleApps[i], newVisible[i]))
+                {
+                    changed = true;
+                    break;
+                }
+            }
+        }
+
+        if (changed)
+        {
+            _visibleApps.CollectionChanged -= _visibleAppsCollectionChangedHandler;
+            try
+            {
+                _visibleApps.Clear();
+                foreach (var app in newVisible)
+                {
+                    _visibleApps.Add(app);
+                }
+            }
+            finally
+            {
+                _visibleApps.CollectionChanged += _visibleAppsCollectionChangedHandler;
+            }
         }
 
         OnPropertyChanged(nameof(VisibleAppCount));
@@ -2176,6 +2208,12 @@ public sealed class MainWindowViewModel : ObservableObject
     private static bool IsDriverCategory(string category) =>
         category.Contains("driver", StringComparison.OrdinalIgnoreCase) ||
         category.Contains("accessor", StringComparison.OrdinalIgnoreCase);
+
+    private static bool IsDriverApp(AppItem app) =>
+        IsDriverCategory(app.Category ?? string.Empty);
+
+    private bool CanAutoSelectRecommendation(AppItem app) =>
+        !IsDriverApp(app) || Settings.AutoSelectDrivers;
 
     private void NotifyScreenStateChanged()
     {
@@ -2353,7 +2391,8 @@ public sealed class MainWindowViewModel : ObservableObject
                 _apps,
                 _currentPlatformId,
                 hardwareDetection,
-                autoSelectSupportedApps: false);
+                autoSelectSupportedApps: false,
+                canAutoSelectApp: CanAutoSelectRecommendation);
 
             var autoSelectedCount = ApplyRecommendedSelections(selectionSnapshot);
 
@@ -2450,7 +2489,7 @@ public sealed class MainWindowViewModel : ObservableObject
         foreach (var app in _apps.Where(app => app.IsRecommended && app.IsSupportedOnCurrentPlatform))
         {
             var wasSelectedAtDetectionStart = selectionSnapshot.TryGetValue(app.Id, out var selected) && selected;
-            if (wasSelectedAtDetectionStart || app.IsSelected)
+            if (wasSelectedAtDetectionStart || app.IsSelected || !CanAutoSelectRecommendation(app))
             {
                 continue;
             }
@@ -2924,7 +2963,15 @@ public sealed class MainWindowViewModel : ObservableObject
         UpdatesViewModel.IsBusy = true;
         try
         {
-            await _appUpdateService.UpdateAllAsync(UpdatesViewModel.AvailableUpdates.ToList(), _installerService);
+            var availableUpdates = UpdatesViewModel.AvailableUpdates.ToList();
+            var selectedUpdates = availableUpdates
+                .Where(app => app.IsSelectedForUpdate)
+                .ToList();
+            var updateQueue = selectedUpdates.Count > 0
+                ? selectedUpdates
+                : availableUpdates;
+
+            await _installerService.UpdateMultipleAsync(updateQueue, CancellationToken.None);
             await HistoryViewModel.RefreshAsync();
             await RefreshAvailableAppUpdatesAsync(rerunInstalledDetection: true, updateStatusText: true);
         }
@@ -2978,8 +3025,9 @@ public sealed class MainWindowViewModel : ObservableObject
                 });
             }
 
-            var latestVersions = await Task.Run(() =>
-                _appUpdateService.ResolveLatestCatalogVersions(_apps.ToList(), _currentPlatformId));
+            var latestVersions = await _appUpdateService.ResolveLatestCatalogVersionsAsync(
+                _apps.ToList(),
+                _currentPlatformId);
 
             await Dispatcher.UIThread.InvokeAsync(() =>
             {
@@ -3158,7 +3206,7 @@ public sealed class MainWindowViewModel : ObservableObject
 
     private bool CanExecuteAppContextInstall(object? parameter)
     {
-        return !IsInstalling && parameter is AppItem app && !app.IsInstalled;
+        return !IsInstalling && parameter is AppItem app && (!app.IsInstalled || app.HasUpdateAvailable);
     }
 
     private bool CanExecuteAppContextUpdate(object? parameter)
@@ -3791,7 +3839,8 @@ public sealed class MainWindowViewModel : ObservableObject
                     _apps,
                     _currentPlatformId,
                     hardwareDetection,
-                    autoSelectSupportedApps: false);
+                    autoSelectSupportedApps: false,
+                    canAutoSelectApp: CanAutoSelectRecommendation);
 
                 foreach (var app in _apps)
                 {
@@ -4450,8 +4499,11 @@ public sealed class MainWindowViewModel : ObservableObject
         var installedApps = await Task.Run(() =>
             _detectionService.DetectInstalledAppStates(_apps.ToList(), _currentPlatformId));
 
-        ApplyInstalledAppResults(installedApps);
-        NotifyAppSummaryStateChanged();
+        await Dispatcher.UIThread.InvokeAsync(() =>
+        {
+            ApplyInstalledAppResults(installedApps);
+            NotifyAppSummaryStateChanged();
+        });
         await RefreshAvailableAppUpdatesAsync(rerunInstalledDetection: false, updateStatusText: false);
     }
 

@@ -1,7 +1,12 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:converters="clr-namespace:NovaSetup.Views.Converters"
              x:Class="NovaSetup.Views.UpdatesView"
              x:CompileBindings="False">
+  <UserControl.Resources>
+    <converters:StringHasValueConverter x:Key="StringHasValueConverter" />
+  </UserControl.Resources>
+
   <ScrollViewer VerticalScrollBarVisibility="Auto"
                 HorizontalScrollBarVisibility="Disabled">
     <StackPanel Spacing="12"
@@ -21,16 +26,27 @@
 
       <Border Classes="card"
               Padding="16">
-        <Grid ColumnDefinitions="Auto,Auto,*"
+        <Grid ColumnDefinitions="Auto,Auto,Auto,*,Auto"
               ColumnSpacing="8">
-          <Button Classes="primary"
+          <CheckBox Content="Select All"
+                    IsChecked="{Binding AreAllVisibleUpdatesSelected, Mode=TwoWay}"
+                    IsVisible="{Binding HasUpdates}"
+                    VerticalAlignment="Center" />
+          <Button Grid.Column="1"
+                  Classes="primary"
                   Content="Update All"
                   Command="{Binding UpdateAllCommand}" />
-          <Button Grid.Column="1"
+          <Button Grid.Column="2"
                   Classes="ghost compact"
                   Content="Check Now"
                   Command="{Binding CheckNowCommand}" />
-          <TextBlock Grid.Column="2"
+          <TextBlock Grid.Column="3"
+                     Text="{Binding SelectedUpdatesText}"
+                     IsVisible="{Binding HasSelectedUpdates}"
+                     VerticalAlignment="Center"
+                     Foreground="{DynamicResource AccentBrush}"
+                     FontWeight="SemiBold" />
+          <TextBlock Grid.Column="4"
                      Text="{Binding SummaryText}"
                      VerticalAlignment="Center"
                      HorizontalAlignment="Right"
@@ -44,21 +60,24 @@
         <Grid RowDefinitions="Auto,*">
           <Border Background="{DynamicResource ElevatedCardBrush}"
                   Padding="16,12">
-            <Grid ColumnDefinitions="2.1*,1.3*,Auto,1.3*,Auto"
+            <Grid ColumnDefinitions="Auto,2.1*,1.3*,Auto,1.3*,Auto"
                   ColumnSpacing="12">
-              <TextBlock Text="App"
+              <TextBlock Text="Sel"
                          FontWeight="SemiBold" />
               <TextBlock Grid.Column="1"
-                         Text="Installed"
+                         Text="App"
                          FontWeight="SemiBold" />
               <TextBlock Grid.Column="2"
+                         Text="Installed"
+                         FontWeight="SemiBold" />
+              <TextBlock Grid.Column="3"
                          Text="To"
                          FontWeight="SemiBold"
                          HorizontalAlignment="Center" />
-              <TextBlock Grid.Column="3"
+              <TextBlock Grid.Column="4"
                          Text="Latest"
                          FontWeight="SemiBold" />
-              <TextBlock Grid.Column="4"
+              <TextBlock Grid.Column="5"
                          Text="Action"
                          FontWeight="SemiBold"
                          HorizontalAlignment="Right" />
@@ -87,26 +106,44 @@
                 <Border Padding="16,12"
                         BorderBrush="{DynamicResource CardBorderBrush}"
                         BorderThickness="0,0,0,1">
-                  <Grid ColumnDefinitions="2.1*,1.3*,Auto,1.3*,Auto"
+                  <Grid ColumnDefinitions="Auto,2.1*,1.3*,Auto,1.3*,Auto"
                         ColumnSpacing="12">
-                    <TextBlock Text="{Binding Name}"
-                               VerticalAlignment="Center"
-                               FontWeight="SemiBold"
-                               TextWrapping="Wrap" />
-                    <TextBlock Grid.Column="1"
+                    <CheckBox IsChecked="{Binding IsSelectedForUpdate}"
+                              VerticalAlignment="Center"
+                              HorizontalAlignment="Center" />
+                    <StackPanel Grid.Column="1"
+                                Spacing="4"
+                                VerticalAlignment="Center">
+                      <TextBlock Text="{Binding Name}"
+                                 FontWeight="SemiBold"
+                                 TextWrapping="Wrap" />
+                      <TextBlock Text="{Binding StatusMessage}"
+                                 IsVisible="{Binding StatusMessage, Converter={StaticResource StringHasValueConverter}}"
+                                 Foreground="{DynamicResource TextMutedBrush}"
+                                 FontSize="12"
+                                 TextWrapping="Wrap" />
+                      <ProgressBar Minimum="0"
+                                   Maximum="1"
+                                   Height="4"
+                                   Value="{Binding DownloadProgress}"
+                                   Background="{DynamicResource InputBrush}"
+                                   Foreground="{DynamicResource AccentBrush}"
+                                   IsVisible="{Binding IsInstalling}" />
+                    </StackPanel>
+                    <TextBlock Grid.Column="2"
                                Text="{Binding InstalledVersion, StringFormat='v{0}'}"
                                VerticalAlignment="Center"
                                Foreground="{DynamicResource TextMutedBrush}" />
-                    <TextBlock Grid.Column="2"
+                    <TextBlock Grid.Column="3"
                                Text="->"
                                VerticalAlignment="Center"
                                HorizontalAlignment="Center"
                                Foreground="{DynamicResource TextMutedBrush}" />
-                    <TextBlock Grid.Column="3"
+                    <TextBlock Grid.Column="4"
                                Text="{Binding Version, StringFormat='v{0}'}"
                                VerticalAlignment="Center"
                                Foreground="{DynamicResource SuccessBrush}" />
-                    <Button Grid.Column="4"
+                    <Button Grid.Column="5"
                             Classes="ghost compact"
                             Content="Update"
                             Command="{Binding DataContext.UpdateSingleCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"

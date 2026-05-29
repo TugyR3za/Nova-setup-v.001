@@ -24,7 +24,10 @@ public sealed class AppUpdateService
         _loggingService = loggingService;
     }
 
-    public Dictionary<string, string> ResolveLatestCatalogVersions(IEnumerable<AppItem> allApps, string currentPlatform)
+    public async Task<Dictionary<string, string>> ResolveLatestCatalogVersionsAsync(
+        IEnumerable<AppItem> allApps,
+        string currentPlatform,
+        CancellationToken cancellationToken = default)
     {
         var resolvedVersions = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         if (!OperatingSystem.IsWindows() ||
@@ -70,7 +73,7 @@ public sealed class AppUpdateService
 
         // FAST PATH: Single `winget upgrade` call to get all available updates at once
         // This replaces N individual `winget show --id X` calls — huge speed improvement
-        var batchUpgrades = TryBatchResolveUpgrades(wingetPath);
+        var batchUpgrades = await TryBatchResolveUpgradesAsync(wingetPath, cancellationToken);
         foreach (var (packageId, appId) in packageIdToAppId)
         {
             if (batchUpgrades.TryGetValue(packageId, out var availableVersion) &&
@@ -81,7 +84,11 @@ public sealed class AppUpdateService
             }
 
             // SLOW FALLBACK: Only for packages not found in the batch result
-            if (TryResolveLatestWingetVersion(wingetPath, packageId, out var latestVersion))
+            var latestVersion = await TryResolveLatestWingetVersionAsync(
+                wingetPath,
+                packageId,
+                cancellationToken);
+            if (!string.IsNullOrWhiteSpace(latestVersion))
             {
                 resolvedVersions[appId] = latestVersion;
             }
@@ -101,7 +108,9 @@ public sealed class AppUpdateService
     /// Returns a dictionary mapping winget package IDs to their available (latest) versions.
     /// This is dramatically faster than calling "winget show --id X" once per app.
     /// </summary>
-    private Dictionary<string, string> TryBatchResolveUpgrades(string wingetPath)
+    private async Task<Dictionary<string, string>> TryBatchResolveUpgradesAsync(
+        string wingetPath,
+        CancellationToken cancellationToken)
     {
         var results = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
@@ -126,15 +135,21 @@ public sealed class AppUpdateService
 
             var stdoutTask = process.StandardOutput.ReadToEndAsync();
             var stderrTask = process.StandardError.ReadToEndAsync();
-
-            if (!process.WaitForExit(30000))
+            using var timeoutSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            timeoutSource.CancelAfter(TimeSpan.FromSeconds(30));
+            try
+            {
+                await process.WaitForExitAsync(timeoutSource.Token);
+            }
+            catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
             {
                 try { process.Kill(entireProcessTree: true); } catch { }
                 _loggingService?.LogWarning("[AppUpdateService] Batch winget upgrade timed out after 30s.");
                 return results;
             }
 
-            var output = stdoutTask.GetAwaiter().GetResult();
+            var output = await stdoutTask;
+            _ = await stderrTask;
             output = AnsiEscapeRegex.Replace(output, string.Empty);
 
             // Parse the tabular output: Name | Id | Version | Available | Source
@@ -164,6 +179,10 @@ public sealed class AppUpdateService
 
             _loggingService?.LogInfo(
                 $"[AppUpdateService] Batch winget upgrade found {results.Count} package(s) with available updates.");
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            throw;
         }
         catch (Exception ex)
         {
@@ -201,13 +220,7 @@ public sealed class AppUpdateService
         _loggingService?.LogInfo(
             $"[AppUpdateService] Updating {app.Name} from v{app.InstalledVersion} to v{app.Version}");
 
-        var updateCandidate = BuildUpdateInstallCandidate(app);
-        var results = await installerService.InstallSelectedAppsAsync(
-            new[] { updateCandidate },
-            GetCurrentPlatformId(),
-            silentInstallEnabled: updateCandidate.SupportsSilentInstall,
-            catalogApps: new[] { updateCandidate },
-            allowUpgradeForInstalledApps: true);
+        var results = await installerService.UpdateMultipleAsync(new[] { app }, CancellationToken.None);
 
         if (results.Any(result => result.Success))
         {
@@ -221,10 +234,9 @@ public sealed class AppUpdateService
 
     public async Task UpdateAllAsync(List<AppItem> apps, InstallerService installerService)
     {
-        foreach (var app in apps ?? new List<AppItem>())
-        {
-            await UpdateAppAsync(app, installerService);
-        }
+        ArgumentNullException.ThrowIfNull(installerService);
+
+        await installerService.UpdateMultipleAsync(apps ?? new List<AppItem>(), CancellationToken.None);
     }
 
     private static string GetCurrentPlatformId()
@@ -274,10 +286,11 @@ public sealed class AppUpdateService
         return match.Success ? match.Groups["id"].Value.Trim() : string.Empty;
     }
 
-    private bool TryResolveLatestWingetVersion(string wingetPath, string packageId, out string latestVersion)
+    private async Task<string> TryResolveLatestWingetVersionAsync(
+        string wingetPath,
+        string packageId,
+        CancellationToken cancellationToken)
     {
-        latestVersion = string.Empty;
-
         try
         {
             using var process = new Process
@@ -300,8 +313,13 @@ public sealed class AppUpdateService
 
             var stdoutTask = process.StandardOutput.ReadToEndAsync();
             var stderrTask = process.StandardError.ReadToEndAsync();
-
-            if (!process.WaitForExit(12000))
+            using var timeoutSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            timeoutSource.CancelAfter(TimeSpan.FromSeconds(12));
+            try
+            {
+                await process.WaitForExitAsync(timeoutSource.Token);
+            }
+            catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
             {
                 try
                 {
@@ -314,33 +332,37 @@ public sealed class AppUpdateService
 
                 _loggingService?.LogWarning(
                     $"[AppUpdateService] Timed out while resolving latest version for Winget package {packageId}.");
-                return false;
+                return string.Empty;
             }
 
-            var output = $"{stdoutTask.GetAwaiter().GetResult()}{Environment.NewLine}{stderrTask.GetAwaiter().GetResult()}";
+            var output = $"{await stdoutTask}{Environment.NewLine}{await stderrTask}";
             var versionMatch = VersionLineRegex.Match(output);
             if (!versionMatch.Success)
             {
                 _loggingService?.LogDebug(
                     $"[AppUpdateService] Winget did not return a latest version for package {packageId}.");
-                return false;
+                return string.Empty;
             }
 
-            latestVersion = versionMatch.Groups["value"].Value.Trim();
+            var latestVersion = versionMatch.Groups["value"].Value.Trim();
             if (string.IsNullOrWhiteSpace(latestVersion))
             {
-                return false;
+                return string.Empty;
             }
 
             _loggingService?.LogDebug(
                 $"[AppUpdateService] Latest Winget version for {packageId}: {latestVersion}");
-            return true;
+            return latestVersion;
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            throw;
         }
         catch (Exception ex)
         {
             _loggingService?.LogWarning(
                 $"[AppUpdateService] Unable to refresh latest version for Winget package {packageId}: {ex.Message}");
-            return false;
+            return string.Empty;
         }
     }
 

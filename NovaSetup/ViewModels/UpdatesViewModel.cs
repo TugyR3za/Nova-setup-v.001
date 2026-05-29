@@ -1,4 +1,6 @@
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
+using System.ComponentModel;
 using System.Windows.Input;
 using NovaSetup.Models;
 
@@ -11,6 +13,7 @@ public sealed class UpdatesViewModel : ObservableObject
     private readonly AsyncRelayCommand _checkNowCommand;
     private readonly RelayCommand _updateSingleCommand;
     private bool _isBusy;
+    private bool _isUpdatingSelectAll;
 
     public UpdatesViewModel(
         Func<Task> updateAllAsync,
@@ -33,14 +36,7 @@ public sealed class UpdatesViewModel : ObservableObject
             },
             parameter => !_isBusy && parameter is AppItem);
 
-        _availableUpdates.CollectionChanged += (_, _) =>
-        {
-            OnPropertyChanged(nameof(HasUpdates));
-            OnPropertyChanged(nameof(HasNoUpdates));
-            OnPropertyChanged(nameof(SummaryText));
-            _updateAllCommand.RaiseCanExecuteChanged();
-            _updateSingleCommand.RaiseCanExecuteChanged();
-        };
+        _availableUpdates.CollectionChanged += HandleAvailableUpdatesChanged;
     }
 
     public ObservableCollection<AppItem> AvailableUpdates => _availableUpdates;
@@ -54,6 +50,43 @@ public sealed class UpdatesViewModel : ObservableObject
             ? "1 update available"
             : $"{_availableUpdates.Count} updates available"
         : "All apps are up to date";
+
+    public int SelectedUpdateCount => _availableUpdates.Count(app => app.IsSelectedForUpdate);
+
+    public bool HasSelectedUpdates => SelectedUpdateCount > 0;
+
+    public string SelectedUpdatesText => HasSelectedUpdates
+        ? SelectedUpdateCount == 1
+            ? "1 selected"
+            : $"{SelectedUpdateCount} selected"
+        : string.Empty;
+
+    public bool AreAllVisibleUpdatesSelected
+    {
+        get => HasUpdates && _availableUpdates.All(app => app.IsSelectedForUpdate);
+        set
+        {
+            if (_isUpdatingSelectAll)
+            {
+                return;
+            }
+
+            _isUpdatingSelectAll = true;
+            try
+            {
+                foreach (var app in _availableUpdates)
+                {
+                    app.IsSelectedForUpdate = value;
+                }
+            }
+            finally
+            {
+                _isUpdatingSelectAll = false;
+            }
+
+            NotifyUpdateSelectionStateChanged();
+        }
+    }
 
     public bool IsBusy
     {
@@ -77,10 +110,58 @@ public sealed class UpdatesViewModel : ObservableObject
 
     public void SetAvailableUpdates(IEnumerable<AppItem> apps)
     {
+        foreach (var app in _availableUpdates)
+        {
+            app.PropertyChanged -= HandleAvailableUpdatePropertyChanged;
+        }
+
         _availableUpdates.Clear();
         foreach (var app in apps ?? Enumerable.Empty<AppItem>())
         {
             _availableUpdates.Add(app);
         }
+    }
+
+    private void HandleAvailableUpdatesChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    {
+        if (e.OldItems is not null)
+        {
+            foreach (var item in e.OldItems.OfType<AppItem>())
+            {
+                item.PropertyChanged -= HandleAvailableUpdatePropertyChanged;
+            }
+        }
+
+        if (e.NewItems is not null)
+        {
+            foreach (var item in e.NewItems.OfType<AppItem>())
+            {
+                item.PropertyChanged -= HandleAvailableUpdatePropertyChanged;
+                item.PropertyChanged += HandleAvailableUpdatePropertyChanged;
+            }
+        }
+
+        OnPropertyChanged(nameof(HasUpdates));
+        OnPropertyChanged(nameof(HasNoUpdates));
+        OnPropertyChanged(nameof(SummaryText));
+        NotifyUpdateSelectionStateChanged();
+        _updateAllCommand.RaiseCanExecuteChanged();
+        _updateSingleCommand.RaiseCanExecuteChanged();
+    }
+
+    private void HandleAvailableUpdatePropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(AppItem.IsSelectedForUpdate))
+        {
+            NotifyUpdateSelectionStateChanged();
+        }
+    }
+
+    private void NotifyUpdateSelectionStateChanged()
+    {
+        OnPropertyChanged(nameof(SelectedUpdateCount));
+        OnPropertyChanged(nameof(HasSelectedUpdates));
+        OnPropertyChanged(nameof(SelectedUpdatesText));
+        OnPropertyChanged(nameof(AreAllVisibleUpdatesSelected));
     }
 }

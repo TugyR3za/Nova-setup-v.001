@@ -35,6 +35,7 @@ public sealed class AppSettings : ObservableObject
     private string _restartBehavior = RestartAskBeforeRestart;
     private bool _showAlreadyInstalledApps = true;
     private bool _autoDetectInstalledAppsOnStartup = true;
+    private bool _autoSelectDrivers;
     private string _downloadLocationMode = DownloadSystemDefault;
     private string _customDownloadFolder = string.Empty;
     private bool _keepInstallersAfterInstall;
@@ -93,6 +94,12 @@ public sealed class AppSettings : ObservableObject
     {
         get => _autoDetectInstalledAppsOnStartup;
         set => SetProperty(ref _autoDetectInstalledAppsOnStartup, value);
+    }
+
+    public bool AutoSelectDrivers
+    {
+        get => _autoSelectDrivers;
+        set => SetProperty(ref _autoSelectDrivers, value);
     }
 
     public string DownloadLocationMode
@@ -215,6 +222,7 @@ public sealed class AppSettings : ObservableObject
             RestartBehavior = RestartBehavior,
             ShowAlreadyInstalledApps = ShowAlreadyInstalledApps,
             AutoDetectInstalledAppsOnStartup = AutoDetectInstalledAppsOnStartup,
+            AutoSelectDrivers = AutoSelectDrivers,
             DownloadLocationMode = DownloadLocationMode,
             CustomDownloadFolder = CustomDownloadFolder,
             KeepInstallersAfterInstall = KeepInstallersAfterInstall,
@@ -246,6 +254,7 @@ public sealed class AppSettings : ObservableObject
         RestartBehavior = source.RestartBehavior;
         ShowAlreadyInstalledApps = source.ShowAlreadyInstalledApps;
         AutoDetectInstalledAppsOnStartup = source.AutoDetectInstalledAppsOnStartup;
+        AutoSelectDrivers = source.AutoSelectDrivers;
         DownloadLocationMode = source.DownloadLocationMode;
         CustomDownloadFolder = source.CustomDownloadFolder;
         KeepInstallersAfterInstall = source.KeepInstallersAfterInstall;
